@@ -1,0 +1,128 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #0A0A0A;
+    color: #FFFFFF;
+  }
+
+  h1, h2, h3, h4, .font-display {
+    font-family: 'Space Grotesk', 'Syne', sans-serif;
+    letter-spacing: -0.025em;
+  }
+}
+
+/* Custom scrollbar for dark aesthetic */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0A0A0A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #222520;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #D2E8A3;
+}
+
+/* Light mode theme overrides */
+html.light body {
+  background-color: #F4F5F0;
+  color: #0F172A;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #E2E8F0;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #94A3B8;
+}
+
+html.light .glass-dock {
+  background: #FFFFFF;
+  border: 2px solid #64748B;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+}
+
+html.light .glass-card {
+  background: #FFFFFF !important;
+  border: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+html.light .glass-card:hover {
+  border-color: #65A30D !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+}
+
+/* Light mode typography & contrast */
+html.light h1,
+html.light h2,
+html.light h3,
+html.light h4,
+html.light h5,
+html.light h6 {
+  color: #0F172A;
+}
+
+html.light .text-[#D2E8A3] {
+  color: #4D7C0F !important; /* Rich readable olive green in light mode */
+}
+
+/* Preserve white text inside dark backgrounds (e.g. dark buttons, dark badges, dark image overlays) */
+html.light button.bg-slate-900,
+html.light button.bg-black,
+html.light button.bg-green-500,
+html.light button.bg-green-600,
+html.light button.bg-rose-500,
+html.light button.bg-[#742284],
+html.light .bg-black,
+html.light .bg-slate-900 {
+  color: #FFFFFF !important;
+}
+
+html.light button.bg-slate-900 .text-white,
+html.light button.bg-black .text-white,
+html.light .bg-black .text-white,
+html.light .bg-slate-900 .text-white {
+  color: #FFFFFF !important;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.25s ease-out both;
+}
+

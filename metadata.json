@@ -1,0 +1,6 @@
+{
+  "name": "LÚMIN SHOP",
+  "description": "Tienda de moda urbana streetwear y tazas/vasos sublimados bajo pedido.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
