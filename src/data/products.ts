@@ -1,6 +1,11 @@
 import { Product } from '../types';
+import { supabase } from '../lib/supabase';
 
-export const PRODUCTS: Product[] = [
+// ============================================
+// STATIC FALLBACK DATA (used if Supabase fails)
+// ============================================
+
+const PRODUCTS_STATIC: Product[] = [
   {
     id: 'polo-acid-tokyo',
     name: 'Polo Oversized "Acid Tokyo 1988"',
@@ -104,7 +109,7 @@ export const PRODUCTS: Product[] = [
     productionTime: '⚡ 24-48 hrs',
     image: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
     galleryImages: [
-      'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1514432324607-a09d9b4efdd?auto=format&fit=crop&w=800&q=80',
       'https://images.unsplash.com/photo-1577937927133-66ef06acdf18?auto=format&fit=crop&w=800&q=80'
     ],
     description: 'Vaso de vidrio esmerilado opaco con sorbete y tapa de bambú ecológica. Sublimado continuo full color de alta durabilidad.',
@@ -206,3 +211,104 @@ export const FAQS = [
     answer: '¡Sí! Al configurar tu pedido puedes agregar texto, nombre o un mensaje especial sin costo adicional.'
   }
 ];
+
+// ============================================
+// SUPABASE DATA TRANSFORMATION
+// ============================================
+
+interface SupabaseProductRow {
+  id: string;
+  external_id: string | null;
+  nombre: string;
+  precio: number;
+  precio_original: number | null;
+  tecnica: string | null;
+  tiempo_produccion: string | null;
+  imagen: string | null;
+  galeria: string[] | null;
+  descripcion: string | null;
+  etiqueta: string | null;
+  personalizable: boolean | null;
+  opciones_ropa: {
+    sizes?: string[];
+    fits?: string[];
+    colors?: { name: string; hex: string }[];
+  } | null;
+  opciones_vaso: {
+    types?: { name: string; extraPrice: number }[];
+    finishes?: string[];
+  } | null;
+  destacado: boolean | null;
+  activo: boolean | null;
+}
+
+function mapSupabaseToProduct(row: SupabaseProductRow): Product {
+  return {
+    id: row.external_id || row.id,
+    name: row.nombre,
+    category: row.opciones_ropa ? 'streetwear' : 'cups',
+    price: row.precio,
+    originalPrice: row.precio_original ?? undefined,
+    technique: row.tecnica ?? '',
+    productionTime: row.tiempo_produccion ?? '',
+    image: row.imagen ?? '',
+    galleryImages: row.galeria ?? undefined,
+    description: row.descripcion ?? '',
+    tag: row.etiqueta ?? undefined,
+    apparelOptions: row.opciones_ropa
+      ? {
+          sizes: row.opciones_ropa.sizes ?? [],
+          fits: row.opciones_ropa.fits ?? [],
+          colors: row.opciones_ropa.colors ?? [],
+        }
+      : undefined,
+    cupOptions: row.opciones_vaso
+      ? {
+          types: row.opciones_vaso.types ?? [],
+          finishes: row.opciones_vaso.finishes ?? [],
+        }
+      : undefined,
+    customizable: row.personalizable ?? false,
+  };
+}
+
+// ============================================
+// EXPORTED PRODUCTS (starts as static, updated from Supabase)
+// ============================================
+
+export let PRODUCTS: Product[] = PRODUCTS_STATIC;
+
+// ============================================
+// SUPABASE FETCH FUNCTION
+// ============================================
+
+export async function loadProductsFromSupabase(): Promise<Product[]> {
+  if (!supabase) {
+    return PRODUCTS_STATIC;
+  }
+
+  try {
+    const { data, error } = await supabase
+      .from('productos')
+      .select('*')
+      .eq('activo', true)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      console.warn('[LUMIN] Supabase fetch error, using static fallback:', error.message);
+      return PRODUCTS_STATIC;
+    }
+
+    if (!data || data.length === 0) {
+      console.warn('[LUMIN] No products in Supabase, using static fallback');
+      return PRODUCTS_STATIC;
+    }
+
+    const mapped = data.map(mapSupabaseToProduct);
+    PRODUCTS = mapped;
+    return mapped;
+  } catch (err) {
+    console.warn('[LUMIN] Supabase connection failed, using static fallback:', err);
+    return PRODUCTS_STATIC;
+  }
+}

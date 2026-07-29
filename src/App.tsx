@@ -13,7 +13,7 @@ import { Footer } from './components/Footer';
 import { SocialQuickBar, FloatingWhatsAppWidget } from './components/SocialQuickBar';
 import { GoogleAuthModal, GoogleLoginBanner } from './components/GoogleAuthModal';
 
-import { PRODUCTS, CATEGORIES } from './data/products';
+import { PRODUCTS as PRODUCTS_STATIC, CATEGORIES, loadProductsFromSupabase } from './data/products';
 import { Product, CartItem, NavigationTab, Category, ThemeMode, UserProfileData, GoogleUser } from './types';
 import {
   Filter,
@@ -58,6 +58,13 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTechnique, setSelectedTechnique] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc'>('featured');
+
+  // Products from Supabase (with static fallback)
+  const [products, setProducts] = useState<Product[]>(PRODUCTS_STATIC);
+
+  useEffect(() => {
+    loadProductsFromSupabase().then(setProducts);
+  }, []);
 
   // Interactive Modals
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -197,7 +204,7 @@ export default function App() {
 
   // Filter products logic
   const filteredProducts = useMemo(() => {
-    return PRODUCTS.filter((product) => {
+    return products.filter((product) => {
       // Category filter
       if (selectedCategory === 'streetwear' && product.category !== 'streetwear') return false;
       if (selectedCategory === 'cups' && product.category !== 'cups') return false;
@@ -222,7 +229,7 @@ export default function App() {
       if (sortBy === 'price-desc') return b.price - a.price;
       return 0;
     });
-  }, [selectedCategory, searchQuery, selectedTechnique, sortBy]);
+  }, [selectedCategory, searchQuery, selectedTechnique, sortBy, products]);
 
   // Cart operations
   const handleAddToCart = (item: CartItem) => {
@@ -458,12 +465,12 @@ export default function App() {
                   onClick={() => handleTabChange('catalog')}
                   className={`text-xs font-bold hover:underline flex items-center gap-1 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`}
                 >
-                  Ver Catálogo Completo ({PRODUCTS.length}) →
+                  Ver Catálogo Completo ({products.length}) →
                 </button>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                {PRODUCTS.slice(0, 4).map((product, idx) => (
+                {products.slice(0, 4).map((product, idx) => (
                   <ProductCard
                     key={product.id}
                     index={idx}
