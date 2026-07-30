@@ -69,7 +69,7 @@ CREATE TABLE usuarios (
 -- TABLA: perfiles
 -- Que guarda: datos de envio y preferencias del usuario
 CREATE TABLE perfiles (
-    id TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     usuario_id TEXT UNIQUE NOT NULL,
     tema TEXT DEFAULT 'dark',
     nombre_completo TEXT,
@@ -82,7 +82,7 @@ CREATE TABLE perfiles (
 -- TABLA: favoritos
 -- Que guarda: productos que el usuario marco como favorito
 CREATE TABLE favoritos (
-    id TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     usuario_id TEXT NOT NULL,
     producto_id TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT NOW(),
@@ -92,7 +92,7 @@ CREATE TABLE favoritos (
 -- TABLA: pedidos
 -- Que guarda: pedidos realizados por WhatsApp
 CREATE TABLE pedidos (
-    id TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     usuario_id TEXT NOT NULL,
     cliente_nombre TEXT NOT NULL,
     cliente_telefono TEXT,
@@ -110,7 +110,7 @@ CREATE TABLE pedidos (
 -- TABLA: ideas_personalizadas
 -- Que guarda: ideas personalizadas que los clientes envian
 CREATE TABLE ideas_personalizadas (
-    id TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
     usuario_id TEXT NOT NULL,
     tipo_producto TEXT,
     descripcion TEXT NOT NULL,

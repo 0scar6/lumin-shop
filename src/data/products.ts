@@ -1,4 +1,4 @@
-import { Product } from '../types';
+import { Product, ProductType } from '../types';
 import { supabase } from '../lib/supabase';
 
 // ============================================
@@ -218,8 +218,8 @@ export const FAQS = [
 
 interface SupabaseProductRow {
   id: string;
-  external_id: string | null;
   nombre: string;
+  categoria_id: string | null;
   precio: number;
   precio_original: number | null;
   tecnica: string | null;
@@ -244,9 +244,9 @@ interface SupabaseProductRow {
 
 function mapSupabaseToProduct(row: SupabaseProductRow): Product {
   return {
-    id: row.external_id || row.id,
+    id: row.id,
     name: row.nombre,
-    category: row.opciones_ropa ? 'streetwear' : 'cups',
+    category: (row.categoria_id || (row.opciones_ropa ? 'streetwear' : 'cups')) as ProductType,
     price: row.precio,
     originalPrice: row.precio_original ?? undefined,
     technique: row.tecnica ?? '',

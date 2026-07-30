@@ -22,6 +22,7 @@ export async function syncFavoritesToSupabase(favorites: Product[], userId?: str
     // Insert new favorites
     if (favorites.length > 0) {
       const rows = favorites.map((p) => ({
+        id: crypto.randomUUID(),
         usuario_id: identifier,
         producto_id: p.id,
       }));
@@ -81,6 +82,7 @@ export async function syncCartToSupabase(
     }));
 
     await supabase.from('pedidos').insert({
+      id: crypto.randomUUID(),
       usuario_id: identifier,
       cliente_nombre: userProfile.name || 'Sin nombre',
       cliente_telefono: userProfile.phone || '',
@@ -114,6 +116,7 @@ export async function syncProfileToSupabase(
       .from('perfiles')
       .upsert(
         {
+          id: identifier,
           usuario_id: identifier,
           tema: themeMode,
           nombre_completo: profile.name,
@@ -183,6 +186,7 @@ export async function syncCustomIdeaToSupabase(
   try {
     const identifier = userId || getAnonymousId();
     await supabase.from('ideas_personalizadas').insert({
+      id: crypto.randomUUID(),
       usuario_id: identifier,
       tipo_producto: tipoProducto,
       descripcion,
@@ -200,7 +204,6 @@ export async function syncCustomIdeaToSupabase(
 interface SupabaseCategory {
   id: string;
   nombre: string;
-  slug: string;
   icono: string | null;
   activo: boolean;
   orden: number;
@@ -232,7 +235,7 @@ export async function loadCategoriesFromSupabase(): Promise<CategoryUI[]> {
 
     const allCategory: CategoryUI = { id: 'all', label: 'Todos los Productos', iconName: 'Grid' };
     const mapped = data.map((c: SupabaseCategory) => ({
-      id: c.slug,
+      id: c.id,
       label: c.nombre,
       iconName: CATEGORY_ICON_MAP[c.icono || ''] || 'Grid',
     }));
