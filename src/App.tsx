@@ -23,6 +23,7 @@ import {
   loadCategoriesFromSupabase,
 } from './lib/supabase-data';
 import { loadConfig, cfg } from './lib/config';
+import { generateOrderImage } from './lib/generateOrderImage';
 import { Product, CartItem, NavigationTab, Category, ThemeMode, UserProfileData, GoogleUser } from './types';
 import {
   Filter,
@@ -356,10 +357,27 @@ export default function App() {
     return msg;
   };
 
-  const handleSendWhatsAppOrder = () => {
-    const message = buildWhatsAppMessage();
+  const handleSendWhatsAppOrder = async () => {
     syncCartToSupabase(cart, userProfile, deliveryType, googleUser?.id);
-    window.open(`https://wa.me/${cfg('brand_phone_raw', '51993365099')}?text=${encodeURIComponent(message)}`, '_blank');
+
+    // Generate order image
+    try {
+      const blob = await generateOrderImage(cart, userProfile, deliveryType, totalCartAmount, getUnitPrice);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `pedido-lumin-${Date.now()}.jpg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      // Fallback to text if image fails
+    }
+
+    // Open WhatsApp with short message
+    const shortMsg = `${cfg('brand_whatsapp_msg', '¡Hola LUMIN! ⚡ Quisiera realizar el siguiente pedido:')} Adjunto imagen del pedido.`;
+    window.open(`https://wa.me/${cfg('brand_phone_raw', '51993365099')}?text=${encodeURIComponent(shortMsg)}`, '_blank');
   };
 
   const handleCopyOrderSummary = () => {
@@ -1065,7 +1083,7 @@ export default function App() {
                         className="w-full py-4 rounded-2xl bg-green-500 hover:bg-green-600 text-black font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-xl shadow-green-500/20 active:scale-98"
                       >
                         <MessageCircle className="w-5 h-5 fill-black" />
-                        <span>ENVIAR PEDIDO POR WHATSAPP</span>
+                        <span>ENVIAR PEDIDO POR WHATSAPP (con imagen)</span>
                       </button>
 
                       <button

@@ -493,7 +493,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 className="w-full py-3.5 rounded-xl bg-green-500 hover:bg-green-600 text-black font-extrabold text-xs transition-all flex items-center justify-center gap-2 shadow-lg shadow-green-500/20 active:scale-98"
               >
                 <MessageSquare className="w-4 h-4 fill-black" />
-                <span>ENVIAR PEDIDO POR WHATSAPP</span>
+                <span>ENVIAR PEDIDO POR WHATSAPP (con imagen)</span>
               </button>
 
               <button
