@@ -48,7 +48,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
           <p className={`text-sm sm:text-base max-w-xl leading-relaxed ${
             isLight ? 'text-slate-700' : 'text-gray-400'
           }`}>
-            Polos Heavyweight con <strong className={isLight ? 'text-slate-900 font-bold' : 'text-white'}>Estampado Urbano HD High-Density</strong> y vasos/tazas con sublimación continua a 200°C. <br className="hidden sm:inline" />
+            Polos Sublimados con <strong className={isLight ? 'text-slate-900 font-bold' : 'text-white'}>Estampado Urbano HD High-Density</strong> y vasos/tazas con sublimación continua a 200°C. <br className="hidden sm:inline" />
             Sin sobre-stock. Fabricado especialmente para ti al confirmar tu orden.
           </p>
 
