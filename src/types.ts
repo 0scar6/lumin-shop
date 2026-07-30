@@ -3,7 +3,7 @@ export type Category = 'all' | 'streetwear' | 'cups' | 'drops';
 export type ProductType = 'streetwear' | 'cups';
 
 export interface ApparelOptions {
-  sizes: string[];
+  sizes: (string | { name: string; extraPrice: number })[];
   fits: string[];
   colors: { name: string; hex: string }[];
 }

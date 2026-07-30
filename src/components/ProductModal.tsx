@@ -19,9 +19,9 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const isApparel = product?.category === 'streetwear';
 
   // Apparel State
-  const [selectedSize, setSelectedSize] = useState<string>(
-    product?.apparelOptions?.sizes[1] || 'M'
-  );
+  const firstSize = product?.apparelOptions?.sizes[0];
+  const defaultSize = firstSize ? (typeof firstSize === 'string' ? firstSize : firstSize.name) : 'M';
+  const [selectedSize, setSelectedSize] = useState<string>(defaultSize);
   const [selectedFit, setSelectedFit] = useState<string>(
     product?.apparelOptions?.fits[0] || 'Oversized Streetwear'
   );
@@ -46,7 +46,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     if (!product) return;
     setActiveImage(product.image);
     if (product.apparelOptions) {
-      setSelectedSize(product.apparelOptions.sizes[1] || 'M');
+      const sizeAt1 = product.apparelOptions.sizes[1];
+      setSelectedSize(sizeAt1 ? (typeof sizeAt1 === 'string' ? sizeAt1 : sizeAt1.name) : 'M');
       setSelectedFit(product.apparelOptions.fits[0] || 'Oversized Streetwear');
       setSelectedColor(product.apparelOptions.colors[0] || { name: 'Negro Carbón', hex: '#0A0A0A' });
     }
@@ -197,21 +198,25 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       1. Selecciona tu Talla:
                     </label>
                     <div className="flex flex-wrap gap-1.5">
-                      {product.apparelOptions.sizes.map((size) => (
-                        <button
-                          key={size}
-                          onClick={() => setSelectedSize(size)}
-                          className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all border ${
-                            selectedSize === size
-                              ? 'bg-[#D2E8A3] text-[#0A0A0A] border-[#D2E8A3] shadow-md'
-                              : isLight
-                              ? 'bg-slate-100 text-slate-800 border-slate-300 hover:border-slate-400'
-                              : 'bg-[#161814] text-gray-300 border-white/10 hover:border-white/30'
-                          }`}
-                        >
-                          {size}
-                        </button>
-                      ))}
+                      {product.apparelOptions.sizes.map((size) => {
+                        const sizeName = typeof size === 'string' ? size : size.name;
+                        const sizeExtra = typeof size === 'string' ? 0 : size.extraPrice;
+                        return (
+                          <button
+                            key={sizeName}
+                            onClick={() => setSelectedSize(sizeName)}
+                            className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all border ${
+                              selectedSize === sizeName
+                                ? 'bg-[#D2E8A3] text-[#0A0A0A] border-[#D2E8A3] shadow-md'
+                                : isLight
+                                ? 'bg-slate-100 text-slate-800 border-slate-300 hover:border-slate-400'
+                                : 'bg-[#161814] text-gray-300 border-white/10 hover:border-white/30'
+                            }`}
+                          >
+                            {sizeName}{sizeExtra > 0 ? ` +S/ ${sizeExtra}` : ''}
+                          </button>
+                        );
+                      })}
                     </div>
                   </div>
 

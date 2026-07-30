@@ -50,7 +50,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Brand Logo & On-Demand Badge - Dedicated Spacious Branding Area */}
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           <button 
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            onClick={() => { setActiveTab?.('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
             className="flex items-center gap-2 sm:gap-3 group text-left focus:outline-none flex-shrink-0"
           >
             <div className="w-8 h-8 sm:w-11 sm:h-11 bg-[#D2E8A3] rounded-xl flex items-center justify-center shadow-lg shadow-[#D2E8A3]/20 ring-2 ring-[#D2E8A3]/30 transition-transform group-hover:scale-105 flex-shrink-0">

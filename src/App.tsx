@@ -298,10 +298,23 @@ export default function App() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  // Helper: calculate unit price including size extra
+  const getUnitPrice = (item: CartItem) => {
+    const cupExtra = item.product.cupOptions?.types.find((t) => t.name === item.selectedCupType)?.extraPrice || 0;
+    let sizeExtra = 0;
+    if (item.selectedSize && item.product.apparelOptions) {
+      const sizeObj = item.product.apparelOptions.sizes.find((s) => {
+        const name = typeof s === 'string' ? s : s.name;
+        return name === item.selectedSize;
+      });
+      if (sizeObj && typeof sizeObj !== 'string') sizeExtra = sizeObj.extraPrice;
+    }
+    return item.product.price + cupExtra + sizeExtra;
+  };
+
   // Total cart calculation
   const totalCartAmount = cart.reduce((acc, item) => {
-    const extra = item.product.cupOptions?.types.find((t) => t.name === item.selectedCupType)?.extraPrice || 0;
-    return acc + (item.product.price + extra) * item.quantity;
+    return acc + getUnitPrice(item) * item.quantity;
   }, 0);
 
   // Generate WhatsApp Message
@@ -324,8 +337,7 @@ export default function App() {
     msg += `\n📦 *DETALLE DE MI PEDIDO* (${cart.reduce((sum, i) => sum + i.quantity, 0)} ítems):\n`;
 
     cart.forEach((item, index) => {
-      const extra = item.product.cupOptions?.types.find((t) => t.name === item.selectedCupType)?.extraPrice || 0;
-      const unitPrice = item.product.price + extra;
+      const unitPrice = getUnitPrice(item);
       const itemTotal = unitPrice * item.quantity;
 
       msg += `\n*${index + 1}. ${item.product.name}* (Cant: ${item.quantity})\n`;
@@ -820,8 +832,7 @@ export default function App() {
 
                   <div className="space-y-3">
                     {cart.map((item) => {
-                      const extra = item.product.cupOptions?.types.find((t) => t.name === item.selectedCupType)?.extraPrice || 0;
-                      const itemUnitPrice = item.product.price + extra;
+                      const itemUnitPrice = getUnitPrice(item);
                       const itemTotal = itemUnitPrice * item.quantity;
 
                       return (
