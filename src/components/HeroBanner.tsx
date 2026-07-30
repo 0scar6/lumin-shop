@@ -1,18 +1,58 @@
 import React from 'react';
 import { Tag, ArrowRight, Clock, ShieldCheck, Flame } from 'lucide-react';
 
+interface HeroMediaProps {
+  url: string;
+  alt: string;
+  className?: string;
+}
+
+const HeroMedia: React.FC<HeroMediaProps> = ({ url, alt, className }) => {
+  const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+  const isGif = /\.gif$/i.test(url);
+
+  if (isVideo) {
+    return (
+      <video
+        src={url}
+        autoPlay
+        muted
+        loop
+        playsInline
+        className={className}
+      />
+    );
+  }
+
+  return (
+    <img
+      src={url}
+      alt={alt}
+      className={className}
+      loading="eager"
+    />
+  );
+};
+
 interface HeroBannerProps {
   onExploreClick: () => void;
   onCustomOrderClick: () => void;
   themeMode?: 'dark' | 'light' | 'amoled';
+  heroMedia1Url?: string;
+  heroMedia2Url?: string;
 }
 
 export const HeroBanner: React.FC<HeroBannerProps> = ({
   onExploreClick,
   onCustomOrderClick,
   themeMode = 'dark',
+  heroMedia1Url,
+  heroMedia2Url,
 }) => {
   const isLight = themeMode === 'light';
+
+  const defaultMedia1 = 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80';
+  const defaultMedia2 = 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80';
 
   return (
     <div className={`relative rounded-3xl overflow-hidden border p-6 sm:p-10 my-6 transition-all ${
@@ -100,8 +140,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             <div className={`relative group overflow-hidden rounded-2xl border aspect-[4/5] ${
               isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#161814] border-white/10'
             }`}>
-              <img
-                src="https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80"
+              <HeroMedia
+                url={heroMedia1Url || defaultMedia1}
                 alt="Polo Streetwear Oversized"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
@@ -115,8 +155,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
             <div className={`relative group overflow-hidden rounded-2xl border aspect-[4/5] mt-6 ${
               isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#161814] border-white/10'
             }`}>
-              <img
-                src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80"
+              <HeroMedia
+                url={heroMedia2Url || defaultMedia2}
                 alt="Vaso Sublimado Frosted"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />

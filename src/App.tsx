@@ -454,6 +454,8 @@ export default function App() {
               onExploreClick={() => handleTabChange('catalog')}
               onCustomOrderClick={() => setIsCustomIdeaOpen(true)}
               themeMode={themeMode}
+              heroMedia1Url={cfg('hero_media_1_url', '') || undefined}
+              heroMedia2Url={cfg('hero_media_2_url', '') || undefined}
             />
 
             {/* Direct WhatsApp & Social Media Quick Access Bar */}
