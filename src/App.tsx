@@ -13,7 +13,15 @@ import { Footer } from './components/Footer';
 import { SocialQuickBar, FloatingWhatsAppWidget } from './components/SocialQuickBar';
 import { GoogleAuthModal, GoogleLoginBanner } from './components/GoogleAuthModal';
 
-import { PRODUCTS as PRODUCTS_STATIC, CATEGORIES, loadProductsFromSupabase } from './data/products';
+import { PRODUCTS as PRODUCTS_STATIC, CATEGORIES as CATEGORIES_STATIC, loadProductsFromSupabase } from './data/products';
+import {
+  syncFavoritesToSupabase,
+  syncCartToSupabase,
+  syncProfileToSupabase,
+  syncGoogleUserToSupabase,
+  syncCustomIdeaToSupabase,
+  loadCategoriesFromSupabase,
+} from './lib/supabase-data';
 import { Product, CartItem, NavigationTab, Category, ThemeMode, UserProfileData, GoogleUser } from './types';
 import {
   Filter,
@@ -61,9 +69,13 @@ export default function App() {
 
   // Products from Supabase (with static fallback)
   const [products, setProducts] = useState<Product[]>(PRODUCTS_STATIC);
+  const [categories, setCategories] = useState(CATEGORIES_STATIC);
 
   useEffect(() => {
     loadProductsFromSupabase().then(setProducts);
+    loadCategoriesFromSupabase().then((cats) => {
+      if (cats.length > 0) setCategories(cats);
+    });
   }, []);
 
   // Interactive Modals
@@ -98,6 +110,7 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem('lumin_favorites', JSON.stringify(favorites));
+    syncFavoritesToSupabase(favorites);
   }, [favorites]);
 
   // Theme Mode & User Profile (persisted in localStorage)
@@ -147,6 +160,7 @@ export default function App() {
       name: user.name,
       email: user.email,
     }));
+    syncGoogleUserToSupabase(user);
   };
 
   const handleGoogleLogout = () => {
@@ -189,6 +203,7 @@ export default function App() {
   const handleSaveProfile = (profile: UserProfileData) => {
     setUserProfile(profile);
     localStorage.setItem('lumin_user_profile', JSON.stringify(profile));
+    syncProfileToSupabase(profile, themeMode, googleUser?.id);
   };
 
   const handleProfileScreenSubmit = (e: React.FormEvent) => {
@@ -328,6 +343,7 @@ export default function App() {
 
   const handleSendWhatsAppOrder = () => {
     const message = buildWhatsAppMessage();
+    syncCartToSupabase(cart, userProfile, deliveryType, googleUser?.id);
     window.open(`https://wa.me/51993365099?text=${encodeURIComponent(message)}`, '_blank');
   };
 
@@ -355,6 +371,13 @@ export default function App() {
     text += `• *Tipo:* ${customIdeaType === 'polo' ? 'Polo Streetwear' : customIdeaType === 'vaso' ? 'Vaso / Taza Sublimada' : 'Otro artículo'}\n`;
     text += `• *Detalle de mi idea:* ${customIdeaText.trim()}\n`;
     text += `\nQuisiera cotización y asesoría de diseño por favor.`;
+
+    syncCustomIdeaToSupabase(
+      customIdeaType,
+      customIdeaText.trim(),
+      userProfile.email || '',
+      googleUser?.id
+    );
 
     window.open(`https://wa.me/51993365099?text=${encodeURIComponent(text)}`, '_blank');
     setIsCustomIdeaOpen(false);
@@ -508,7 +531,7 @@ export default function App() {
 
               {/* Category Pills */}
               <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
-                {CATEGORIES.map((cat) => {
+                {categories.map((cat) => {
                   const isCatActive = selectedCategory === cat.id;
                   const IconComponent =
                     cat.id === 'streetwear'
