@@ -58,7 +58,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex flex-col whitespace-nowrap min-w-max pr-1 sm:pr-4">
               <div className="flex items-center gap-1">
                 <h1 className={`font-display text-base sm:text-2xl font-black tracking-wider uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                  LÚMIN SHOP<span className="text-[#65A30D] sm:text-[#D2E8A3]">.</span>
+                  LUMIN SHOP<span className="text-[#65A30D] sm:text-[#D2E8A3]">.</span>
                 </h1>
               </div>
               <span className={`hidden sm:block text-[9px] sm:text-[10px] font-mono tracking-widest uppercase -mt-0.5 ${isLight ? 'text-slate-600 font-semibold' : 'text-gray-300'}`}>
