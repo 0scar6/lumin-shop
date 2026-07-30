@@ -299,6 +299,46 @@ export async function loadCategoriesFromSupabase(): Promise<CategoryUI[]> {
 }
 
 // ============================================
+// CONFIGURACION (textos editables desde Supabase)
+// ============================================
+
+export interface ConfigItem {
+  id: string;
+  seccion: string;
+  clave: string;
+  valor: string;
+}
+
+let cachedConfig: Record<string, string> | null = null;
+
+export async function loadConfigFromSupabase(): Promise<Record<string, string>> {
+  if (!supabase) return {};
+  if (cachedConfig) return cachedConfig;
+
+  try {
+    const { data, error } = await supabase
+      .from('configuracion')
+      .select('*');
+
+    if (error || !data || data.length === 0) return {};
+
+    const config: Record<string, string> = {};
+    data.forEach((row: ConfigItem) => {
+      config[row.id] = row.valor;
+    });
+
+    cachedConfig = config;
+    return config;
+  } catch {
+    return {};
+  }
+}
+
+export function getConfigValue(config: Record<string, string>, key: string, fallback: string): string {
+  return config[key] ?? fallback;
+}
+
+// ============================================
 // UTILS
 // ============================================
 

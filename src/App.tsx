@@ -22,6 +22,8 @@ import {
   syncGoogleUserToSupabase,
   syncCustomIdeaToSupabase,
   loadCategoriesFromSupabase,
+  loadConfigFromSupabase,
+  getConfigValue,
 } from './lib/supabase-data';
 import { Product, CartItem, NavigationTab, Category, ThemeMode, UserProfileData, GoogleUser } from './types';
 import {
@@ -71,12 +73,16 @@ export default function App() {
   // Products from Supabase (with static fallback)
   const [products, setProducts] = useState<Product[]>(PRODUCTS_STATIC);
   const [categories, setCategories] = useState(CATEGORIES_STATIC);
+  const [config, setConfig] = useState<Record<string, string>>({});
+
+  const c = (key: string, fallback: string) => getConfigValue(config, key, fallback);
 
   useEffect(() => {
     loadProductsFromSupabase().then(setProducts);
     loadCategoriesFromSupabase().then((cats) => {
       if (cats.length > 0) setCategories(cats);
     });
+    loadConfigFromSupabase().then(setConfig);
   }, []);
 
   // Interactive Modals
@@ -306,7 +312,7 @@ export default function App() {
   // Generate WhatsApp Message
   const buildWhatsAppMessage = () => {
     const nameStr = userProfile.name.trim() || '';
-    let msg = `¡Hola LÚMIN SHOP! ⚡ Quisiera realizar el siguiente pedido:\n\n`;
+    let msg = `${c('brand_whatsapp_msg', '¡Hola LÚMIN SHOP! ⚡ Quisiera realizar el siguiente pedido:')}\n\n`;
 
     msg += `👤 *MIS DATOS DE CONTACTO:*\n`;
     msg += `• *Nombre:* ${nameStr || 'Por indicar por chat'}\n`;
@@ -346,7 +352,7 @@ export default function App() {
   const handleSendWhatsAppOrder = () => {
     const message = buildWhatsAppMessage();
     syncCartToSupabase(cart, userProfile, deliveryType, googleUser?.id);
-    window.open(`https://wa.me/51993365099?text=${encodeURIComponent(message)}`, '_blank');
+    window.open(`https://wa.me/${c('brand_phone_raw', '51993365099')}?text=${encodeURIComponent(message)}`, '_blank');
   };
 
   const handleCopyOrderSummary = () => {
@@ -357,7 +363,7 @@ export default function App() {
   };
 
   const handleCopyYapePhone = () => {
-    navigator.clipboard.writeText('993365099');
+    navigator.clipboard.writeText(c('brand_phone_raw', '993365099').replace(/^51/, ''));
     setCopiedPhone(true);
     setTimeout(() => setCopiedPhone(false), 2500);
   };
@@ -367,7 +373,7 @@ export default function App() {
     e.preventDefault();
     if (!customIdeaText.trim()) return;
 
-    let text = `⚡ *CONSULTA DE IDEA PERSONALIZADA LÚMIN SHOP*\n`;
+    let text = `${c('brand_whatsapp_idea', '⚡ *CONSULTA DE IDEA PERSONALIZADA LÚMIN SHOP*')}\n`;
     if (userProfile.name) text += `👤 *Cliente:* ${userProfile.name}\n`;
     if (userProfile.phone) text += `📞 *Teléfono:* ${userProfile.phone}\n`;
     text += `• *Tipo:* ${customIdeaType === 'polo' ? 'Polo Streetwear' : customIdeaType === 'vaso' ? 'Vaso / Taza Sublimada' : 'Otro artículo'}\n`;
@@ -381,7 +387,7 @@ export default function App() {
       googleUser?.id
     );
 
-    window.open(`https://wa.me/51993365099?text=${encodeURIComponent(text)}`, '_blank');
+    window.open(`https://wa.me/${c('brand_phone_raw', '51993365099')}?text=${encodeURIComponent(text)}`, '_blank');
     setIsCustomIdeaOpen(false);
     setCustomIdeaText('');
   };
@@ -437,20 +443,20 @@ export default function App() {
                   <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider ${
                     isLight ? 'bg-lime-100 text-lime-800 border border-lime-300' : 'bg-[#D2E8A3]/20 text-[#D2E8A3]'
                   }`}>
-                    Sobre LÚMIN SHOP
+                    Sobre {c('brand_name', 'LÚMIN SHOP')}
                   </span>
-                  <span className={`text-xs font-mono ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>@.lumin.shop</span>
+                  <span className={`text-xs font-mono ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>{c('brand_instagram', '@.lumin.shop')}</span>
                 </div>
-                <span className={`text-xs font-mono ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>📍 Lima, Perú • Envíos a Nivel Nacional</span>
+                <span className={`text-xs font-mono ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>{c('brand_location', '📍 Lima, Perú • Envíos a Nivel Nacional')}</span>
               </div>
 
               <h2 className={`font-display text-2xl sm:text-3xl font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                Ropa Urbana Streetwear & Sublimación de Alta Temperatura
+                {c('section_about_subtitle', 'Ropa Urbana Streetwear & Sublimación de Alta Temperatura')}
               </h2>
 
-              <p className={`text-sm sm:text-base leading-relaxed ${isLight ? 'text-slate-700' : 'text-gray-300'}`}>
-                LÚMIN SHOP es una marca independiente peruana dedicada al diseño y confección de streetwear exclusivo y artículos gráficos. Nos especializamos en polos <strong>Oversized & Boxy Fit</strong> producidos en algodón reactivo de 240g (Heavyweight) de máxima durabilidad, además de <strong>Vasos Frosted Glass de 16oz</strong> y <strong>Tazas Térmicas de 11oz</strong> sublimadas térmicamente a 200°C. Cada prenda y producto se elabora 100% bajo pedido con acabado profesional.
-              </p>
+              <p className={`text-sm sm:text-base leading-relaxed ${isLight ? 'text-slate-700' : 'text-gray-300'}`}
+                dangerouslySetInnerHTML={{ __html: c('section_about_text', 'LÚMIN SHOP es una marca independiente peruana dedicada al diseño y confección de streetwear exclusivo y artículos gráficos. Nos especializamos en polos <strong>Oversized & Boxy Fit</strong> producidos en algodón reactivo de 240g (Heavyweight) de máxima durabilidad, además de <strong>Vasos Frosted Glass de 16oz</strong> y <strong>Tazas Térmicas de 11oz</strong> sublimadas térmicamente a 200°C. Cada prenda y producto se elabora 100% bajo pedido con acabado profesional.') }}
+              />
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button
@@ -458,7 +464,7 @@ export default function App() {
                   className="px-5 py-2.5 rounded-full bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs sm:text-sm hover:bg-[#b8d682] transition-all flex items-center gap-2 shadow-lg"
                 >
                   <Grid className="w-4 h-4" />
-                  <span>Explorar Catálogo de Productos</span>
+                  <span>{c('section_about_cta_cat', 'Explorar Catálogo de Productos')}</span>
                 </button>
                 <button
                   onClick={() => setIsCustomIdeaOpen(true)}
@@ -467,7 +473,7 @@ export default function App() {
                   }`}
                 >
                   <Tag className="w-4 h-4 text-[#D2E8A3]" />
-                  <span>Cotizar Idea Personalizada</span>
+                  <span>{c('section_about_cta_idea', 'Cotizar Idea Personalizada')}</span>
                 </button>
               </div>
             </section>
@@ -480,10 +486,10 @@ export default function App() {
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
                   <span className={`text-xs font-mono uppercase tracking-widest ${isLight ? 'text-lime-700 font-bold' : 'text-[#D2E8A3]'}`}>
-                    🔥 SELECCIÓN DESTACADA DROP 04
+                    {c('section_featured_title', '🔥 SELECCIÓN DESTACADA DROP 04')}
                   </span>
                   <h3 className={`font-display text-xl sm:text-2xl font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                    Nuestros Más Pedidos
+                    {c('section_featured_sub', 'Nuestros Más Pedidos')}
                   </h3>
                 </div>
                 <button
@@ -952,7 +958,7 @@ export default function App() {
 
                       <div className="flex items-center gap-1.5 bg-black/60 px-3 py-1.5 rounded-xl border border-white/10">
                         <Smartphone className="w-3.5 h-3.5 text-[#00D2B5]" />
-                        <span className="font-mono text-xs font-black text-white">993 365 099</span>
+                        <span className="font-mono text-xs font-black text-white">{c('brand_phone', '993 365 099')}</span>
                       </div>
                     </div>
 
@@ -1353,7 +1359,7 @@ export default function App() {
                     </strong>
                   </div>
                   <p className="text-xs leading-relaxed text-gray-400">
-                    Pago directo al <strong className="text-[#D2E8A3] font-mono">993 365 099</strong> a nombre de LÚMIN SHOP o BCP / Interbank.
+                    Pago directo al <strong className="text-[#D2E8A3] font-mono">{c('brand_phone', '993 365 099')}</strong> a nombre de {c('brand_holder', 'Oscar Daniel')} ({c('brand_name', 'LÚMIN SHOP')}) o BCP / Interbank.
                   </p>
                 </div>
 
