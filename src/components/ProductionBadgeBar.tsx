@@ -42,7 +42,7 @@ export const ProductionBadgeBar: React.FC<ProductionBadgeBarProps> = ({ themeMod
           <span>{cfg('badge_model_title', 'MODELO SUSTENTABLE BAJO DEMANDA')}</span>
         </div>
         <h3 className={`font-display text-2xl sm:text-3xl font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-          {cfg('badge_model_subtitle', '¿CÓMO FUNCIONA LÚMIN SHOP?')}
+          {cfg('badge_model_subtitle', '¿CÓMO FUNCIONA LUMIN SHOP?')}
         </h3>
         <p className={`text-xs sm:text-sm ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
           {cfg('badge_model_desc', 'Cero sobre-stock, mayor frescura en estampados y acabados totalmente personalizados para ti.')}

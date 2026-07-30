@@ -37,7 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
   const isLight = themeMode === 'light';
 
   const handleWhatsAppHelp = () => {
-    const text = encodeURIComponent(cfg('brand_whatsapp_help', 'Hola LÚMIN SHOP! ⚡ Quisiera hacer una consulta sobre un pedido.'));
+    const text = encodeURIComponent(cfg('brand_whatsapp_help', 'Hola LUMIN SHOP! ⚡ Quisiera hacer una consulta sobre un pedido.'));
     window.open(`https://wa.me/${cfg('brand_phone_raw', '51993365099')}?text=${text}`, '_blank');
   };
 

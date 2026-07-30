@@ -307,7 +307,7 @@ export default function App() {
   // Generate WhatsApp Message
   const buildWhatsAppMessage = () => {
     const nameStr = userProfile.name.trim() || '';
-    let msg = `${cfg('brand_whatsapp_msg', '¡Hola LÚMIN SHOP! ⚡ Quisiera realizar el siguiente pedido:')}\n\n`;
+    let msg = `${cfg('brand_whatsapp_msg', '¡Hola LUMIN SHOP! ⚡ Quisiera realizar el siguiente pedido:')}\n\n`;
 
     msg += `👤 *MIS DATOS DE CONTACTO:*\n`;
     msg += `• *Nombre:* ${nameStr || 'Por indicar por chat'}\n`;
@@ -368,10 +368,10 @@ export default function App() {
     e.preventDefault();
     if (!customIdeaText.trim()) return;
 
-    let text = `${cfg('brand_whatsapp_idea', '⚡ *CONSULTA DE IDEA PERSONALIZADA LÚMIN SHOP*')}\n`;
+    let text = `${cfg('brand_whatsapp_idea', '⚡ *CONSULTA DE IDEA PERSONALIZADA LUMIN SHOP*')}\n`;
     if (userProfile.name) text += `👤 *Cliente:* ${userProfile.name}\n`;
     if (userProfile.phone) text += `📞 *Teléfono:* ${userProfile.phone}\n`;
-    text += `• *Tipo:* ${customIdeaType === 'polo' ? 'Polo Streetwear' : customIdeaType === 'vaso' ? 'Vaso / Taza Sublimada' : 'Otro artículo'}\n`;
+    text += `• *Tipo:* ${customIdeaType === 'polo' ? 'Polo Sublimado' : customIdeaType === 'vaso' ? 'Vaso / Taza Sublimada' : 'Placa de Aluminio / Otro'}\n`;
     text += `• *Detalle de mi idea:* ${customIdeaText.trim()}\n`;
     text += `\nQuisiera cotización y asesoría de diseño por favor.`;
 
@@ -429,7 +429,7 @@ export default function App() {
             {/* Direct WhatsApp & Social Media Quick Access Bar */}
             <SocialQuickBar themeMode={themeMode} />
 
-            {/* Brand Description Section - LÚMIN SHOP */}
+            {/* Brand Description Section - LUMIN SHOP */}
             <section className={`p-6 sm:p-8 rounded-3xl border space-y-4 relative overflow-hidden ${
               isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'glass-card border-white/10 text-white'
             }`}>
@@ -438,7 +438,7 @@ export default function App() {
                   <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider ${
                     isLight ? 'bg-lime-100 text-lime-800 border border-lime-300' : 'bg-[#D2E8A3]/20 text-[#D2E8A3]'
                   }`}>
-                    Sobre {cfg('brand_name', 'LÚMIN SHOP')}
+                    Sobre {cfg('brand_name', 'LUMIN SHOP')}
                   </span>
                   <span className={`text-xs font-mono ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>{cfg('brand_instagram', '@.lumin.shop')}</span>
                 </div>
@@ -450,7 +450,7 @@ export default function App() {
               </h2>
 
               <p className={`text-sm sm:text-base leading-relaxed ${isLight ? 'text-slate-700' : 'text-gray-300'}`}
-                dangerouslySetInnerHTML={{ __html: cfg('section_about_text', 'LÚMIN SHOP es una marca independiente peruana dedicada al diseño y confección de streetwear exclusivo y artículos gráficos. Nos especializamos en polos <strong>Oversized & Boxy Fit</strong> producidos en algodón reactivo de 240g (Heavyweight) de máxima durabilidad, además de <strong>Vasos Frosted Glass de 16oz</strong> y <strong>Tazas Térmicas de 11oz</strong> sublimadas térmicamente a 200°C. Cada prenda y producto se elabora 100% bajo pedido con acabado profesional.') }}
+                dangerouslySetInnerHTML={{ __html: cfg('section_about_text', 'LUMIN SHOP es una marca independiente peruana dedicada al diseño y confección de streetwear exclusivo y artículos gráficos. Nos especializamos en polos <strong>Oversized & Boxy Fit</strong> producidos en algodón reactivo de 240g (Heavyweight) de máxima durabilidad, además de <strong>Vasos Frosted Glass de 16oz</strong> y <strong>Tazas Térmicas de 11oz</strong> sublimadas térmicamente a 200°C. Cada prenda y producto se elabora 100% bajo pedido con acabado profesional.') }}
               />
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -765,7 +765,7 @@ export default function App() {
                 <h2 className={`font-display text-2xl sm:text-3xl font-extrabold uppercase ${
                   isLight ? 'text-slate-900' : 'text-white'
                 }`}>
-                  MI PEDIDO LÚMIN ({cart.length})
+                  MI PEDIDO LUMIN ({cart.length})
                 </h2>
               </div>
 
@@ -939,7 +939,7 @@ export default function App() {
                         </div>
                         <div>
                           <h4 className="text-xs font-bold text-white">Pago Yape / Plin Directo</h4>
-                          <p className="text-[10px] text-purple-200">Titular: Oscar Daniel (LÚMIN SHOP)</p>
+                          <p className="text-[10px] text-purple-200">Titular: Oscar Daniel (LUMIN SHOP)</p>
                         </div>
                       </div>
 
@@ -1303,7 +1303,7 @@ export default function App() {
               </form>
             </section>
 
-            {/* Section 3: Conceptos Clave del Servicio LÚMIN SHOP */}
+            {/* Section 3: Conceptos Clave del Servicio LUMIN SHOP */}
             <section className={`p-6 rounded-3xl border space-y-4 ${
               isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10 text-gray-300'
             }`}>
@@ -1311,7 +1311,7 @@ export default function App() {
                 <div className="flex items-center gap-2 text-[#D2E8A3]">
                   <HelpCircle className="w-5 h-5" />
                   <h3 className={`font-display text-lg font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                    3. Conceptos Clave del Servicio LÚMIN SHOP
+                    3. Conceptos Clave del Servicio LUMIN SHOP
                   </h3>
                 </div>
                 <span className="text-xs font-mono font-bold text-green-400 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
@@ -1346,7 +1346,7 @@ export default function App() {
                     </strong>
                   </div>
                   <p className="text-xs leading-relaxed text-gray-400">
-                    {cfg('concept_2_desc', 'Pago directo al 993 365 099 a nombre de Oscar Daniel (LÚMIN SHOP) o BCP / Interbank.')}
+                    {cfg('concept_2_desc', 'Pago directo al 993 365 099 a nombre de Oscar Daniel (LUMIN SHOP) o BCP / Interbank.')}
                   </p>
                 </div>
 
@@ -1492,13 +1492,13 @@ export default function App() {
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-mono">
                 <Tag className="w-3.5 h-3.5" />
-                <span>COTIZACIÓN DE DISEÑO PERSONALIZADO</span>
+                <span>COTIZACIÓN DE PRODUCTO SUBLIMADO</span>
               </div>
               <h3 className="font-display text-xl font-black text-white uppercase">
-                ¿Tienes una idea en mente?
+                ¿Tienes un diseño en mente?
               </h3>
               <p className="text-xs text-gray-400">
-                Escríbenos tu idea, logo o frase y te ayudaremos a plasmarlo en polos streetwear o vasos/tazas sublimadas.
+                Escríbenos tu idea, logo o frase y te ayudaremos a sublimarlo en vasos, tazas, polos o placas de aluminio.
               </p>
             </div>
 
@@ -1517,7 +1517,7 @@ export default function App() {
                         : 'bg-[#161814] text-gray-300 border-white/10'
                     }`}
                   >
-                    👕 Polo Streetwear
+                    👕 Polo Sublimado
                   </button>
                   <button
                     type="button"

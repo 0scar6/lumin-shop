@@ -71,7 +71,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <h2 className="font-display text-base sm:text-lg font-black uppercase tracking-tight">
                 Mi Perfil y Preferencias
               </h2>
-              <p className="text-[10px] text-gray-500 -mt-0.5">LÚMIN Shop & Personalización</p>
+              <p className="text-[10px] text-gray-500 -mt-0.5">LUMIN Shop & Personalización</p>
             </div>
           </div>
 
@@ -156,7 +156,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <span className={`block font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     Oscuro
                   </span>
-                  <span className={`text-[9px] font-mono ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>Clásico LÚMIN</span>
+                  <span className={`text-[9px] font-mono ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>Clásico LUMIN</span>
                 </div>
               </button>
 
@@ -298,12 +298,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </button>
           </form>
 
-          {/* SECTION 3: CONCEPTOS CLAVE DEL SERVICIO LÚMIN SHOP */}
+          {/* SECTION 3: CONCEPTOS CLAVE DEL SERVICIO LUMIN SHOP */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
               <label className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'} flex items-center gap-1.5`}>
                 <HelpCircle className="w-4 h-4" />
-                <span>3. Conceptos del Servicio LÚMIN SHOP:</span>
+                <span>3. Conceptos del Servicio LUMIN SHOP:</span>
               </label>
               <span className="text-[10px] font-mono font-bold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
                 Garantía 100%
@@ -337,7 +337,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   </strong>
                 </div>
                 <p className="text-[11px] leading-relaxed">
-                  Pago seguro al <strong className={`font-mono ${isLight ? 'text-lime-800 font-bold' : 'text-[#D2E8A3]'}`}>993 365 099</strong> a nombre de LÚMIN SHOP. Aceptamos BCP, BBVA e Interbank.
+                  Pago seguro al <strong className={`font-mono ${isLight ? 'text-lime-800 font-bold' : 'text-[#D2E8A3]'}`}>993 365 099</strong> a nombre de LUMIN SHOP. Aceptamos BCP, BBVA e Interbank.
                 </p>
               </div>
 
@@ -393,7 +393,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
                   <Award className="w-4 h-4 flex-shrink-0" />
                   <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                    6. Garantía de Calidad LÚMIN:
+                    6. Garantía de Calidad LUMIN:
                   </strong>
                 </div>
                 <p className="text-[11px] leading-relaxed">
@@ -409,7 +409,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         <div className={`p-3 sm:px-6 sm:py-4 border-t flex items-center justify-between text-[11px] ${
           isLight ? 'bg-gray-100 border-gray-200 text-gray-600' : 'bg-[#0A0A0A] border-white/10 text-gray-400'
         }`}>
-          <span>LÚMIN SHOP v2.0 • Urbano & Sublimación</span>
+          <span>LUMIN SHOP v2.0 • Urbano & Sublimación</span>
           <button
             onClick={onClose}
             className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold transition-colors"

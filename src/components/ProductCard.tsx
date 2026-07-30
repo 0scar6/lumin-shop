@@ -89,7 +89,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           }`}>
             <Flame className="w-3 h-3" />
             <span className="uppercase tracking-wider">
-              {product.category === 'streetwear' ? 'Ropa Urbana' : 'Sublimado'}
+              {product.category === 'streetwear' ? 'Polo Sublimado' : product.category === 'cups' ? 'Vaso/Taza' : 'Placa de Aluminio'}
             </span>
           </div>
 

@@ -157,7 +157,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               </div>
               <div className={`flex items-center gap-2 text-[11px] sm:text-xs ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
                 <ShieldCheck className={`w-3.5 h-3.5 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
-                <span>Calidad Garantizada LÚMIN 100%</span>
+                <span>Calidad Garantizada LUMIN 100%</span>
               </div>
             </div>
           </div>
@@ -173,7 +173,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     : 'bg-[#D2E8A3]/10 border-[#D2E8A3]/20 text-[#D2E8A3]'
                 }`}>
                   {isApparel ? <Shirt className="w-3 h-3" /> : <Coffee className="w-3 h-3" />}
-                  <span className="uppercase">{isApparel ? 'Polo Streetwear Bajo Pedido' : 'Vaso / Taza Sublimada'}</span>
+                  <span className="uppercase">{isApparel ? 'Polo Sublimado Bajo Pedido' : 'Vaso / Taza Sublimada'}</span>
                 </div>
                 <h2 className={`font-display text-xl sm:text-2xl font-extrabold leading-tight ${
                   isLight ? 'text-slate-900' : 'text-white'
@@ -361,7 +361,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   maxLength={30}
                   value={customText}
                   onChange={(e) => setCustomText(e.target.value)}
-                  placeholder={isApparel ? 'Ej. Nombre en manga / "LÚMIN 04"' : 'Ej. "Carlos" o Frase corta'}
+                  placeholder={isApparel ? 'Ej. Nombre en manga / "LUMIN 04"' : 'Ej. "Carlos" o Frase corta'}
                   className={`w-full border rounded-xl px-3 py-2 text-xs focus:outline-none transition-colors ${
                     isLight
                       ? 'bg-slate-100 border-slate-300 text-slate-900 placeholder-slate-500 focus:border-slate-800'

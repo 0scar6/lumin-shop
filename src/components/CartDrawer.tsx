@@ -49,7 +49,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   // Generate WhatsApp Order Text (Customer perspective to shop)
   const buildWhatsAppMessage = () => {
     const nameStr = customerName.trim() || userProfile?.name || '';
-    let msg = `¡Hola LÚMIN SHOP! ⚡ Quisiera realizar el siguiente pedido:\n\n`;
+    let msg = `¡Hola LUMIN SHOP! ⚡ Quisiera realizar el siguiente pedido:\n\n`;
 
     // Customer Info
     msg += `👤 *MIS DATOS DE CONTACTO:*\n`;
@@ -124,7 +124,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           <div className="flex items-center gap-2">
             <ShoppingBag className="w-5 h-5 text-[#D2E8A3]" />
             <h2 className="font-display text-base sm:text-lg font-black uppercase text-white">
-              Mi Pedido LÚMIN ({cartItems.length})
+              Mi Pedido LUMIN ({cartItems.length})
             </h2>
           </div>
 
@@ -327,7 +327,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                       <h4 className="text-xs font-bold text-white flex items-center gap-1">
                         Pagar con Yape / Plin
                       </h4>
-                      <p className="text-[10px] text-gray-400">Titular: LÚMIN SHOP (Oscar Daniel)</p>
+                      <p className="text-[10px] text-gray-400">Titular: LUMIN SHOP (Oscar Daniel)</p>
                     </div>
                   </div>
 
@@ -392,13 +392,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
               <div>
                 <h3 className="text-base font-black text-white">QR Estático Yape / Plin</h3>
-                <p className="text-xs text-gray-400">LÚMIN SHOP • 993 365 099</p>
+                <p className="text-xs text-gray-400">LUMIN SHOP • 993 365 099</p>
               </div>
 
               <div className="p-2 rounded-2xl bg-white border-4 border-[#742284] shadow-2xl overflow-hidden max-w-[210px]">
                 <img
                   src={yapeQrImage}
-                  alt="QR Yape LÚMIN SHOP"
+                  alt="QR Yape LUMIN SHOP"
                   className="w-full h-auto rounded-lg object-contain"
                 />
               </div>

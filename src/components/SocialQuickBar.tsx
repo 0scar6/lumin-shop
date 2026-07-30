@@ -10,7 +10,7 @@ export const SocialQuickBar: React.FC<SocialQuickBarProps> = ({ themeMode = 'dar
   const isLight = themeMode === 'light';
 
   const handleWhatsApp = () => {
-    const text = encodeURIComponent(cfg('brand_whatsapp_help', 'Hola LÚMIN SHOP! ⚡ Quisiera hacer una consulta o realizar un pedido por WhatsApp.'));
+    const text = encodeURIComponent(cfg('brand_whatsapp_help', 'Hola LUMIN SHOP! ⚡ Quisiera hacer una consulta o realizar un pedido por WhatsApp.'));
     window.open(`https://wa.me/${cfg('brand_phone_raw', '51993365099')}?text=${text}`, '_blank');
   };
 
@@ -109,7 +109,7 @@ export const SocialQuickBar: React.FC<SocialQuickBarProps> = ({ themeMode = 'dar
 
 export const FloatingWhatsAppWidget: React.FC = () => {
   const handleWhatsApp = () => {
-    const text = encodeURIComponent(cfg('brand_whatsapp_help', 'Hola LÚMIN SHOP! ⚡ Quisiera hacer una consulta rápida desde la web.'));
+    const text = encodeURIComponent(cfg('brand_whatsapp_help', 'Hola LUMIN SHOP! ⚡ Quisiera hacer una consulta rápida desde la web.'));
     window.open(`https://wa.me/${cfg('brand_phone_raw', '51993365099')}?text=${text}`, '_blank');
   };
 

@@ -36,7 +36,7 @@ const PRODUCTS_STATIC: Product[] = [
   },
   {
     id: 'polo-cyber-lumin',
-    name: 'Polo Boxy Fit "LÚMIN Vector Mesh"',
+    name: 'Polo Boxy Fit "LUMIN Vector Mesh"',
     category: 'streetwear',
     price: 75.00,
     technique: 'Serigrafía Tacto Cero HD',
@@ -126,7 +126,7 @@ const PRODUCTS_STATIC: Product[] = [
   },
   {
     id: 'taza-lumin-monochrome',
-    name: 'Taza Cerámica "LÚMIN Dark Mode 11oz"',
+    name: 'Taza Cerámica "LUMIN Dark Mode 11oz"',
     category: 'cups',
     price: 35.00,
     technique: 'Sublimación Ultra HD 360°',

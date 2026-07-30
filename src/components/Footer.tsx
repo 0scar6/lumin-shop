@@ -12,7 +12,7 @@ export const Footer: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[#D2E8A3]"></span>
             <span className="font-display text-xl font-black text-white uppercase tracking-tight">
-              {cfg('brand_name', 'LÚMIN SHOP')}<span className="text-[#D2E8A3]">.</span>
+              {cfg('brand_name', 'LUMIN SHOP')}<span className="text-[#D2E8A3]">.</span>
             </span>
           </div>
           <p className="text-gray-400 text-xs leading-relaxed">
@@ -134,7 +134,7 @@ export const Footer: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto pt-8 mt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-4">
-        <p>{cfg('footer_copyright', '© 2026 LÚMIN SHOP. Todos los derechos reservados. Moda Urbana & Sublimación Bajo Pedido.')}</p>
+        <p>{cfg('footer_copyright', '© 2026 LUMIN SHOP. Todos los derechos reservados. Moda Urbana & Sublimación Bajo Pedido.')}</p>
         <p className="font-mono">Acento: #D2E8A3 | Carbón: #0A0A0A</p>
       </div>
     </footer>
