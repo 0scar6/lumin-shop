@@ -27,31 +27,31 @@ export const Footer: React.FC = () => {
         {/* Col 2: Categorías rápidas */}
         <div className="space-y-3">
           <h4 className="font-bold text-white text-xs uppercase font-mono tracking-wider">
-            Colecciones
+            {cfg('footer_collections', 'Colecciones')}
           </h4>
           <ul className="space-y-2">
             <li>
               <a href="#catalog-section" className="hover:text-[#D2E8A3] transition-colors flex items-center gap-2">
                 <Shirt className="w-3.5 h-3.5 text-[#D2E8A3]" />
-                <span>Polos Oversized & Boxy Fit</span>
+                <span>{cfg('footer_col_1', 'Polos Oversized & Boxy Fit')}</span>
               </a>
             </li>
             <li>
               <a href="#catalog-section" className="hover:text-[#D2E8A3] transition-colors flex items-center gap-2">
                 <Coffee className="w-3.5 h-3.5 text-[#D2E8A3]" />
-                <span>Vasos Frosted Glass 16oz</span>
+                <span>{cfg('footer_col_2', 'Vasos Frosted Glass 16oz')}</span>
               </a>
             </li>
             <li>
               <a href="#catalog-section" className="hover:text-[#D2E8A3] transition-colors flex items-center gap-2">
                 <Flame className="w-3.5 h-3.5 text-[#D2E8A3]" />
-                <span>Tazas Térmicas 11oz</span>
+                <span>{cfg('footer_col_3', 'Tazas Térmicas 11oz')}</span>
               </a>
             </li>
             <li>
               <a href="#catalog-section" className="hover:text-[#D2E8A3] transition-colors flex items-center gap-2">
                 <Tag className="w-3.5 h-3.5 text-[#D2E8A3]" />
-                <span>Edición Especial Drop 04</span>
+                <span>{cfg('footer_col_4', 'Edición Especial Drop 04')}</span>
               </a>
             </li>
           </ul>
@@ -60,18 +60,18 @@ export const Footer: React.FC = () => {
         {/* Col 3: Atención y Garantías */}
         <div className="space-y-3">
           <h4 className="font-bold text-white text-xs uppercase font-mono tracking-wider">
-            Garantía & Envíos
+            {cfg('footer_guarantee_title', 'Garantía & Envíos')}
           </h4>
           <ul className="space-y-2">
             <li className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-[#D2E8A3]" />
-              <span>Estampados HD de alta resistencia</span>
+              <span>{cfg('footer_guarantee_1', 'Estampados HD de alta resistencia')}</span>
             </li>
             <li className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-[#D2E8A3]" />
-              <span>Envíos directos a todo el país</span>
+              <span>{cfg('footer_guarantee_2', 'Envíos directos a todo el país')}</span>
             </li>
-            <li><span>Pagos seguros: Yape, Plin, Transferencia o Tarjeta</span></li>
+            <li><span>{cfg('footer_guarantee_3', 'Pagos seguros: Yape, Plin, Transferencia o Tarjeta')}</span></li>
           </ul>
         </div>
 

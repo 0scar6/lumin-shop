@@ -1324,7 +1324,7 @@ export default function App() {
                   </h3>
                 </div>
                 <span className="text-xs font-mono font-bold text-green-400 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
-                  Garantía & Calidad 100%
+                  {cfg('profile_concepts_sub', 'Garantía & Calidad 100%')}
                 </span>
               </div>
 
@@ -1336,11 +1336,11 @@ export default function App() {
                   <div className="flex items-center gap-2 text-[#D2E8A3]">
                     <Clock className="w-4 h-4 flex-shrink-0" />
                     <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      1. Elaboración Bajo Pedido
+                      {cfg('concept_1_title', '1. Elaboración Bajo Pedido')}
                     </strong>
                   </div>
                   <p className="text-xs leading-relaxed text-gray-400">
-                    Producción y sublimación personalizada en <strong className="text-[#D2E8A3]">24 a 48 hrs hábiles</strong> antes de despachar.
+                    {cfg('concept_1_desc', 'Producción y sublimación personalizada en 24 a 48 hrs hábiles antes de despachar.')}
                   </p>
                 </div>
 
@@ -1351,11 +1351,11 @@ export default function App() {
                   <div className="flex items-center gap-2 text-[#D2E8A3]">
                     <CreditCard className="w-4 h-4 flex-shrink-0" />
                     <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      2. Pagos Yape / Plin / Bancos
+                      {cfg('concept_2_title', '2. Pagos Yape / Plin / Bancos')}
                     </strong>
                   </div>
                   <p className="text-xs leading-relaxed text-gray-400">
-                    Pago directo al <strong className="text-[#D2E8A3] font-mono">{cfg('brand_phone', '993 365 099')}</strong> a nombre de {cfg('brand_holder', 'Oscar Daniel')} ({cfg('brand_name', 'LÚMIN SHOP')}) o BCP / Interbank.
+                    {cfg('concept_2_desc', 'Pago directo al 993 365 099 a nombre de Oscar Daniel (LÚMIN SHOP) o BCP / Interbank.')}
                   </p>
                 </div>
 
@@ -1366,11 +1366,11 @@ export default function App() {
                   <div className="flex items-center gap-2 text-[#D2E8A3]">
                     <Truck className="w-4 h-4 flex-shrink-0" />
                     <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      3. Envíos Gratis (S/ 200+)
+                      {cfg('concept_3_title', '3. Envíos Gratis (S/ 200+)')}
                     </strong>
                   </div>
                   <p className="text-xs leading-relaxed text-gray-400">
-                    <strong className="text-green-400">Envío sin costo</strong> en compras mayores a S/ 200 vía Olva Courier, Shalom o Express.
+                    {cfg('concept_3_desc', 'Envío sin costo en compras mayores a S/ 200 vía Olva Courier, Shalom o Express.')}
                   </p>
                 </div>
 
@@ -1381,11 +1381,11 @@ export default function App() {
                   <div className="flex items-center gap-2 text-[#D2E8A3]">
                     <Shirt className="w-4 h-4 flex-shrink-0" />
                     <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      4. Algodón Reactivo & Sublimado HD
+                      {cfg('concept_4_title', '4. Algodón Reactivo & Sublimado HD')}
                     </strong>
                   </div>
                   <p className="text-xs leading-relaxed text-gray-400">
-                    Telas 24/1 de alto gramaje y sublimación térmica 1200 DPI que no se despinta ni se agrieta.
+                    {cfg('concept_4_desc', 'Telas 24/1 de alto gramaje y sublimación térmica 1200 DPI que no se despinta ni se agrieta.')}
                   </p>
                 </div>
 
@@ -1396,11 +1396,11 @@ export default function App() {
                   <div className="flex items-center gap-2 text-[#D2E8A3]">
                     <MessageCircle className="w-4 h-4 flex-shrink-0" />
                     <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      5. Verificación por WhatsApp
+                      {cfg('concept_5_title', '5. Verificación por WhatsApp')}
                     </strong>
                   </div>
                   <p className="text-xs leading-relaxed text-gray-400">
-                    Atención personalizada humana para revisar tu diseño, confirmación de talla y datos antes del envío.
+                    {cfg('concept_5_desc', 'Atención personalizada humana para revisar tu diseño, confirmación de talla y datos antes del envío.')}
                   </p>
                 </div>
 
@@ -1411,11 +1411,11 @@ export default function App() {
                   <div className="flex items-center gap-2 text-[#D2E8A3]">
                     <Award className="w-4 h-4 flex-shrink-0" />
                     <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      6. Garantía de Satisfacción
+                      {cfg('concept_6_title', '6. Garantía de Satisfacción')}
                     </strong>
                   </div>
                   <p className="text-xs leading-relaxed text-gray-400">
-                    Reemplazo o reembolso inmediato ante cualquier falla de fábrica o problemas en el estampado.
+                    {cfg('concept_6_desc', 'Reemplazo o reembolso inmediato ante cualquier falla de fábrica o problemas en el estampado.')}
                   </p>
                 </div>
               </div>
