@@ -35,7 +35,7 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
               : 'bg-[#D2E8A3]/10 border border-[#D2E8A3]/30 text-[#D2E8A3]'
           }`}>
             <Flame className="w-3.5 h-3.5 text-lime-600 dark:text-[#D2E8A3]" />
-            <span>NUEVO DROP 04 — COLECCIÓN BAJO DEMANDA</span>
+            <span>Exclusivo — COLECCIÓN BAJO DEMANDA</span>
           </div>
 
           <h2 className={`font-display text-3xl sm:text-5xl font-extrabold leading-tight uppercase tracking-tight ${
