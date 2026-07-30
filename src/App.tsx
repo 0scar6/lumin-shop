@@ -11,7 +11,6 @@ import { ProductionBadgeBar } from './components/ProductionBadgeBar';
 import { FaqSection } from './components/FaqSection';
 import { Footer } from './components/Footer';
 import { SocialQuickBar, FloatingWhatsAppWidget } from './components/SocialQuickBar';
-import { GoogleAuthModal, GoogleLoginBanner } from './components/GoogleAuthModal';
 
 import { PRODUCTS as PRODUCTS_STATIC, CATEGORIES as CATEGORIES_STATIC, loadProductsFromSupabase } from './data/products';
 import {
@@ -142,7 +141,7 @@ export default function App() {
     }
   });
 
-  const [isGoogleAuthOpen, setIsGoogleAuthOpen] = useState<boolean>(false);
+  // Google auth removed
 
   useEffect(() => {
     if (googleUser) {
@@ -410,7 +409,7 @@ export default function App() {
         setSearchQuery={setSearchQuery}
         themeMode={themeMode}
         googleUser={googleUser}
-        onOpenGoogleAuth={() => setIsGoogleAuthOpen(true)}
+        onOpenGoogleAuth={() => {}}
         showSearch={activeTab === 'catalog'}
       />
 
@@ -781,14 +780,6 @@ export default function App() {
                 </button>
               )}
             </div>
-
-            {/* Google Authentication Anti-Bot Banner */}
-            <GoogleLoginBanner
-              currentUser={googleUser}
-              onOpenModal={() => setIsGoogleAuthOpen(true)}
-              onLogout={handleGoogleLogout}
-              themeMode={themeMode}
-            />
 
             {cart.length === 0 ? (
               <div className={`py-16 text-center space-y-4 rounded-3xl p-8 border max-w-xl mx-auto ${
