@@ -16,6 +16,7 @@ import { GoogleAuthModal, GoogleLoginBanner } from './components/GoogleAuthModal
 import { PRODUCTS as PRODUCTS_STATIC, CATEGORIES as CATEGORIES_STATIC, loadProductsFromSupabase } from './data/products';
 import {
   syncFavoritesToSupabase,
+  syncCartStateToSupabase,
   syncCartToSupabase,
   syncProfileToSupabase,
   syncGoogleUserToSupabase,
@@ -106,6 +107,7 @@ export default function App() {
 
   useEffect(() => {
     localStorage.setItem('lumin_cart', JSON.stringify(cart));
+    syncCartStateToSupabase(cart, userProfile, deliveryType, googleUser?.id);
   }, [cart]);
 
   useEffect(() => {

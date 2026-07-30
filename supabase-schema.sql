@@ -12,6 +12,7 @@
 -- ELIMINAR TABLAS EXISTENTES (en orden por dependencias)
 DROP TABLE IF EXISTS ideas_personalizadas CASCADE;
 DROP TABLE IF EXISTS pedidos CASCADE;
+DROP TABLE IF EXISTS carrito CASCADE;
 DROP TABLE IF EXISTS favoritos CASCADE;
 DROP TABLE IF EXISTS perfiles CASCADE;
 DROP TABLE IF EXISTS usuarios CASCADE;
@@ -105,6 +106,21 @@ CREATE TABLE pedidos (
     metodo_envio TEXT DEFAULT 'domicilio',
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP
+);
+
+-- TABLA: carrito
+-- Que guarda: estado actual del carrito del usuario (se actualiza en tiempo real)
+CREATE TABLE carrito (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+    usuario_id TEXT UNIQUE NOT NULL,
+    cliente_nombre TEXT,
+    cliente_telefono TEXT,
+    cliente_direccion TEXT,
+    cliente_dni TEXT,
+    productos JSONB NOT NULL,
+    total DECIMAL(10,2),
+    metodo_envio TEXT DEFAULT 'domicilio',
+    updated_at TIMESTAMP DEFAULT NOW()
 );
 
 -- TABLA: ideas_personalizadas
@@ -206,6 +222,7 @@ ALTER TABLE productos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE usuarios ENABLE ROW LEVEL SECURITY;
 ALTER TABLE perfiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE favoritos ENABLE ROW LEVEL SECURITY;
+ALTER TABLE carrito ENABLE ROW LEVEL SECURITY;
 ALTER TABLE pedidos ENABLE ROW LEVEL SECURITY;
 ALTER TABLE ideas_personalizadas ENABLE ROW LEVEL SECURITY;
 
@@ -218,5 +235,6 @@ CREATE POLICY "pub" ON productos FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "pub" ON usuarios FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "pub" ON perfiles FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "pub" ON favoritos FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "pub" ON carrito FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "pub" ON pedidos FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "pub" ON ideas_personalizadas FOR ALL USING (true) WITH CHECK (true);

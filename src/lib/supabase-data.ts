@@ -51,7 +51,59 @@ export async function loadFavoritesFromSupabase(userId?: string): Promise<Produc
 }
 
 // ============================================
-// CART / ORDERS
+// CART STATE (real-time sync, not orders)
+// ============================================
+
+export async function syncCartStateToSupabase(
+  cart: CartItem[],
+  userProfile: UserProfileData,
+  deliveryType: string,
+  userId?: string
+): Promise<void> {
+  if (!supabase) return;
+  try {
+    const identifier = userId || getAnonymousId();
+    const total = cart.reduce((acc, item) => {
+      const extra = item.product.cupOptions?.types.find((t) => t.name === item.selectedCupType)?.extraPrice || 0;
+      return acc + (item.product.price + extra) * item.quantity;
+    }, 0);
+
+    const cartItems = cart.map((item) => ({
+      product_id: item.product.id,
+      product_name: item.product.name,
+      quantity: item.quantity,
+      price: item.product.price,
+      selected_size: item.selectedSize,
+      selected_fit: item.selectedFit,
+      selected_color: item.selectedColor,
+      selected_cup_type: item.selectedCupType,
+      selected_finish: item.selectedFinish,
+      custom_text: item.customText,
+    }));
+
+    if (cart.length === 0) {
+      await supabase.from('carrito').delete().eq('usuario_id', identifier);
+    } else {
+      await supabase.from('carrito').delete().eq('usuario_id', identifier);
+      await supabase.from('carrito').insert({
+        id: crypto.randomUUID(),
+        usuario_id: identifier,
+        cliente_nombre: userProfile.name || '',
+        cliente_telefono: userProfile.phone || '',
+        cliente_direccion: userProfile.address || '',
+        cliente_dni: userProfile.dni || '',
+        productos: cartItems,
+        total,
+        metodo_envio: deliveryType || 'domicilio',
+      });
+    }
+  } catch {
+    // Silent fail
+  }
+}
+
+// ============================================
+// ORDERS (WhatsApp)
 // ============================================
 
 export async function syncCartToSupabase(
