@@ -1,6 +1,7 @@
 import React from 'react';
 import { ShoppingBag, Heart, MessageCircle, Search, User, ShieldCheck, Home, Grid, HelpCircle } from 'lucide-react';
 import { GoogleUser, NavigationTab } from '../types';
+import { cfg } from '../lib/config';
 
 interface HeaderProps {
   cartCount: number;
@@ -36,8 +37,8 @@ export const Header: React.FC<HeaderProps> = ({
   const isLight = themeMode === 'light';
 
   const handleWhatsAppHelp = () => {
-    const text = encodeURIComponent('Hola LÚMIN SHOP! ⚡ Quisiera hacer una consulta sobre un pedido.');
-    window.open(`https://wa.me/51993365099?text=${text}`, '_blank');
+    const text = encodeURIComponent(cfg('brand_whatsapp_help', 'Hola LÚMIN SHOP! ⚡ Quisiera hacer una consulta sobre un pedido.'));
+    window.open(`https://wa.me/${cfg('brand_phone_raw', '51993365099')}?text=${text}`, '_blank');
   };
 
   return (
@@ -58,11 +59,11 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="flex flex-col whitespace-nowrap min-w-max pr-1 sm:pr-4">
               <div className="flex items-center gap-1">
                 <h1 className={`font-display text-base sm:text-2xl font-black tracking-wider uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                  LUMIN SHOP<span className="text-[#65A30D] sm:text-[#D2E8A3]">.</span>
+                  {cfg('brand_name', 'LUMIN SHOP')}<span className="text-[#65A30D] sm:text-[#D2E8A3]">.</span>
                 </h1>
               </div>
               <span className={`hidden sm:block text-[9px] sm:text-[10px] font-mono tracking-widest uppercase -mt-0.5 ${isLight ? 'text-slate-600 font-semibold' : 'text-gray-300'}`}>
-                URBAN APPAREL & SUBLIMATION
+                {cfg('brand_slogan', 'URBAN APPAREL & SUBLIMATION')}
               </span>
             </div>
           </button>

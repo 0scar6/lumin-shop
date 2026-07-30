@@ -1,5 +1,6 @@
 import React from 'react';
 import { MessageCircle, Instagram } from 'lucide-react';
+import { cfg } from '../lib/config';
 
 interface SocialQuickBarProps {
   themeMode?: 'dark' | 'light' | 'amoled';
@@ -9,8 +10,8 @@ export const SocialQuickBar: React.FC<SocialQuickBarProps> = ({ themeMode = 'dar
   const isLight = themeMode === 'light';
 
   const handleWhatsApp = () => {
-    const text = encodeURIComponent('Hola LÚMIN SHOP! ⚡ Quisiera hacer una consulta o realizar un pedido por WhatsApp.');
-    window.open(`https://wa.me/51993365099?text=${text}`, '_blank');
+    const text = encodeURIComponent(cfg('brand_whatsapp_help', 'Hola LÚMIN SHOP! ⚡ Quisiera hacer una consulta o realizar un pedido por WhatsApp.'));
+    window.open(`https://wa.me/${cfg('brand_phone_raw', '51993365099')}?text=${text}`, '_blank');
   };
 
   return (
@@ -32,7 +33,7 @@ export const SocialQuickBar: React.FC<SocialQuickBarProps> = ({ themeMode = 'dar
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
             </div>
             <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
-              Contacto directo <strong>993 365 099</strong> • Respuesta inmediata
+              Contacto directo <strong>{cfg('brand_phone', '993 365 099')}</strong> • Respuesta inmediata
             </p>
           </div>
         </div>
@@ -108,15 +109,15 @@ export const SocialQuickBar: React.FC<SocialQuickBarProps> = ({ themeMode = 'dar
 
 export const FloatingWhatsAppWidget: React.FC = () => {
   const handleWhatsApp = () => {
-    const text = encodeURIComponent('Hola LÚMIN SHOP! ⚡ Quisiera hacer una consulta rápida desde la web.');
-    window.open(`https://wa.me/51993365099?text=${text}`, '_blank');
+    const text = encodeURIComponent(cfg('brand_whatsapp_help', 'Hola LÚMIN SHOP! ⚡ Quisiera hacer una consulta rápida desde la web.'));
+    window.open(`https://wa.me/${cfg('brand_phone_raw', '51993365099')}?text=${text}`, '_blank');
   };
 
   return (
     <div className="fixed bottom-24 right-4 sm:bottom-28 sm:right-6 z-40 flex flex-col items-end gap-2 group">
       {/* Tooltip on hover */}
       <div className="hidden group-hover:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 text-white text-xs font-bold border border-slate-700 shadow-2xl animate-fade-in pointer-events-none whitespace-nowrap">
-        <span>Atención 993 365 099</span>
+        <span>Atención {cfg('brand_phone', '993 365 099')}</span>
         <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
       </div>
 

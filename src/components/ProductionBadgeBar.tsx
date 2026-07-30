@@ -1,5 +1,6 @@
 import React from 'react';
 import { Tag, Clock, ShieldCheck, Truck, RefreshCw, CheckCircle } from 'lucide-react';
+import { cfg } from '../lib/config';
 
 interface ProductionBadgeBarProps {
   themeMode?: 'dark' | 'light' | 'amoled';
@@ -11,20 +12,20 @@ export const ProductionBadgeBar: React.FC<ProductionBadgeBarProps> = ({ themeMod
   const steps = [
     {
       step: '01',
-      title: 'Eliges y Configuras',
-      desc: 'Seleccionas tu prenda o vaso, talla, corte, color o texto personal.',
+      title: cfg('badge_step1_title', 'Eliges y Configuras'),
+      desc: cfg('badge_step1_desc', 'Seleccionas tu prenda o vaso, talla, corte, color o texto personal.'),
       icon: Tag,
     },
     {
       step: '02',
-      title: 'Producción 24-48h',
-      desc: 'Estampamos con serigrafía/fijación térmica o sublimamos a 200°C con máxima fijación.',
+      title: cfg('badge_step2_title', 'Producción 24-48h'),
+      desc: cfg('badge_step2_desc', 'Estampamos con serigrafía/fijación térmica o sublimamos a 200°C con máxima fijación.'),
       icon: Clock,
     },
     {
       step: '03',
-      title: 'Despacho & Entrega',
-      desc: 'Empacamos con cuidado y enviamos a la puerta de tu domicilio.',
+      title: cfg('badge_step3_title', 'Despacho & Entrega'),
+      desc: cfg('badge_step3_desc', 'Empacamos con cuidado y enviamos a la puerta de tu domicilio.'),
       icon: Truck,
     },
   ];
@@ -38,13 +39,13 @@ export const ProductionBadgeBar: React.FC<ProductionBadgeBarProps> = ({ themeMod
           isLight ? 'bg-lime-100 border border-lime-300 text-lime-800' : 'bg-[#D2E8A3]/10 border border-[#D2E8A3]/20 text-[#D2E8A3]'
         }`}>
           <RefreshCw className="w-3.5 h-3.5 animate-spin text-lime-600 dark:text-[#D2E8A3]" />
-          <span>MODELO SUSTENTABLE BAJO DEMANDA</span>
+          <span>{cfg('badge_model_title', 'MODELO SUSTENTABLE BAJO DEMANDA')}</span>
         </div>
         <h3 className={`font-display text-2xl sm:text-3xl font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-          ¿CÓMO FUNCIONA <span className={isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}>LÚMIN SHOP</span>?
+          {cfg('badge_model_subtitle', '¿CÓMO FUNCIONA LÚMIN SHOP?')}
         </h3>
         <p className={`text-xs sm:text-sm ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
-          Cero sobre-stock, mayor frescura en estampados y acabados totalmente personalizados para ti.
+          {cfg('badge_model_desc', 'Cero sobre-stock, mayor frescura en estampados y acabados totalmente personalizados para ti.')}
         </p>
       </div>
 

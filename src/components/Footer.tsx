@@ -1,5 +1,6 @@
 import React from 'react';
 import { Tag, MessageCircle, Instagram, ShieldCheck, MapPin, Shirt, Coffee, Flame } from 'lucide-react';
+import { cfg } from '../lib/config';
 
 export const Footer: React.FC = () => {
   return (
@@ -11,15 +12,15 @@ export const Footer: React.FC = () => {
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-[#D2E8A3]"></span>
             <span className="font-display text-xl font-black text-white uppercase tracking-tight">
-              LÚMIN SHOP<span className="text-[#D2E8A3]">.</span>
+              {cfg('brand_name', 'LÚMIN SHOP')}<span className="text-[#D2E8A3]">.</span>
             </span>
           </div>
           <p className="text-gray-400 text-xs leading-relaxed">
-            Marca independiente de ropa urbana streetwear (polos gráficos de alta definición) y vasos/tazas sublimadas de alta temperatura. Trabajamos 100% bajo pedido para garantizar máxima calidad.
+            {cfg('footer_description', 'Marca independiente de ropa urbana streetwear (polos gráficos de alta definición) y vasos/tazas sublimadas de alta temperatura. Trabajamos 100% bajo pedido para garantizar máxima calidad.')}
           </p>
           <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#161814] border border-[#D2E8A3]/20 text-[#D2E8A3] text-[11px] font-mono">
             <Tag className="w-3 h-3 text-[#D2E8A3]" />
-            <span>Producción Express 24-48 hrs</span>
+            <span>{cfg('footer_production', 'Producción Express 24-48 hrs')}</span>
           </div>
         </div>
 
@@ -77,14 +78,14 @@ export const Footer: React.FC = () => {
         {/* Col 4: Contacto directo & Redes */}
         <div className="space-y-3">
           <h4 className="font-bold text-white text-xs uppercase font-mono tracking-wider">
-            Síguenos en Redes
+            {cfg('footer_social_title', 'Síguenos en Redes')}
           </h4>
           <p className="text-gray-400 text-xs">
-            Encuéntranos en TikTok, Facebook e Instagram como <strong className="text-[#D2E8A3]">@.lumin.shop</strong>
+            {cfg('footer_social_text', 'Encuéntranos en TikTok, Facebook e Instagram como')} <strong className="text-[#D2E8A3]">{cfg('brand_instagram', '@.lumin.shop')}</strong>
           </p>
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <a
-              href="https://wa.me/51993365099"
+              href={`https://wa.me/${cfg('brand_phone_raw', '51993365099')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2.5 rounded-full bg-[#161814] hover:bg-[#D2E8A3] text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
@@ -94,11 +95,11 @@ export const Footer: React.FC = () => {
               <span className="font-bold text-[11px]">WhatsApp</span>
             </a>
             <a
-              href="https://tiktok.com/@.lumin.shop"
+              href={`https://tiktok.com/${cfg('brand_tiktok', '@.lumin.shop')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2.5 rounded-full bg-[#161814] hover:bg-[#D2E8A3] text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
-              title="TikTok @.lumin.shop"
+              title={`TikTok ${cfg('brand_tiktok', '@.lumin.shop')}`}
             >
               <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                 <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-5.2-1.74 2.89 2.89 0 0 1 2.31-1.39V9.06a6.34 6.34 0 0 0-3.5 1.05 6.33 6.33 0 0 0-2.8 4.28 6.34 6.34 0 0 0 1.25 5.25A6.33 6.33 0 0 0 9.17 22a6.34 6.34 0 0 0 6.33-6.33V9a8.16 8.16 0 0 0 4.09 1.14V6.69z"/>
@@ -106,11 +107,11 @@ export const Footer: React.FC = () => {
               <span className="font-bold text-[11px]">TikTok</span>
             </a>
             <a
-              href="https://facebook.com/lumin.shop"
+              href={`https://facebook.com/${cfg('brand_facebook', 'lumin.shop')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2.5 rounded-full bg-[#161814] hover:bg-[#D2E8A3] text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
-              title="Facebook @.lumin.shop"
+              title={`Facebook ${cfg('brand_facebook', '@.lumin.shop')}`}
             >
               <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -118,11 +119,11 @@ export const Footer: React.FC = () => {
               <span className="font-bold text-[11px]">Facebook</span>
             </a>
             <a
-              href="https://instagram.com/lumin.shop"
+              href={`https://instagram.com/${cfg('brand_instagram', 'lumin.shop')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2.5 rounded-full bg-[#161814] hover:bg-[#D2E8A3] text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
-              title="Instagram @.lumin.shop"
+              title={`Instagram ${cfg('brand_instagram', '@.lumin.shop')}`}
             >
               <Instagram className="w-3.5 h-3.5" />
               <span className="font-bold text-[11px]">Instagram</span>
@@ -133,7 +134,7 @@ export const Footer: React.FC = () => {
       </div>
 
       <div className="max-w-7xl mx-auto pt-8 mt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-4">
-        <p>© 2026 LÚMIN SHOP. Todos los derechos reservados. Moda Urbana & Sublimación Bajo Pedido.</p>
+        <p>{cfg('footer_copyright', '© 2026 LÚMIN SHOP. Todos los derechos reservados. Moda Urbana & Sublimación Bajo Pedido.')}</p>
         <p className="font-mono">Acento: #D2E8A3 | Carbón: #0A0A0A</p>
       </div>
     </footer>
