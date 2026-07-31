@@ -441,6 +441,8 @@ export default function App() {
         googleUser={googleUser}
         onOpenGoogleAuth={() => {}}
         showSearch={activeTab === 'catalog'}
+        activeTab={activeTab}
+        setActiveTab={handleTabChange}
       />
 
       {/* Main Content Area */}
