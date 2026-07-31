@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, User, Sun, Moon, Zap, Save, CheckCircle2, ShieldCheck, CreditCard, Truck, PhoneCall, HelpCircle, Eye, Heart, ShoppingBag, Clock, Sparkles, MessageCircle, Shirt, Award } from 'lucide-react';
 import { ThemeMode, UserProfileData } from '../types';
+import { cfg } from '../lib/config';
 
 interface UserProfileModalProps {
   isOpen: boolean;
@@ -69,7 +70,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             </div>
             <div>
               <h2 className="font-display text-base sm:text-lg font-black uppercase tracking-tight">
-                Mi Perfil y Preferencias
+                {cfg('up_title', 'Mi Perfil y Preferencias')}
               </h2>
               <p className="text-[10px] text-gray-500 -mt-0.5">LUMIN Shop & Personalización</p>
             </div>
@@ -80,7 +81,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             className={`p-2 rounded-full transition-colors ${
               isLight ? 'hover:bg-gray-200 text-gray-600' : 'hover:bg-white/10 text-gray-400 hover:text-white'
             }`}
-            aria-label="Cerrar perfil"
+            aria-label={cfg('up_close_label', 'Cerrar perfil')}
           >
             <X className="w-5 h-5" />
           </button>
@@ -95,12 +96,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               isLight ? 'bg-gray-100 border-gray-200 text-gray-900' : 'bg-[#161814] border-white/10 text-white'
             }`}>
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-mono font-bold uppercase text-gray-400">Actividad</span>
+                <span className="text-[9px] font-mono font-bold uppercase text-gray-400">{cfg('up_activity', 'Actividad')}</span>
                 <Eye className="w-3.5 h-3.5 text-[#D2E8A3]" />
               </div>
               <div>
                 <span className="text-xl font-black font-display">8</span>
-                <p className="text-[9px] text-gray-400">Productos vistos</p>
+                <p className="text-[9px] text-gray-400">{cfg('up_products_viewed', 'Productos vistos')}</p>
               </div>
             </div>
 
@@ -108,12 +109,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               isLight ? 'bg-gray-100 border-gray-200 text-gray-900' : 'bg-[#161814] border-white/10 text-white'
             }`}>
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-mono font-bold uppercase text-gray-400">Colección</span>
+                <span className="text-[9px] font-mono font-bold uppercase text-gray-400">{cfg('up_collection', 'Colección')}</span>
                 <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400/20" />
               </div>
               <div>
                 <span className="text-xl font-black font-display">4</span>
-                <p className="text-[9px] text-gray-400">Favoritos</p>
+                <p className="text-[9px] text-gray-400">{cfg('up_favorites', 'Favoritos')}</p>
               </div>
             </div>
 
@@ -121,12 +122,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               isLight ? 'bg-gray-100 border-gray-200 text-gray-900' : 'bg-[#161814] border-white/10 text-white'
             }`}>
               <div className="flex items-center justify-between">
-                <span className="text-[9px] font-mono font-bold uppercase text-gray-400">Pedidos</span>
+                <span className="text-[9px] font-mono font-bold uppercase text-gray-400">{cfg('up_orders', 'Pedidos')}</span>
                 <ShoppingBag className="w-3.5 h-3.5 text-green-400" />
               </div>
               <div>
                 <span className="text-xl font-black font-display">3</span>
-                <p className="text-[9px] text-gray-400">Pedidos</p>
+                <p className="text-[9px] text-gray-400">{cfg('up_orders_count', 'Pedidos')}</p>
               </div>
             </div>
           </div>
@@ -135,7 +136,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           <div className="space-y-3">
             <label className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'} flex items-center gap-1.5`}>
               <Sun className="w-4 h-4" />
-              <span>1. Apariencia Visual de la Web:</span>
+              <span>{cfg('up_theme_label', '1. Apariencia Visual de la Web:')}</span>
             </label>
 
             <div className="grid grid-cols-3 gap-2">
@@ -154,9 +155,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <Moon className={`w-5 h-5 ${themeMode === 'dark' ? 'text-[#D2E8A3]' : isLight ? 'text-slate-600' : 'text-gray-400'}`} />
                 <div>
                   <span className={`block font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                    Oscuro
+                    {cfg('up_theme_dark', 'Oscuro')}
                   </span>
-                  <span className={`text-[9px] font-mono ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>Clásico LUMIN</span>
+                  <span className={`text-[9px] font-mono ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>{cfg('up_theme_dark_desc', 'Clásico LUMIN')}</span>
                 </div>
               </button>
 
@@ -177,7 +178,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   <span className={`block font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     AMOLED
                   </span>
-                  <span className={`text-[9px] font-mono ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>Negro Puro</span>
+                  <span className={`text-[9px] font-mono ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>{cfg('up_theme_amoled_desc', 'Negro Puro')}</span>
                 </div>
               </button>
 
@@ -194,9 +195,9 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <Sun className={`w-5 h-5 ${themeMode === 'light' ? 'text-[#8AB73B]' : 'text-gray-400'}`} />
                 <div>
                   <span className={`block font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                    Claro
+                    {cfg('up_theme_light', 'Claro')}
                   </span>
-                  <span className={`text-[9px] font-mono ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>Día Limpio</span>
+                  <span className={`text-[9px] font-mono ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>{cfg('up_theme_light_desc', 'Día Limpio')}</span>
                 </div>
               </button>
             </div>
@@ -207,23 +208,23 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <div className="flex items-center justify-between">
               <label className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'} flex items-center gap-1.5`}>
                 <User className="w-4 h-4" />
-                <span>2. Mis Datos para Envíos Rápidos:</span>
+                <span>{cfg('up_data_label', '2. Mis Datos para Envíos Rápidos:')}</span>
               </label>
-              <span className={`text-[10px] font-mono ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>(Se guarda en tu navegador)</span>
+              <span className={`text-[10px] font-mono ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>({cfg('up_browser_hint', 'Se guarda en tu navegador')})</span>
             </div>
 
             <p className={`text-xs ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
-              Completa tus datos una sola vez para que tus pedidos por WhatsApp se generen automáticamente sin volver a escribirlos.
+              {cfg('up_data_desc', 'Completa tus datos una sola vez para que tus pedidos por WhatsApp se generen automáticamente sin volver a escribirlos.')}
             </p>
 
             <div className="space-y-2.5 pt-1">
               <div>
-                <label className={`block text-[11px] font-bold uppercase mb-1 ${isLight ? 'text-slate-700' : 'text-gray-300'}`}>Nombre y Apellido</label>
+                <label className={`block text-[11px] font-bold uppercase mb-1 ${isLight ? 'text-slate-700' : 'text-gray-300'}`}>{cfg('up_name_label', 'Nombre y Apellido')}</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder="Ej. Carlos Mendoza"
+                  placeholder={cfg('up_name_placeholder', 'Ej. Carlos Mendoza')}
                   className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none focus:ring-1 transition-colors ${
                     isLight
                       ? 'bg-slate-100 text-slate-900 border border-slate-300 placeholder-slate-500 focus:ring-[#8AB73B]'
@@ -234,12 +235,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 <div>
-                  <label className={`block text-[11px] font-bold uppercase mb-1 ${isLight ? 'text-slate-700' : 'text-gray-300'}`}>WhatsApp / Teléfono</label>
+                  <label className={`block text-[11px] font-bold uppercase mb-1 ${isLight ? 'text-slate-700' : 'text-gray-300'}`}>{cfg('up_phone_label', 'WhatsApp / Teléfono')}</label>
                   <input
                     type="tel"
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="Ej. 987654321"
+                    placeholder={cfg('up_phone_placeholder', 'Ej. 987654321')}
                     className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none focus:ring-1 transition-colors ${
                       isLight
                         ? 'bg-slate-100 text-slate-900 border border-slate-300 placeholder-slate-500 focus:ring-[#8AB73B]'
@@ -249,12 +250,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 </div>
 
                 <div>
-                  <label className={`block text-[11px] font-bold uppercase mb-1 ${isLight ? 'text-slate-700' : 'text-gray-300'}`}>DNI (Opcional)</label>
+                  <label className={`block text-[11px] font-bold uppercase mb-1 ${isLight ? 'text-slate-700' : 'text-gray-300'}`}>{cfg('up_dni_label', 'DNI (Opcional)')}</label>
                   <input
                     type="text"
                     value={formData.dni}
                     onChange={(e) => setFormData({ ...formData, dni: e.target.value })}
-                    placeholder="Para la guía de envío"
+                    placeholder={cfg('up_dni_placeholder', 'Para la guía de envío')}
                     className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none focus:ring-1 transition-colors ${
                       isLight
                         ? 'bg-slate-100 text-slate-900 border border-slate-300 placeholder-slate-500 focus:ring-[#8AB73B]'
@@ -265,12 +266,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               </div>
 
               <div>
-                <label className={`block text-[11px] font-bold uppercase mb-1 ${isLight ? 'text-slate-700' : 'text-gray-300'}`}>Dirección de Entrega y Referencia</label>
+                <label className={`block text-[11px] font-bold uppercase mb-1 ${isLight ? 'text-slate-700' : 'text-gray-300'}`}>{cfg('up_address_label', 'Dirección de Entrega y Referencia')}</label>
                 <input
                   type="text"
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                  placeholder="Ej. Av. Larco 456 Dpto 302, Miraflores (Ref: Frente a la iglesia)"
+                  placeholder={cfg('up_address_placeholder', 'Ej. Av. Larco 456 Dpto 302, Miraflores (Ref: Frente a la iglesia)')}
                   className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none focus:ring-1 transition-colors ${
                     isLight
                       ? 'bg-slate-100 text-slate-900 border border-slate-300 placeholder-slate-500 focus:ring-[#8AB73B]'
@@ -287,12 +288,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               {savedSuccess ? (
                 <>
                   <CheckCircle2 className="w-4 h-4 text-[#0A0A0A]" />
-                  <span>¡DATOS GUARDADOS CON ÉXITO!</span>
+                  <span>{cfg('up_save_success', '¡DATOS GUARDADOS CON ÉXITO!')}</span>
                 </>
               ) : (
                 <>
                   <Save className="w-4 h-4" />
-                  <span>GUARDAR MI INFORMACIÓN</span>
+                  <span>{cfg('up_save_btn', 'GUARDAR MI INFORMACIÓN')}</span>
                 </>
               )}
             </button>
@@ -303,10 +304,10 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             <div className="flex items-center justify-between">
               <label className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'} flex items-center gap-1.5`}>
                 <HelpCircle className="w-4 h-4" />
-                <span>3. Conceptos del Servicio LUMIN SHOP:</span>
+                <span>{cfg('up_concepts_label', '3. Conceptos del Servicio LUMIN SHOP:')}</span>
               </label>
               <span className="text-[10px] font-mono font-bold text-green-500 bg-green-500/10 px-2 py-0.5 rounded-full border border-green-500/20">
-                Garantía 100%
+                {cfg('up_guarantee_badge', 'Garantía 100%')}
               </span>
             </div>
 
@@ -318,11 +319,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
                   <Clock className="w-4 h-4 flex-shrink-0" />
                   <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                    1. Tiempos de Elaboración:
+                    {cfg('up_concept1_title', '1. Tiempos de Elaboración:')}
                   </strong>
                 </div>
                 <p className="text-[11px] leading-relaxed">
-                  Confección y sublimación personalizada en <strong className={isLight ? 'text-lime-800 font-extrabold' : 'text-[#D2E8A3]'}>24 a 48 hrs hábiles</strong> antes del despacho final.
+                  {cfg('up_concept1_desc', 'Confección y sublimación personalizada en ')}<strong className={isLight ? 'text-lime-800 font-extrabold' : 'text-[#D2E8A3]'}>24 a 48 hrs hábiles</strong>{cfg('up_concept1_desc_suffix', ' antes del despacho final.')}
                 </p>
               </div>
 
@@ -333,11 +334,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
                   <CreditCard className="w-4 h-4 flex-shrink-0" />
                   <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                    2. Pagos Yape / Plin / BCP:
+                    {cfg('up_concept2_title', '2. Pagos Yape / Plin / BCP:')}
                   </strong>
                 </div>
                 <p className="text-[11px] leading-relaxed">
-                  Pago seguro al <strong className={`font-mono ${isLight ? 'text-lime-800 font-bold' : 'text-[#D2E8A3]'}`}>993 365 099</strong> a nombre de LUMIN SHOP. Aceptamos BCP, BBVA e Interbank.
+                  {cfg('up_concept2_desc', 'Pago seguro al ')}<strong className={`font-mono ${isLight ? 'text-lime-800 font-bold' : 'text-[#D2E8A3]'}`}>993 365 099</strong>{cfg('up_concept2_desc_suffix', ' a nombre de LUMIN SHOP. Aceptamos BCP, BBVA e Interbank.')}
                 </p>
               </div>
 
@@ -348,11 +349,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
                   <Truck className="w-4 h-4 flex-shrink-0" />
                   <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                    3. Envíos Gratis & Cobertura:
+                    {cfg('up_concept3_title', '3. Envíos Gratis & Cobertura:')}
                   </strong>
                 </div>
                 <p className="text-[11px] leading-relaxed">
-                  <strong className={isLight ? 'text-green-700 font-extrabold' : 'text-green-400'}>Gratis por compras desde S/ 200</strong>. Envíos con Olva Courier, Shalom o Motorizado Express.
+                  <strong className={isLight ? 'text-green-700 font-extrabold' : 'text-green-400'}>{cfg('up_concept3_highlight', 'Gratis por compras desde S/ 200')}</strong>{cfg('up_concept3_desc', '. Envíos con Olva Courier, Shalom o Motorizado Express.')}
                 </p>
               </div>
 
@@ -363,11 +364,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
                   <Shirt className="w-4 h-4 flex-shrink-0" />
                   <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                    4. Algodón 24/1 & Sublimación HD:
+                    {cfg('up_concept4_title', '4. Algodón 24/1 & Sublimación HD:')}
                   </strong>
                 </div>
                 <p className="text-[11px] leading-relaxed">
-                  Telas reactivas de alto gramaje y estampado HD 1200 DPI de máxima fijación resistente a lavados.
+                  {cfg('up_concept4_desc', 'Telas reactivas de alto gramaje y estampado HD 1200 DPI de máxima fijación resistente a lavados.')}
                 </p>
               </div>
 
@@ -378,11 +379,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
                   <MessageCircle className="w-4 h-4 flex-shrink-0" />
                   <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                    5. Asesoría Directa WhatsApp:
+                    {cfg('up_concept5_title', '5. Asesoría Directa WhatsApp:')}
                   </strong>
                 </div>
                 <p className="text-[11px] leading-relaxed">
-                  Coordinación personalizada en tiempo real para validar tu talla, color y datos de entrega antes de producir.
+                  {cfg('up_concept5_desc', 'Coordinación personalizada en tiempo real para validar tu talla, color y datos de entrega antes de producir.')}
                 </p>
               </div>
 
@@ -393,11 +394,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
                   <Award className="w-4 h-4 flex-shrink-0" />
                   <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                    6. Garantía de Calidad LUMIN:
+                    {cfg('up_concept6_title', '6. Garantía de Calidad LUMIN:')}
                   </strong>
                 </div>
                 <p className="text-[11px] leading-relaxed">
-                  100% de cobertura ante defectos o fallas de estampado. Reemplazo o ajuste inmediato sin complicaciones.
+                  {cfg('up_concept6_desc', '100% de cobertura ante defectos o fallas de estampado. Reemplazo o ajuste inmediato sin complicaciones.')}
                 </p>
               </div>
             </div>
@@ -409,12 +410,12 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
         <div className={`p-3 sm:px-6 sm:py-4 border-t flex items-center justify-between text-[11px] ${
           isLight ? 'bg-gray-100 border-gray-200 text-gray-600' : 'bg-[#0A0A0A] border-white/10 text-gray-400'
         }`}>
-          <span>LUMIN SHOP v2.0 • Urbano & Sublimación</span>
+          <span>{cfg('up_footer_text', 'LUMIN SHOP v2.0 • Urbano & Sublimación')}</span>
           <button
             onClick={onClose}
             className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 text-xs font-bold transition-colors"
           >
-            Tocar afuera o cerrar
+            {cfg('up_close_hint', 'Tocar afuera o cerrar')}
           </button>
         </div>
 

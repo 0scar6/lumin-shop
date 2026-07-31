@@ -1,6 +1,7 @@
 import React from 'react';
 import { Home, Grid, Heart, ShoppingBag, User } from 'lucide-react';
 import { NavigationTab, ThemeMode } from '../types';
+import { cfg } from '../lib/config';
 
 interface FloatingDockProps {
   activeTab: NavigationTab;
@@ -20,31 +21,31 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
   const isLight = themeMode === 'light';
 
   const tabs = [
-    { id: 'home' as NavigationTab, label: 'Inicio', icon: Home },
-    { id: 'catalog' as NavigationTab, label: 'Catálogo', icon: Grid },
+    { id: 'home' as NavigationTab, label: cfg('nav_home', 'Inicio'), icon: Home },
+    { id: 'catalog' as NavigationTab, label: cfg('nav_catalog', 'Catálogo'), icon: Grid },
     {
       id: 'favorites' as NavigationTab,
-      label: 'Favoritos',
+      label: cfg('nav_favorites', 'Favoritos'),
       icon: Heart,
       badge: favoritesCount,
     },
     {
       id: 'cart' as NavigationTab,
-      label: 'Pedido',
+      label: cfg('nav_cart', 'Pedido'),
       icon: ShoppingBag,
       badge: cartCount,
       highlight: true,
     },
     {
       id: 'profile' as NavigationTab,
-      label: 'Mi Cuenta',
+      label: cfg('nav_profile', 'Mi Cuenta'),
       icon: User,
     },
   ];
 
   return (
     <nav
-      aria-label="Navegación Principal"
+      aria-label={cfg('nav_main_label', 'Navegación Principal')}
       className={`fixed bottom-2.5 sm:bottom-5 left-1/2 -translate-x-1/2 z-50 w-[94vw] sm:w-auto max-w-md sm:max-w-xl px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-2xl shadow-2xl transition-all duration-300 flex items-center justify-around sm:justify-center gap-1 sm:gap-2.5 ${
         isLight
           ? 'bg-white text-slate-900 border-2 border-slate-900 shadow-xl shadow-slate-900/20'

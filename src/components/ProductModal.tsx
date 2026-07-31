@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check, ShieldCheck, Clock, Tag, Plus, Minus, ShoppingBag, Shirt, Coffee } from 'lucide-react';
 import { Product, CartItem, ThemeMode } from '../types';
+import { cfg } from '../lib/config';
 
 interface ProductModalProps {
   product: Product | null;
@@ -104,7 +105,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               ? 'bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-300'
               : 'bg-black/70 hover:bg-black text-white border-white/10'
           }`}
-          aria-label="Cerrar modal"
+          aria-label={cfg('pm_close_label', 'Cerrar modal')}
         >
           <X className="w-5 h-5" />
         </button>
@@ -143,7 +144,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                           : isLight ? 'border-slate-300 opacity-70 hover:opacity-100' : 'border-white/10 opacity-60 hover:opacity-100'
                       }`}
                     >
-                      <img src={imgUrl} alt={`Vista ${idx + 1}`} className="w-full h-full object-cover" />
+                      <img src={imgUrl} alt={`${cfg('pm_view_prefix', 'Vista')} ${idx + 1}`} className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>
@@ -154,11 +155,11 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             <div className={`mt-4 pt-3 border-t space-y-1.5 ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
               <div className={`flex items-center gap-2 text-[11px] sm:text-xs ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
                 <Clock className={`w-3.5 h-3.5 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
-                <span>Tiempo de confección: <strong>24 a 48 hrs</strong></span>
+                <span>{cfg('pm_production_time', 'Tiempo de confección: ')}<strong>24 a 48 hrs</strong></span>
               </div>
               <div className={`flex items-center gap-2 text-[11px] sm:text-xs ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
                 <ShieldCheck className={`w-3.5 h-3.5 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
-                <span>Calidad Garantizada LUMIN 100%</span>
+                <span>{cfg('pm_quality_guarantee', 'Calidad Garantizada LUMIN 100%')}</span>
               </div>
             </div>
           </div>
@@ -174,7 +175,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     : 'bg-[#D2E8A3]/10 border-[#D2E8A3]/20 text-[#D2E8A3]'
                 }`}>
                   {isApparel ? <Shirt className="w-3 h-3" /> : <Coffee className="w-3 h-3" />}
-                  <span className="uppercase">{isApparel ? 'Polo Sublimado Bajo Pedido' : 'Vaso / Taza Sublimada'}</span>
+                  <span className="uppercase">{isApparel ? cfg('pm_category_polo', 'Polo Sublimado Bajo Pedido') : cfg('pm_category_cup', 'Vaso / Taza Sublimada')}</span>
                 </div>
                 <h2 className={`font-display text-xl sm:text-2xl font-extrabold leading-tight ${
                   isLight ? 'text-slate-900' : 'text-white'
@@ -195,7 +196,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     <label className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1.5 ${
                       isLight ? 'text-slate-800' : 'text-gray-300'
                     }`}>
-                      1. Selecciona tu Talla:
+                      {cfg('pm_size_label', '1. Selecciona tu Talla:')}
                     </label>
                     <div className="flex flex-wrap gap-1.5">
                       {product.apparelOptions.sizes.map((size) => {
@@ -225,7 +226,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     <label className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1.5 ${
                       isLight ? 'text-slate-800' : 'text-gray-300'
                     }`}>
-                      2. Tipo de Corte / Fit:
+                      {cfg('pm_fit_label', '2. Tipo de Corte / Fit:')}
                     </label>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                       {product.apparelOptions.fits.map((fit) => (
@@ -254,7 +255,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     <label className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1.5 ${
                       isLight ? 'text-slate-800' : 'text-gray-300'
                     }`}>
-                      3. Color de Tela: <span className={isLight ? 'text-lime-800 font-extrabold' : 'text-[#D2E8A3] font-mono'}>{selectedColor.name}</span>
+                      {cfg('pm_color_label', '3. Color de Tela: ')}<span className={isLight ? 'text-lime-800 font-extrabold' : 'text-[#D2E8A3] font-mono'}>{selectedColor.name}</span>
                     </label>
                     <div className="flex items-center gap-2.5">
                       {product.apparelOptions.colors.map((c) => (
@@ -291,7 +292,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     <label className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1.5 ${
                       isLight ? 'text-slate-800' : 'text-gray-300'
                     }`}>
-                      1. Tipo de Vaso / Taza:
+                      {cfg('pm_cup_type_label', '1. Tipo de Vaso / Taza:')}
                     </label>
                     <div className="space-y-1.5">
                       {product.cupOptions.types.map((typeObj) => (
@@ -310,7 +311,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                         >
                           <span>{typeObj.name}</span>
                           <span className={`font-bold ${isLight && selectedCupTypeObj.name !== typeObj.name ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
-                            {typeObj.extraPrice > 0 ? `+S/ ${typeObj.extraPrice}` : typeObj.extraPrice < 0 ? `-S/ ${Math.abs(typeObj.extraPrice)}` : 'Incluido'}
+                            {typeObj.extraPrice > 0 ? `+S/ ${typeObj.extraPrice}` : typeObj.extraPrice < 0 ? `-S/ ${Math.abs(typeObj.extraPrice)}` : cfg('pm_included', 'Incluido')}
                           </span>
                         </button>
                       ))}
@@ -322,7 +323,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     <label className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1.5 ${
                       isLight ? 'text-slate-800' : 'text-gray-300'
                     }`}>
-                      2. Acabado de la Superficie:
+                      {cfg('pm_finish_label', '2. Acabado de la Superficie:')}
                     </label>
                     <div className="flex flex-wrap gap-1.5">
                       {product.cupOptions.finishes.map((finish) => (
@@ -351,13 +352,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 <label className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1 flex items-center justify-between ${
                   isLight ? 'text-slate-800' : 'text-gray-300'
                 }`}>
-                  <span>Añadir Texto o Apodo Personalizado:</span>
+                  <span>{cfg('pm_custom_text_label', 'Añadir Texto o Apodo Personalizado:')}</span>
                   <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-bold ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>Gratis</span>
+                    <span className={`text-[10px] font-bold ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>{cfg('pm_free', 'Gratis')}</span>
                     <span className={`text-[10px] font-mono font-bold ${
                       customText.length >= 30 ? 'text-red-500' : isLight ? 'text-lime-800' : 'text-[#D2E8A3]'
                     }`}>
-                      {customText.length}/30 caracteres
+                      {customText.length}/30 {cfg('pm_characters', 'caracteres')}
                     </span>
                   </div>
                 </label>
@@ -366,7 +367,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   maxLength={30}
                   value={customText}
                   onChange={(e) => setCustomText(e.target.value)}
-                  placeholder={isApparel ? 'Ej. Nombre en manga / "LUMIN 04"' : 'Ej. "Carlos" o Frase corta'}
+                  placeholder={isApparel ? cfg('pm_placeholder_apparel', 'Ej. Nombre en manga / "LUMIN 04"') : cfg('pm_placeholder_cup', 'Ej. "Carlos" o Frase corta')}
                   className={`w-full border rounded-xl px-3 py-2 text-xs focus:outline-none transition-colors ${
                     isLight
                       ? 'bg-slate-100 border-slate-300 text-slate-900 placeholder-slate-500 focus:border-slate-800'
@@ -396,7 +397,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 className={`p-1.5 rounded-lg transition-colors ${
                   isLight ? 'hover:bg-slate-200 text-slate-800' : 'hover:bg-white/10 text-gray-300'
                 }`}
-                aria-label="Disminuir cantidad"
+                aria-label={cfg('pm_decrease', 'Disminuir cantidad')}
               >
                 <Minus className="w-3.5 h-3.5" />
               </button>
@@ -408,14 +409,14 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 className={`p-1.5 rounded-lg transition-colors ${
                   isLight ? 'hover:bg-slate-200 text-slate-800' : 'hover:bg-white/10 text-gray-300'
                 }`}
-                aria-label="Aumentar cantidad"
+                aria-label={cfg('pm_increase', 'Aumentar cantidad')}
               >
                 <Plus className="w-3.5 h-3.5" />
               </button>
             </div>
 
             <div className="text-right">
-              <span className={`text-[9px] sm:text-[10px] font-mono block ${isLight ? 'text-slate-600 font-bold' : 'text-gray-400'}`}>TOTAL ESTIMADO</span>
+              <span className={`text-[9px] sm:text-[10px] font-mono block ${isLight ? 'text-slate-600 font-bold' : 'text-gray-400'}`}>{cfg('pm_total_label', 'TOTAL ESTIMADO')}</span>
               <span className={`text-lg sm:text-xl font-black ${isLight ? 'text-slate-900' : 'text-[#D2E8A3]'}`}>
                 S/ {totalPrice.toFixed(2)}
               </span>
@@ -428,7 +429,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             className="w-full sm:w-auto sm:px-8 py-3 sm:py-3.5 rounded-xl bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A] font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#D2E8A3]/15 active:scale-98"
           >
             <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>AÑADIR A MI PEDIDO</span>
+            <span>{cfg('pm_add_to_cart', 'AÑADIR A MI PEDIDO')}</span>
           </button>
 
         </div>

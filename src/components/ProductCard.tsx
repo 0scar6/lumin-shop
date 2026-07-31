@@ -1,6 +1,7 @@
 import React from 'react';
 import { Heart, Plus, Clock, Flame } from 'lucide-react';
 import { Product } from '../types';
+import { cfg } from '../lib/config';
 
 interface ProductCardProps {
   product: Product;
@@ -54,7 +55,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
               ? 'bg-[#D2E8A3] text-[#0A0A0A]'
               : 'bg-black/60 text-white hover:bg-black/80'
           }`}
-          aria-label="Guardar en favoritos"
+          aria-label={cfg('pc_save_fav', 'Guardar en favoritos')}
         >
           <Heart className={`w-4 h-4 ${isFavorite ? 'fill-[#0A0A0A]' : ''}`} />
         </button>
@@ -92,7 +93,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           }`}>
             <Flame className="w-3 h-3" />
             <span className="uppercase tracking-wider">
-              {product.category === 'streetwear' ? 'Polo Sublimado' : product.category === 'cups' ? 'Vaso/Taza' : 'Placa de Aluminio'}
+              {product.category === 'streetwear' ? cfg('pc_category_polo', 'Polo Sublimado') : product.category === 'cups' ? cfg('pc_category_cup', 'Vaso/Taza') : cfg('pc_category_plaque', 'Placa de Aluminio')}
             </span>
           </div>
 
@@ -128,7 +129,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
             <span className={`text-[9px] sm:text-[10px] uppercase font-mono font-bold ${
               isLight ? 'text-slate-600' : 'text-gray-400'
             }`}>
-              S/ Soles
+              {cfg('pc_currency', 'S/ Soles')}
             </span>
             <div className="flex items-baseline gap-1">
               <span className={`text-sm sm:text-lg font-black whitespace-nowrap ${
@@ -149,10 +150,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
           <button
             onClick={() => onSelectProduct(product)}
             className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A] font-extrabold text-[11px] sm:text-xs transition-all shadow-md active:scale-95 whitespace-nowrap"
-            aria-label="Configurar Pedido"
+            aria-label={cfg('pc_order_label', 'Configurar Pedido')}
           >
             <Plus className="w-3.5 h-3.5 stroke-[3]" />
-            <span>Pedir</span>
+            <span>{cfg('pc_order_btn', 'Pedir')}</span>
           </button>
         </div>
 

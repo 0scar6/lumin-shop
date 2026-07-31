@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { ChevronDown, HelpCircle } from 'lucide-react';
 import { FAQS } from '../data/products';
+import { cfg } from '../lib/config';
 
 interface FaqSectionProps {
   themeMode?: 'dark' | 'light' | 'amoled';
@@ -21,10 +22,10 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ themeMode = 'dark' }) =>
           isLight ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-[#161814] border-white/20 text-gray-200'
         }`}>
           <HelpCircle className="w-3.5 h-3.5 text-lime-700 dark:text-[#D2E8A3]" />
-          <span>RESOLVEMOS TUS DUDAS</span>
+          <span>{cfg('faq_badge', 'RESOLVEMOS TUS DUDAS')}</span>
         </div>
         <h3 className={`font-display text-2xl sm:text-3xl font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-          PREGUNTAS FRECUENTES
+          {cfg('faq_heading', 'PREGUNTAS FRECUENTES')}
         </h3>
       </div>
 
