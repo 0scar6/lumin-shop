@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { ShoppingBag, Heart, MessageCircle, Search, User } from 'lucide-react';
 import { GoogleUser, NavigationTab } from '../types';
 import { cfg } from '../lib/config';
@@ -17,6 +17,7 @@ interface HeaderProps {
   showSearch?: boolean;
   activeTab?: NavigationTab;
   setActiveTab?: (tab: NavigationTab) => void;
+  onAdminActivate?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -33,8 +34,23 @@ export const Header: React.FC<HeaderProps> = ({
   showSearch = true,
   activeTab = 'home',
   setActiveTab,
+  onAdminActivate,
 }) => {
   const isLight = themeMode === 'light';
+  const logoClickCount = useRef(0);
+  const logoClickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleLogoClick = () => {
+    logoClickCount.current += 1;
+    if (logoClickTimer.current) clearTimeout(logoClickTimer.current);
+    logoClickTimer.current = setTimeout(() => { logoClickCount.current = 0; }, 3000);
+    if (logoClickCount.current >= 5) {
+      logoClickCount.current = 0;
+      onAdminActivate?.();
+    }
+    setActiveTab?.('home');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleWhatsAppHelp = () => {
     const text = encodeURIComponent(cfg('brand_whatsapp_help', 'Hola LUMIN SHOP! ⚡ Quisiera hacer una consulta sobre un pedido.'));
@@ -50,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* Brand Logo & On-Demand Badge - Dedicated Spacious Branding Area */}
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
           <button 
-            onClick={() => { setActiveTab?.('home'); window.scrollTo({ top: 0, behavior: 'smooth' }); }}
+            onClick={handleLogoClick}
             className="flex items-center gap-2 sm:gap-3 group text-left focus:outline-none flex-shrink-0"
           >
             <div className="w-8 h-8 sm:w-11 sm:h-11 bg-[#D2E8A3] rounded-xl flex items-center justify-center shadow-lg shadow-[#D2E8A3]/20 ring-2 ring-[#D2E8A3]/30 transition-transform group-hover:scale-105 flex-shrink-0">

@@ -11,6 +11,7 @@ import { ProductionBadgeBar } from './components/ProductionBadgeBar';
 import { FaqSection } from './components/FaqSection';
 import { Footer } from './components/Footer';
 import { SocialQuickBar, FloatingWhatsAppWidget } from './components/SocialQuickBar';
+import { AdminPanel } from './components/AdminPanel';
 
 import { PRODUCTS as PRODUCTS_STATIC, CATEGORIES as CATEGORIES_STATIC, loadProductsFromSupabase } from './data/products';
 import {
@@ -87,6 +88,7 @@ export default function App() {
   const [isFavoritesOpen, setIsFavoritesOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
   const [isCustomIdeaOpen, setIsCustomIdeaOpen] = useState<boolean>(false);
+  const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
 
   // Cart & Favorites State (persisted in localStorage)
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -443,6 +445,7 @@ export default function App() {
         showSearch={activeTab === 'catalog'}
         activeTab={activeTab}
         setActiveTab={handleTabChange}
+        onAdminActivate={() => setIsAdminOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -1603,6 +1606,13 @@ export default function App() {
           </div>
         </div>
       )}
+
+      {/* Hidden Admin Panel - Activated by 5 clicks on logo */}
+      <AdminPanel
+        isOpen={isAdminOpen}
+        onClose={() => setIsAdminOpen(false)}
+        themeMode={themeMode}
+      />
 
     </div>
   );
