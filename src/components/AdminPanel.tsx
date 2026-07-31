@@ -1,73 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { X, Upload, Save, ExternalLink, Lock, Eye, EyeOff, Package, ShoppingBag, FileText, Settings, Image } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { X, Upload, Save, Eye, EyeOff, Lock, Package, Settings, Image, Plus, Trash2, ArrowLeft, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-const ADMIN_PASSWORD = 'Ratitaxd12';
+const ADMIN_PASS = 'Ratitaxd12';
 
 interface AdminPanelProps {
   isOpen: boolean;
   onClose: () => void;
   themeMode?: 'dark' | 'light' | 'amoled';
+  onConfigChange?: () => void;
 }
 
-interface ConfigRow {
-  id: string;
-  seccion: string;
-  clave: string;
-  valor: string;
-}
+interface ConfigRow { id: string; seccion: string; clave: string; valor: string; }
+interface ProductoRow { id: string; nombre: string; categoria_id: string; precio: number; precio_original: number | null; tecnica: string; tiempo_produccion: string; imagen: string; galeria: any; descripcion: string; etiqueta: string; opciones_ropa: any; opciones_vaso: any; personalizable: boolean; activo: boolean; destacado: boolean; }
+interface PedidoRow { id: string; usuario_id: string; cliente_nombre: string; cliente_telefono: string; cliente_direccion: string; productos: any; total: number; estado: string; created_at: string; }
 
-interface PedidoRow {
-  id: string;
-  usuario_id: string;
-  items: string;
-  total: number;
-  estado: string;
-  created_at: string;
-}
-
-export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, themeMode = 'dark' }) => {
+export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, themeMode = 'dark', onConfigChange }) => {
   const isLight = themeMode === 'light';
-  const [authenticated, setAuthenticated] = useState(false);
-  const [passwordInput, setPasswordInput] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [passwordError, setPasswordError] = useState(false);
 
+  // Auth
+  const [authenticated, setAuthenticated] = useState(false);
+  const [pw, setPw] = useState('');
+  const [pwError, setPwError] = useState(false);
+  const [showPw, setShowPw] = useState(false);
+
+  // Tabs
+  const [mainTab, setMainTab] = useState<'config' | 'products' | 'orders'>('config');
+
+  // Config state
   const [configRows, setConfigRows] = useState<ConfigRow[]>([]);
-  const [editValues, setEditValues] = useState<Record<string, string>>({});
-  const [originalValues, setOriginalValues] = useState<Record<string, string>>({});
+  const [cfgEdit, setCfgEdit] = useState<Record<string, string>>({});
+  const [cfgOriginal, setCfgOriginal] = useState<Record<string, string>>({});
+  const [cfgSection, setCfgSection] = useState('hero');
+  const [cfgSaved, setCfgSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadTarget, setUploadTarget] = useState('');
-  const [saved, setSaved] = useState(false);
-  const [activeSection, setActiveSection] = useState('hero');
-  const [activeTab, setActiveTab] = useState<'config' | 'orders' | 'storage'>('config');
 
+  // Products state
+  const [products, setProducts] = useState<ProductoRow[]>([]);
+  const [editingProduct, setEditingProduct] = useState<ProductoRow | null>(null);
+  const [isNewProduct, setIsNewProduct] = useState(false);
+  const [prodSaving, setProdSaving] = useState(false);
+
+  // Orders state
   const [orders, setOrders] = useState<PedidoRow[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
 
-  useEffect(() => {
-    if (!isOpen) {
-      setAuthenticated(false);
-      setPasswordInput('');
-      setPasswordError(false);
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    if (!authenticated || !supabase) return;
-    loadConfig();
-    loadOrders();
-  }, [authenticated]);
-
+  // --- AUTH ---
+  useEffect(() => { if (!isOpen) { setAuthenticated(false); setPw(''); } }, [isOpen]);
   const handleLogin = () => {
-    if (passwordInput === ADMIN_PASSWORD) {
-      setAuthenticated(true);
-      setPasswordError(false);
-    } else {
-      setPasswordError(true);
-      setTimeout(() => setPasswordError(false), 2000);
-    }
+    if (pw === ADMIN_PASS) { setAuthenticated(true); setPwError(false); }
+    else { setPwError(true); setTimeout(() => setPwError(false), 2000); }
   };
+
+  // --- LOAD DATA ---
+  useEffect(() => { if (!authenticated || !supabase) return; loadConfig(); loadProducts(); loadOrders(); }, [authenticated]);
 
   const loadConfig = async () => {
     try {
@@ -76,9 +63,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, themeMo
         setConfigRows(data);
         const vals: Record<string, string> = {};
         data.forEach((r: ConfigRow) => { vals[r.id] = r.valor; });
-        setEditValues(vals);
-        setOriginalValues(vals);
+        setCfgEdit(vals);
+        setCfgOriginal(vals);
       }
+    } catch {}
+  };
+
+  const loadProducts = async () => {
+    try {
+      const { data } = await supabase!.from('productos').select('*').order('created_at', { ascending: false });
+      if (data) setProducts(data as ProductoRow[]);
     } catch {}
   };
 
@@ -91,381 +85,508 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, themeMo
     setOrdersLoading(false);
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, configKey: string) => {
+  // --- CONFIG ---
+  const cfgChanged = configRows.filter(r => cfgEdit[r.id] !== cfgOriginal[r.id]).length;
+
+  const handleCfgSave = async () => {
+    if (!supabase) return;
+    try {
+      for (const row of configRows) {
+        const v = cfgEdit[row.id] ?? row.valor;
+        if (v !== cfgOriginal[row.id]) {
+          await supabase.from('configuracion').upsert({ id: row.id, seccion: row.seccion, clave: row.clave, valor: v }, { onConflict: 'id' });
+        }
+      }
+      setCfgOriginal({ ...cfgEdit });
+      setCfgSaved(true);
+      onConfigChange?.();
+      setTimeout(() => setCfgSaved(false), 2000);
+    } catch {}
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
     const file = e.target.files?.[0];
     if (!file || !supabase) return;
     setUploading(true);
-    setUploadTarget(configKey);
+    setUploadTarget(key);
     try {
       const ext = file.name.split('.').pop() || 'jpg';
-      const fileName = `hero_${configKey}_${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from('media').upload(fileName, file, { cacheControl: '3600', upsert: false });
+      const path = `uploads/${key}_${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from('media').upload(path, file, { cacheControl: '3600', upsert: false });
       if (error) throw error;
-      const { data: urlData } = supabase.storage.from('media').getPublicUrl(fileName);
+      const { data: urlData } = supabase.storage.from('media').getPublicUrl(path);
       if (urlData?.publicUrl) {
-        setEditValues(prev => ({ ...prev, [configKey]: urlData.publicUrl }));
+        setCfgEdit(prev => ({ ...prev, [key]: urlData.publicUrl }));
       }
-    } catch (err) {
-      console.error('Upload error:', err);
+    } catch (err: any) {
+      alert('Error al subir: ' + (err.message || err));
     }
     setUploading(false);
     setUploadTarget('');
   };
 
-  const handleSaveAll = async () => {
-    if (!supabase) return;
-    try {
-      for (const row of configRows) {
-        const newVal = editValues[row.id] ?? row.valor;
-        if (newVal !== originalValues[row.id]) {
-          await supabase.from('configuracion').upsert({
-            id: row.id, seccion: row.seccion, clave: row.clave, valor: newVal,
-          }, { onConflict: 'id' });
-        }
-      }
-      setOriginalValues({ ...editValues });
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2000);
-    } catch (err) {
-      console.error('Save error:', err);
-    }
-  };
-
-  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
-    if (!supabase) return;
-    await supabase.from('pedidos').update({ estado: newStatus }).eq('id', orderId);
-    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, estado: newStatus } : o));
-  };
-
-  const getChangedCount = () => {
-    return configRows.filter(r => editValues[r.id] !== originalValues[r.id]).length;
-  };
-
-  const sections = [
-    { key: 'hero', label: 'Hero / Media' },
-    { key: 'marca', label: 'Marca' },
-    { key: 'secciones', label: 'Secciones' },
-    { key: 'footer', label: 'Footer' },
-    { key: 'badges', label: 'Badges' },
-    { key: 'carrito', label: 'Carrito' },
-    { key: 'perfil', label: 'Perfil' },
+  const cfgSections = [
+    { key: 'hero', label: 'Hero' }, { key: 'marca', label: 'Marca' }, { key: 'secciones', label: 'Secciones' },
+    { key: 'footer', label: 'Footer' }, { key: 'badges', label: 'Badges' }, { key: 'carrito', label: 'Carrito' }, { key: 'perfil', label: 'Perfil' },
   ];
 
-  const filteredRows = configRows.filter(r => r.seccion === activeSection);
+  // --- PRODUCTS ---
+  const emptyProduct: ProductoRow = {
+    id: '', nombre: '', categoria_id: 'streetwear', precio: 0, precio_original: null,
+    tecnica: '', tiempo_produccion: '⚡ 24-48 hrs', imagen: '', galeria: null,
+    descripcion: '', etiqueta: '', opciones_ropa: null, opciones_vaso: null,
+    personalizable: false, activo: true, destacado: false,
+  };
 
+  const startNewProduct = () => { setEditingProduct({ ...emptyProduct, id: `prod-${Date.now()}` }); setIsNewProduct(true); };
+
+  const handleProdSave = async () => {
+    if (!editingProduct || !supabase) return;
+    setProdSaving(true);
+    try {
+      const { error } = await supabase.from('productos').upsert(editingProduct, { onConflict: 'id' });
+      if (error) throw error;
+      await loadProducts();
+      setEditingProduct(null);
+      setIsNewProduct(false);
+    } catch (err: any) {
+      alert('Error: ' + err.message);
+    }
+    setProdSaving(false);
+  };
+
+  const handleProdDelete = async (id: string) => {
+    if (!supabase || !confirm('¿Eliminar este producto?')) return;
+    await supabase.from('productos').delete().eq('id', id);
+    await loadProducts();
+    setEditingProduct(null);
+  };
+
+  const handleProdImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, field: 'imagen') => {
+    const file = e.target.files?.[0];
+    if (!file || !supabase || !editingProduct) return;
+    setUploading(true);
+    try {
+      const ext = file.name.split('.').pop() || 'jpg';
+      const path = `products/${editingProduct.id}_${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from('media').upload(path, file, { cacheControl: '3600', upsert: false });
+      if (error) throw error;
+      const { data: urlData } = supabase.storage.from('media').getPublicUrl(path);
+      if (urlData?.publicUrl) {
+        setEditingProduct(prev => prev ? { ...prev, [field]: urlData.publicUrl } : prev);
+      }
+    } catch (err: any) {
+      alert('Error: ' + err.message);
+    }
+    setUploading(false);
+  };
+
+  // --- ORDERS ---
+  const handleOrderStatus = async (orderId: string, status: string) => {
+    if (!supabase) return;
+    await supabase.from('pedidos').update({ estado: status }).eq('id', orderId);
+    setOrders(prev => prev.map(o => o.id === orderId ? { ...o, estado: status } : o));
+  };
+
+  // --- PREVIEW (live banner preview) ---
+  const PreviewBanner = () => (
+    <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#161814] p-4 space-y-3">
+      <p className="text-[10px] font-bold text-[#D2E8A3] uppercase tracking-wider">Vista Previa — Hero Banner</p>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="aspect-square rounded-xl overflow-hidden bg-black/40">
+          {cfgEdit.hero_media_1_url ? (
+            /\.(mp4|webm)$/i.test(cfgEdit.hero_media_1_url)
+              ? <video src={cfgEdit.hero_media_1_url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+              : <img src={cfgEdit.hero_media_1_url} className="w-full h-full object-cover" alt="" />
+          ) : <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">Sin media</div>}
+        </div>
+        <div className="aspect-square rounded-xl overflow-hidden bg-black/40">
+          {cfgEdit.hero_media_2_url ? (
+            /\.(mp4|webm)$/i.test(cfgEdit.hero_media_2_url)
+              ? <video src={cfgEdit.hero_media_2_url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+              : <img src={cfgEdit.hero_media_2_url} className="w-full h-full object-cover" alt="" />
+          ) : <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">Sin media</div>}
+        </div>
+      </div>
+      <div className="text-center space-y-1">
+        <p className="text-white font-black text-sm uppercase">{cfgEdit.hero_title_1 || 'MODA URBANA &'}</p>
+        <p className="text-[#D2E8A3] font-black text-sm uppercase">{cfgEdit.hero_title_2 || 'VASOS SUBLIMADOS'}</p>
+        <p className="text-gray-400 text-[10px]">{cfgEdit.hero_description || 'Sin sobre-stock...'}</p>
+      </div>
+    </div>
+  );
+
+  // --- RENDER ---
   if (!isOpen) return null;
 
-  // PASSWORD SCREEN
+  // PASSWORD
   if (!authenticated) {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
-        <div
-          className={`relative w-full max-w-sm rounded-2xl border p-8 space-y-6 ${
-            isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-[#0A0A0A] border-white/10 text-white'
-          }`}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors">
-            <X className="w-5 h-5" />
-          </button>
-
+        <div className={`relative w-full max-w-sm rounded-2xl border p-8 space-y-6 ${isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-[#0A0A0A] border-white/10 text-white'}`} onClick={e => e.stopPropagation()}>
+          <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10"><X className="w-5 h-5" /></button>
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-[#D2E8A3]/10 border border-[#D2E8A3]/30 flex items-center justify-center">
-              <Lock className="w-6 h-6 text-[#D2E8A3]" />
-            </div>
-            <h2 className="text-lg font-extrabold uppercase tracking-wide">Admin Access</h2>
-            <p className="text-xs text-gray-400">Ingresa la contraseña para continuar</p>
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-[#D2E8A3]/10 border border-[#D2E8A3]/30 flex items-center justify-center"><Lock className="w-6 h-6 text-[#D2E8A3]" /></div>
+            <h2 className="text-lg font-extrabold uppercase">Admin Access</h2>
+            <p className="text-xs text-gray-400">Contraseña requerida</p>
           </div>
-
           <div className="space-y-3">
             <div className="relative">
               <input
-                type={showPassword ? 'text' : 'password'}
-                value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                placeholder="Contraseña"
-                className={`w-full px-4 py-3 rounded-xl border text-sm font-mono transition-colors ${
-                  passwordError
-                    ? 'border-red-500 bg-red-500/10 text-red-400'
-                    : isLight
-                    ? 'bg-slate-50 border-slate-300 text-slate-900 focus:border-lime-600'
-                    : 'bg-white/5 border-white/10 text-white focus:border-[#D2E8A3]'
-                } focus:outline-none`}
+                type={showPw ? 'text' : 'password'} value={pw} onChange={e => setPw(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                placeholder="••••••••"
+                className={`w-full px-4 py-3 rounded-xl border text-sm font-mono transition-colors ${pwError ? 'border-red-500 bg-red-500/10' : isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-white/5 border-white/10 text-white'} focus:outline-none focus:border-[#D2E8A3]`}
               />
-              <button
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
-              >
-                {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              <button onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">
+                {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               </button>
             </div>
-            {passwordError && <p className="text-xs text-red-400 text-center">Contraseña incorrecta</p>}
-            <button
-              onClick={handleLogin}
-              className="w-full py-3 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-sm hover:bg-[#c2e088] transition-all shadow-lg"
-            >
-              ENTRAR
-            </button>
+            {pwError && <p className="text-xs text-red-400 text-center">Contraseña incorrecta</p>}
+            <button onClick={handleLogin} className="w-full py-3 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-sm hover:bg-[#c2e088] transition-all shadow-lg">ENTRAR</button>
           </div>
         </div>
       </div>
     );
   }
 
-  // ADMIN PANEL
+  // MAIN ADMIN
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" onClick={onClose}>
-      <div
-        className={`relative w-full max-w-5xl max-h-[90vh] rounded-2xl border overflow-hidden flex flex-col ${
-          isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-[#0A0A0A] border-white/10 text-white'
-        }`}
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-2 sm:p-4" onClick={onClose}>
+      <div className={`relative w-full max-w-6xl max-h-[92vh] rounded-2xl border overflow-hidden flex flex-col ${isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-[#0A0A0A] border-white/10 text-white'}`} onClick={e => e.stopPropagation()}>
+
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-b border-white/10 flex-shrink-0">
           <div>
-            <h2 className="text-lg font-extrabold uppercase tracking-wide">Admin Panel</h2>
-            <p className="text-[11px] text-gray-400 mt-0.5">LUMIN SHOP — Gestión completa</p>
+            <h2 className="text-base sm:text-lg font-extrabold uppercase tracking-wide">Admin Panel</h2>
+            <p className="text-[10px] text-gray-400">LUMIN SHOP — Gestión completa</p>
           </div>
-          <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10 transition-colors">
-            <X className="w-5 h-5" />
-          </button>
+          <button onClick={onClose} className="p-2 rounded-full hover:bg-white/10"><X className="w-5 h-5" /></button>
         </div>
 
         {/* Main Tabs */}
-        <div className="flex gap-1 px-4 py-2 border-b border-white/10">
+        <div className="flex gap-1 px-3 sm:px-4 py-2 border-b border-white/10 flex-shrink-0">
           {[
             { key: 'config' as const, label: 'Configuración', icon: Settings },
-            { key: 'orders' as const, label: 'Pedidos', icon: Package },
-            { key: 'storage' as const, label: 'Storage / Media', icon: Image },
+            { key: 'products' as const, label: 'Productos', icon: Package },
+            { key: 'orders' as const, label: 'Pedidos', icon: Image },
           ].map(t => (
-            <button
-              key={t.key}
-              onClick={() => setActiveTab(t.key)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold transition-all ${
-                activeTab === t.key
-                  ? 'bg-[#D2E8A3] text-[#0A0A0A]'
-                  : isLight ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-white/5 text-gray-400 hover:bg-white/10'
-              }`}
-            >
-              <t.icon className="w-3.5 h-3.5" />
-              {t.label}
+            <button key={t.key} onClick={() => { setMainTab(t.key); setEditingProduct(null); setIsNewProduct(false); }}
+              className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 rounded-full text-xs font-bold transition-all ${mainTab === t.key ? 'bg-[#D2E8A3] text-[#0A0A0A]' : 'bg-white/5 text-gray-400 hover:bg-white/10'}`}>
+              <t.icon className="w-3.5 h-3.5" /><span className="hidden sm:inline">{t.label}</span>
             </button>
           ))}
         </div>
 
-        {/* TAB: CONFIG */}
-        {activeTab === 'config' && (
-          <>
-            <div className="flex gap-1 px-4 py-2 overflow-x-auto border-b border-white/10">
-              {sections.map(s => (
-                <button
-                  key={s.key}
-                  onClick={() => setActiveSection(s.key)}
-                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all ${
-                    activeSection === s.key
-                      ? 'bg-[#D2E8A3]/20 text-[#D2E8A3] border border-[#D2E8A3]/40'
-                      : isLight ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-white/5 text-gray-500 hover:bg-white/10'
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-            </div>
+        {/* CONTENT */}
+        <div className="flex-1 overflow-y-auto">
 
-            <div className="flex-1 overflow-y-auto p-6 space-y-4">
-              {filteredRows.map(row => {
-                const isChanged = editValues[row.id] !== originalValues[row.id];
-                return (
-                  <div key={row.id} className={`space-y-1.5 p-3 rounded-xl border transition-all ${
-                    isChanged ? 'border-[#D2E8A3]/40 bg-[#D2E8A3]/5' : 'border-transparent'
-                  }`}>
-                    <label className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                      <span>{row.clave}</span>
-                      <span className="text-[10px] font-mono text-gray-600">({row.id})</span>
-                      {isChanged && <span className="text-[10px] text-[#D2E8A3] font-bold">● modificado</span>}
-                    </label>
+          {/* ========== CONFIG ========== */}
+          {mainTab === 'config' && !editingProduct && (
+            <div className="flex flex-col h-full">
+              <div className="flex gap-1 px-3 py-2 overflow-x-auto border-b border-white/10 flex-shrink-0">
+                {cfgSections.map(s => (
+                  <button key={s.key} onClick={() => setCfgSection(s.key)}
+                    className={`px-3 py-1.5 rounded-full text-[11px] font-bold whitespace-nowrap transition-all ${cfgSection === s.key ? 'bg-[#D2E8A3]/20 text-[#D2E8A3] border border-[#D2E8A3]/40' : 'bg-white/5 text-gray-500 hover:bg-white/10'}`}>
+                    {s.label}
+                  </button>
+                ))}
+              </div>
 
-                    {(row.id === 'hero_media_1_url' || row.id === 'hero_media_2_url') && (
-                      <div className="flex items-center gap-2 mb-1">
-                        <label className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition-all ${
-                          uploading && uploadTarget === row.id
-                            ? 'bg-yellow-500/20 text-yellow-400'
-                            : 'bg-[#D2E8A3]/10 text-[#D2E8A3] hover:bg-[#D2E8A3]/20'
-                        }`}>
-                          <Upload className="w-3.5 h-3.5" />
-                          {uploading && uploadTarget === row.id ? 'Subiendo...' : 'Subir a Storage'}
-                          <input
-                            type="file"
-                            accept="image/*,video/mp4,video/webm"
-                            className="hidden"
-                            onChange={(e) => handleFileUpload(e, row.id)}
-                            disabled={uploading}
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Fields */}
+                  <div className="space-y-3">
+                    {configRows.filter(r => r.seccion === cfgSection).map(row => {
+                      const changed = cfgEdit[row.id] !== cfgOriginal[row.id];
+                      return (
+                        <div key={row.id} className={`space-y-1.5 p-3 rounded-xl border transition-all ${changed ? 'border-[#D2E8A3]/40 bg-[#D2E8A3]/5' : 'border-transparent'}`}>
+                          <label className="flex items-center gap-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+                            <span>{row.clave}</span>
+                            <span className="text-[9px] font-mono text-gray-600">({row.id})</span>
+                            {changed && <span className="text-[#D2E8A3]">●</span>}
+                          </label>
+
+                          {(row.id.includes('media')) && (
+                            <div className="flex items-center gap-2 mb-1">
+                              <label className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-bold cursor-pointer transition-all ${uploading && uploadTarget === row.id ? 'bg-yellow-500/20 text-yellow-400' : 'bg-[#D2E8A3]/10 text-[#D2E8A3] hover:bg-[#D2E8A3]/20'}`}>
+                                <Upload className="w-3 h-3" />
+                                {uploading && uploadTarget === row.id ? 'Subiendo...' : 'Subir archivo'}
+                                <input type="file" accept="image/*,video/mp4,video/webm" className="hidden" onChange={e => handleFileUpload(e, row.id)} disabled={uploading} />
+                              </label>
+                              <span className="text-[10px] text-gray-500">o pega URL:</span>
+                            </div>
+                          )}
+
+                          <input type="text" value={cfgEdit[row.id] ?? ''}
+                            onChange={e => setCfgEdit(prev => ({ ...prev, [row.id]: e.target.value }))}
+                            className={`w-full px-3 py-2 rounded-xl border text-sm font-mono transition-colors ${isLight ? 'bg-slate-50 border-slate-300 text-slate-900' : 'bg-white/5 border-white/10 text-white'} focus:outline-none focus:border-[#D2E8A3]`}
+
                           />
-                        </label>
-                        {editValues[row.id] && (
-                          <a href={editValues[row.id]} target="_blank" rel="noopener noreferrer" className="text-xs text-gray-500 hover:text-[#D2E8A3] flex items-center gap-1">
-                            <ExternalLink className="w-3 h-3" /> Ver
-                          </a>
-                        )}
-                      </div>
-                    )}
 
-                    <input
-                      type="text"
-                      value={editValues[row.id] ?? ''}
-                      onChange={(e) => setEditValues(prev => ({ ...prev, [row.id]: e.target.value }))}
-                      className={`w-full px-3 py-2 rounded-xl border text-sm font-mono transition-colors ${
-                        isLight
-                          ? 'bg-slate-50 border-slate-300 text-slate-900 focus:border-lime-600'
-                          : 'bg-white/5 border-white/10 text-white focus:border-[#D2E8A3]'
-                      } focus:outline-none`}
-                    />
-
-                    {editValues[row.id] && row.id.includes('media') && (
-                      <div className="mt-2 rounded-xl overflow-hidden border border-white/10 max-h-48">
-                        {/\.(mp4|webm)$/i.test(editValues[row.id]) ? (
-                          <video src={editValues[row.id]} className="w-full h-48 object-cover" autoPlay muted loop playsInline />
-                        ) : (
-                          <img src={editValues[row.id]} className="w-full h-48 object-cover" alt="Preview" />
-                        )}
-                      </div>
-                    )}
+                          {cfgEdit[row.id] && row.id.includes('media') && (
+                            <div className="mt-2 rounded-xl overflow-hidden border border-white/10 max-h-48">
+                              {/\.(mp4|webm)$/i.test(cfgEdit[row.id])
+                                ? <video src={cfgEdit[row.id]} className="w-full h-48 object-cover" autoPlay muted loop playsInline />
+                                : <img src={cfgEdit[row.id]} className="w-full h-48 object-cover" alt="" />
+                              }
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
-          </>
-        )}
 
-        {/* TAB: ORDERS */}
-        {activeTab === 'orders' && (
-          <div className="flex-1 overflow-y-auto p-6">
-            {ordersLoading ? (
-              <p className="text-sm text-gray-400 text-center py-10">Cargando pedidos...</p>
-            ) : orders.length === 0 ? (
-              <p className="text-sm text-gray-400 text-center py-10">No hay pedidos aún</p>
-            ) : (
-              <div className="space-y-3">
-                {orders.map(order => (
-                  <div key={order.id} className={`p-4 rounded-xl border ${
-                    isLight ? 'border-slate-200 bg-slate-50' : 'border-white/10 bg-white/5'
-                  }`}>
+                  {/* Live Preview */}
+                  <div className="space-y-4">
+                    {cfgSection === 'hero' && <PreviewBanner />}
+                    <div className={`p-4 rounded-xl border ${isLight ? 'border-slate-200 bg-slate-50' : 'border-white/10 bg-white/5'}`}>
+                      <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Vista Previa Textos</p>
+                      <div className="space-y-1.5">
+                        {configRows.filter(r => r.seccion === cfgSection).slice(0, 8).map(r => (
+                          <div key={r.id} className="flex items-center gap-2">
+                            <span className="text-[10px] text-gray-500 w-24 truncate flex-shrink-0">{r.clave}:</span>
+                            <span className={`text-xs truncate ${cfgEdit[r.id] !== cfgOriginal[r.id] ? 'text-[#D2E8A3] font-bold' : 'text-gray-300'}`}>
+                              {cfgEdit[r.id] || '(vacío)'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Config Footer */}
+              <div className="flex items-center justify-between px-4 sm:px-6 py-3 border-t border-white/10 flex-shrink-0">
+                <div className="flex items-center gap-3">
+                  {cfgSaved && <span className="text-xs text-green-400 font-bold">✓ Guardado</span>}
+                  {cfgChanged > 0 && <span className="text-xs text-[#D2E8A3] font-bold">{cfgChanged} cambio{cfgChanged > 1 ? 's' : ''}</span>}
+                </div>
+                <button onClick={handleCfgSave} disabled={cfgChanged === 0}
+                  className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-extrabold text-sm transition-all ${cfgChanged > 0 ? 'bg-[#D2E8A3] text-[#0A0A0A] hover:bg-[#c2e088] shadow-lg' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}>
+                  <Save className="w-4 h-4" /> Guardar ({cfgChanged})
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ========== PRODUCTS ========== */}
+          {mainTab === 'products' && (
+            <div className="flex flex-col h-full">
+              {/* Product List / Edit */}
+              {editingProduct ? (
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                  <button onClick={() => { setEditingProduct(null); setIsNewProduct(false); }} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white mb-2">
+                    <ArrowLeft className="w-4 h-4" /> Volver a productos
+                  </button>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Form */}
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-extrabold uppercase">{isNewProduct ? 'Nuevo Producto' : 'Editar: ' + editingProduct.nombre}</h3>
+
+                      <div className="space-y-3">
+                        <div>
+                          <label className="text-[10px] font-bold text-gray-400 uppercase">ID del producto</label>
+                          <input value={editingProduct.id} onChange={e => setEditingProduct(p => p ? { ...p, id: e.target.value } : p)} disabled={!isNewProduct}
+                            className="w-full px-3 py-2 rounded-xl border text-sm font-mono bg-white/5 border-white/10 text-white focus:outline-none focus:border-[#D2E8A3] disabled:opacity-50" />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-gray-400 uppercase">Nombre</label>
+                          <input value={editingProduct.nombre} onChange={e => setEditingProduct(p => p ? { ...p, nombre: e.target.value } : p)}
+                            className="w-full px-3 py-2 rounded-xl border text-sm bg-white/5 border-white/10 text-white focus:outline-none focus:border-[#D2E8A3]" />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase">Categoría</label>
+                            <select value={editingProduct.categoria_id} onChange={e => setEditingProduct(p => p ? { ...p, categoria_id: e.target.value } : p)}
+                              className="w-full px-3 py-2 rounded-xl border text-sm bg-white/5 border-white/10 text-white focus:outline-none focus:border-[#D2E8A3]">
+                              <option value="streetwear">Polos Sublimados</option>
+                              <option value="cups">Vasos/Tazas</option>
+                              <option value="drops">Placas de Aluminio</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase">Etiqueta</label>
+                            <input value={editingProduct.etiqueta || ''} onChange={e => setEditingProduct(p => p ? { ...p, etiqueta: e.target.value } : p)}
+                              className="w-full px-3 py-2 rounded-xl border text-sm bg-white/5 border-white/10 text-white focus:outline-none focus:border-[#D2E8A3]" />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase">Precio (S/)</label>
+                            <input type="number" step="0.01" value={editingProduct.precio} onChange={e => setEditingProduct(p => p ? { ...p, precio: parseFloat(e.target.value) || 0 } : p)}
+                              className="w-full px-3 py-2 rounded-xl border text-sm bg-white/5 border-white/10 text-white focus:outline-none focus:border-[#D2E8A3]" />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase">Precio original (S/)</label>
+                            <input type="number" step="0.01" value={editingProduct.precio_original ?? ''} onChange={e => setEditingProduct(p => p ? { ...p, precio_original: e.target.value ? parseFloat(e.target.value) : null } : p)}
+                              className="w-full px-3 py-2 rounded-xl border text-sm bg-white/5 border-white/10 text-white focus:outline-none focus:border-[#D2E8A3]" />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-gray-400 uppercase">Técnica</label>
+                          <input value={editingProduct.tecnica || ''} onChange={e => setEditingProduct(p => p ? { ...p, tecnica: e.target.value } : p)}
+                            className="w-full px-3 py-2 rounded-xl border text-sm bg-white/5 border-white/10 text-white focus:outline-none focus:border-[#D2E8A3]" />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-gray-400 uppercase">Tiempo producción</label>
+                          <input value={editingProduct.tiempo_produccion || ''} onChange={e => setEditingProduct(p => p ? { ...p, tiempo_produccion: e.target.value } : p)}
+                            className="w-full px-3 py-2 rounded-xl border text-sm bg-white/5 border-white/10 text-white focus:outline-none focus:border-[#D2E8A3]" />
+                        </div>
+                        <div>
+                          <label className="text-[10px] font-bold text-gray-400 uppercase">Descripción</label>
+                          <textarea rows={3} value={editingProduct.descripcion || ''} onChange={e => setEditingProduct(p => p ? { ...p, descripcion: e.target.value } : p)}
+                            className="w-full px-3 py-2 rounded-xl border text-sm bg-white/5 border-white/10 text-white focus:outline-none focus:border-[#D2E8A3] resize-none" />
+                        </div>
+
+                        {/* Image: URL or File */}
+                        <div>
+                          <label className="text-[10px] font-bold text-gray-400 uppercase">Imagen principal</label>
+                          <input value={editingProduct.imagen || ''} onChange={e => setEditingProduct(p => p ? { ...p, imagen: e.target.value } : p)} placeholder="Pega URL de imagen..."
+                            className="w-full px-3 py-2 rounded-xl border text-sm bg-white/5 border-white/10 text-white focus:outline-none focus:border-[#D2E8A3] mb-2" />
+                          <label className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold cursor-pointer hover:bg-[#D2E8A3]/20 w-fit">
+                            <Upload className="w-3.5 h-3.5" />
+                            {uploading ? 'Subiendo...' : 'O subir desde archivos'}
+                            <input type="file" accept="image/*" className="hidden" onChange={e => handleProdImageUpload(e, 'imagen')} disabled={uploading} />
+                          </label>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" checked={editingProduct.activo} onChange={e => setEditingProduct(p => p ? { ...p, activo: e.target.checked } : p)} className="accent-[#D2E8A3]" />
+                            <span className="text-xs font-bold text-gray-400">Activo</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" checked={editingProduct.destacado} onChange={e => setEditingProduct(p => p ? { ...p, destacado: e.target.checked } : p)} className="accent-[#D2E8A3]" />
+                            <span className="text-xs font-bold text-gray-400">Destacado</span>
+                          </label>
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" checked={editingProduct.personalizable} onChange={e => setEditingProduct(p => p ? { ...p, personalizable: e.target.checked } : p)} className="accent-[#D2E8A3]" />
+                            <span className="text-xs font-bold text-gray-400">Personalizable</span>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Preview */}
+                    <div className="space-y-4">
+                      <h3 className="text-sm font-extrabold uppercase text-[#D2E8A3]">Vista Previa</h3>
+                      <div className={`rounded-2xl overflow-hidden border border-white/10 ${isLight ? 'bg-white' : 'bg-[#161814]'}`}>
+                        <div className="aspect-square overflow-hidden bg-black/40">
+                          {editingProduct.imagen ? (
+                            <img src={editingProduct.imagen} alt="" className="w-full h-full object-cover" />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">Sin imagen</div>
+                          )}
+                        </div>
+                        <div className="p-4 space-y-2">
+                          {editingProduct.etiqueta && (
+                            <span className="inline-block px-2 py-0.5 rounded bg-black/80 text-[#D2E8A3] text-[10px] font-bold">{editingProduct.etiqueta}</span>
+                          )}
+                          <p className="text-white font-extrabold text-sm">{editingProduct.nombre || 'Nombre del producto'}</p>
+                          <p className="text-gray-400 text-xs line-clamp-2">{editingProduct.descripcion || 'Descripción...'}</p>
+                          <div className="flex items-baseline gap-2 pt-1">
+                            <span className="text-[#D2E8A3] font-black text-lg">S/ {editingProduct.precio.toFixed(2)}</span>
+                            {editingProduct.precio_original && <span className="text-gray-500 text-xs line-through">S/ {editingProduct.precio_original.toFixed(2)}</span>}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Product Save/Delete */}
+                  <div className="flex items-center justify-between pt-4 border-t border-white/10">
+                    {!isNewProduct && (
+                      <button onClick={() => handleProdDelete(editingProduct.id)} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-red-500/10 text-red-400 text-xs font-bold hover:bg-red-500/20">
+                        <Trash2 className="w-3.5 h-3.5" /> Eliminar
+                      </button>
+                    )}
+                    <div className="flex gap-2 ml-auto">
+                      <button onClick={() => { setEditingProduct(null); setIsNewProduct(false); }}
+                        className="px-4 py-2 rounded-xl bg-white/5 text-gray-400 text-xs font-bold hover:bg-white/10">Cancelar</button>
+                      <button onClick={handleProdSave} disabled={prodSaving || !editingProduct.nombre}
+                        className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-sm hover:bg-[#c2e088] shadow-lg disabled:opacity-50">
+                        {prodSaving ? 'Guardando...' : <><Check className="w-4 h-4" /> Guardar</>}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* Product Grid */
+                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-extrabold uppercase">{products.length} Productos</h3>
+                    <button onClick={startNewProduct} className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs hover:bg-[#c2e088] shadow-lg">
+                      <Plus className="w-4 h-4" /> Nuevo Producto
+                    </button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {products.map(p => (
+                      <div key={p.id} onClick={() => setEditingProduct(p)}
+                        className={`rounded-2xl overflow-hidden border cursor-pointer transition-all hover:border-[#D2E8A3]/40 ${isLight ? 'bg-white border-slate-200' : 'bg-[#161814] border-white/10'}`}>
+                        <div className="aspect-video overflow-hidden bg-black/20">
+                          {p.imagen ? <img src={p.imagen} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">Sin imagen</div>}
+                        </div>
+                        <div className="p-3 space-y-1">
+                          <div className="flex items-center gap-2">
+                            {!p.activo && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-bold">INACTIVO</span>}
+                            {p.destacado && <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#D2E8A3]/20 text-[#D2E8A3] font-bold">★</span>}
+                          </div>
+                          <p className="text-white text-xs font-extrabold truncate">{p.nombre}</p>
+                          <p className="text-[#D2E8A3] text-xs font-bold">S/ {p.precio.toFixed(2)}</p>
+                          <p className="text-gray-500 text-[10px]">{p.categoria_id}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* ========== ORDERS ========== */}
+          {mainTab === 'orders' && (
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3">
+              {ordersLoading ? (
+                <p className="text-sm text-gray-400 text-center py-10">Cargando pedidos...</p>
+              ) : orders.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-10">No hay pedidos aún</p>
+              ) : (
+                orders.map(order => (
+                  <div key={order.id} className={`p-4 rounded-xl border ${isLight ? 'border-slate-200 bg-slate-50' : 'border-white/10 bg-white/5'}`}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="space-y-1 flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <ShoppingBag className="w-4 h-4 text-[#D2E8A3] flex-shrink-0" />
-                          <span className="text-xs font-mono text-gray-500 truncate">{order.id}</span>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="text-[10px] font-mono text-gray-500">{order.id.slice(0, 12)}...</span>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            order.estado === 'entregado' ? 'bg-green-500/20 text-green-400'
+                            : order.estado === 'enviado' ? 'bg-blue-500/20 text-blue-400'
+                            : order.estado === 'produccion' ? 'bg-yellow-500/20 text-yellow-400'
+                            : 'bg-white/10 text-gray-400'
+                          }`}>{order.estado || 'pendiente'}</span>
                         </div>
-                        <p className="text-xs text-gray-400">Usuario: {order.usuario_id || 'Anónimo'}</p>
-                        <p className="text-xs text-gray-400">Fecha: {new Date(order.created_at).toLocaleString('es-PE')}</p>
-                        <div className="text-xs text-gray-300 mt-1 whitespace-pre-wrap break-words max-h-24 overflow-y-auto">
-                          {typeof order.items === 'string' ? order.items : JSON.stringify(order.items, null, 2)}
-                        </div>
+                        <p className="text-xs text-gray-400">{order.cliente_nombre || 'Sin nombre'} — {order.cliente_telefono || 'Sin tel'}</p>
+                        <p className="text-xs text-gray-500">{order.created_at ? new Date(order.created_at).toLocaleString('es-PE') : ''}</p>
                       </div>
                       <div className="text-right space-y-2 flex-shrink-0">
                         <p className="text-sm font-extrabold text-[#D2E8A3]">S/ {order.total?.toFixed(2)}</p>
-                        <select
-                          value={order.estado || 'pendiente'}
-                          onChange={(e) => handleUpdateOrderStatus(order.id, e.target.value)}
-                          className={`text-[11px] font-bold px-2 py-1 rounded-lg border ${
-                            order.estado === 'entregado' ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                            : order.estado === 'produccion' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-                            : 'bg-white/5 text-gray-400 border-white/10'
-                          }`}
-                        >
+                        <select value={order.estado || 'pendiente'} onChange={e => handleOrderStatus(order.id, e.target.value)}
+                          className="text-[11px] font-bold px-2 py-1 rounded-lg border bg-white/5 text-gray-400 border-white/10">
                           <option value="pendiente">Pendiente</option>
-                          <option value="produccion">En Producción</option>
+                          <option value="produccion">Producción</option>
                           <option value="enviado">Enviado</option>
                           <option value="entregado">Entregado</option>
                         </select>
                       </div>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* TAB: STORAGE */}
-        {activeTab === 'storage' && (
-          <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            <div className={`p-4 rounded-xl border ${isLight ? 'border-slate-200 bg-slate-50' : 'border-white/10 bg-white/5'}`}>
-              <h3 className="text-sm font-extrabold mb-2">Cómo usar Storage</h3>
-              <ol className="text-xs text-gray-400 space-y-1.5 list-decimal list-inside">
-                <li>Ve a <strong className="text-white">Supabase Dashboard → Storage → media</strong></li>
-                <li>Click <strong className="text-white">Upload files</strong> y sube tu video o imagen</li>
-                <li>Copia la <strong className="text-white">URL pública</strong> del archivo</li>
-                <li>Pégal en <strong className="text-[#D2E8A3]">Configuración → Hero / Media</strong></li>
-                <li>Guarda los cambios y recarga la página</li>
-              </ol>
-            </div>
-
-            <div className={`p-4 rounded-xl border ${isLight ? 'border-slate-200 bg-slate-50' : 'border-white/10 bg-white/5'}`}>
-              <h3 className="text-sm font-extrabold mb-2">Subir archivo rápido</h3>
-              <p className="text-xs text-gray-400 mb-3">Sube directamente desde aquí y copia la URL generada:</p>
-              <div className="flex items-center gap-2">
-                <label className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold cursor-pointer hover:bg-[#D2E8A3]/20 transition-all">
-                  <Upload className="w-4 h-4" />
-                  {uploading ? 'Subiendo...' : 'Seleccionar archivo'}
-                  <input
-                    type="file"
-                    accept="image/*,video/mp4,video/webm"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file || !supabase) return;
-                      setUploading(true);
-                      try {
-                        const ext = file.name.split('.').pop() || 'jpg';
-                        const fileName = `upload_${Date.now()}.${ext}`;
-                        const { error } = await supabase.storage.from('media').upload(fileName, file, { cacheControl: '3600', upsert: false });
-                        if (error) throw error;
-                        const { data: urlData } = supabase.storage.from('media').getPublicUrl(fileName);
-                        if (urlData?.publicUrl) {
-                          navigator.clipboard.writeText(urlData.publicUrl);
-                          alert('URL copiada al portapapeles:\n' + urlData.publicUrl);
-                        }
-                      } catch (err) {
-                        alert('Error al subir: ' + (err as Error).message);
-                      }
-                      setUploading(false);
-                    }}
-                    disabled={uploading}
-                  />
-                </label>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Footer */}
-        {activeTab === 'config' && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-white/10">
-            <div className="flex items-center gap-3">
-              <span className={`text-xs font-bold transition-all ${saved ? 'text-green-400' : 'text-transparent'}`}>
-                ✓ Guardado
-              </span>
-              {getChangedCount() > 0 && (
-                <span className="text-xs text-[#D2E8A3] font-bold">{getChangedCount()} cambios pendientes</span>
+                ))
               )}
             </div>
-            <button
-              onClick={handleSaveAll}
-              disabled={getChangedCount() === 0}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-extrabold text-sm transition-all shadow-lg ${
-                getChangedCount() > 0
-                  ? 'bg-[#D2E8A3] text-[#0A0A0A] hover:bg-[#c2e088]'
-                  : 'bg-white/5 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              <Save className="w-4 h-4" />
-              Guardar ({getChangedCount()})
-            </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

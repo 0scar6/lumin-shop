@@ -85,6 +85,7 @@ export default function App() {
   // Interactive Modals
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
+  const [configKey, setConfigKey] = useState(0);
   const [isFavoritesOpen, setIsFavoritesOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
   const [isCustomIdeaOpen, setIsCustomIdeaOpen] = useState<boolean>(false);
@@ -1612,6 +1613,7 @@ export default function App() {
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
         themeMode={themeMode}
+        onConfigChange={() => { loadConfig().then(() => setConfigKey(k => k + 1)); }}
       />
 
     </div>
