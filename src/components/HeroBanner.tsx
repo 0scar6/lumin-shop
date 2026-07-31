@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Tag, ArrowRight, Clock, ShieldCheck, Flame } from 'lucide-react';
 import { cfg } from '../lib/config';
 
@@ -6,28 +6,36 @@ interface HeroMediaProps {
   url: string;
   alt: string;
   className?: string;
+  scale?: number;
+  opacity?: number;
 }
 
-const HeroMedia: React.FC<HeroMediaProps> = ({ url, alt, className }) => {
+const HeroMedia: React.FC<HeroMediaProps> = memo(({ url, alt, className, scale = 100, opacity = 100 }) => {
   const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
   const isTikTok = /tiktok\.com/i.test(url);
+  const scaleVal = Math.max(50, Math.min(200, scale)) / 100;
+  const opacityVal = Math.max(0, Math.min(100, opacity)) / 100;
+
+  const wrapperStyle: React.CSSProperties = { opacity: opacityVal };
+  const mediaStyle: React.CSSProperties = { transform: `scale(${scaleVal})`, transformOrigin: 'center' };
 
   if (isTikTok) {
     const videoId = url.match(/\/video\/(\d+)/)?.[1];
     const embedUrl = videoId ? `https://www.tiktok.com/embed/v2/${videoId}` : url;
     return (
-      <div className={`${className} relative overflow-hidden`}>
+      <div className={`${className} relative overflow-hidden`} style={wrapperStyle}>
         <iframe src={embedUrl} title={alt} className="absolute inset-0 w-[170%] h-[170%] -left-[35%] -top-[20%] border-0 pointer-events-none" allow="autoplay; fullscreen" allowFullScreen />
       </div>
     );
   }
 
   if (isVideo) {
-    return <video src={url} autoPlay muted loop playsInline className={className} />;
+    return <video src={url} autoPlay muted loop playsInline className={className} style={{ ...wrapperStyle, ...mediaStyle }} />;
   }
 
-  return <img src={url} alt={alt} className={className} loading="eager" />;
-};
+  return <img src={url} alt={alt} className={className} loading="eager" style={{ ...wrapperStyle, ...mediaStyle }} />;
+});
+HeroMedia.displayName = 'HeroMedia';
 
 interface HeroBannerProps {
   onExploreClick: () => void;
@@ -134,6 +142,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 url={heroMedia1Url || defaultMedia1}
                 alt="Polo Streetwear Oversized"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                scale={parseInt(cfg('hero_media_1_scale', '100'))}
+                opacity={parseInt(cfg('hero_media_1_opacity', '100'))}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-3 flex flex-col justify-end">
                 <span className="text-[10px] font-mono text-[#D2E8A3] uppercase">{cfg('hero_street_title', 'STREETWEAR')}</span>
@@ -148,6 +158,8 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
                 url={heroMedia2Url || defaultMedia2}
                 alt="Vaso Sublimado Frosted"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                scale={parseInt(cfg('hero_media_2_scale', '100'))}
+                opacity={parseInt(cfg('hero_media_2_opacity', '100'))}
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-3 flex flex-col justify-end">
                 <span className="text-[10px] font-mono text-[#D2E8A3] uppercase">{cfg('hero_subli_title', 'SUBLIMACIÓN')}</span>

@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { FloatingDock } from './components/FloatingDock';
 import { HeroBanner } from './components/HeroBanner';
@@ -1612,7 +1612,6 @@ export default function App() {
       <AdminPanel
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
-        themeMode={themeMode}
         onConfigChange={() => { reloadConfig().then(() => setConfigKey(k => k + 1)); }}
       />
 
