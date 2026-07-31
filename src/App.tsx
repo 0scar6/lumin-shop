@@ -214,7 +214,7 @@ export default function App() {
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [copiedOrder, setCopiedOrder] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'envio' | 'recojo'>('envio');
-  const [shippingZone, setShippingZone] = useState<'lima' | 'provincia' | 'internacional'>('lima');
+  const [shippingZone, setShippingZone] = useState<'huamanga' | 'lima' | 'provincia' | 'internacional'>('huamanga');
 
   // Order status tracking
   const [myOrders, setMyOrders] = useState<any[]>([]);
@@ -363,7 +363,8 @@ export default function App() {
 
   // Shipping cost
   const shippingCost = deliveryType === 'recojo' ? 0 : (
-    shippingZone === 'lima' ? parseFloat(cfg('shipping_price_lima', '10')) :
+    shippingZone === 'huamanga' ? 0 :
+    shippingZone === 'lima' ? parseFloat(cfg('shipping_price_lima', '15')) :
     shippingZone === 'provincia' ? parseFloat(cfg('shipping_price_provincia', '25')) :
     parseFloat(cfg('shipping_price_internacional', '80'))
   );
@@ -380,7 +381,7 @@ export default function App() {
     if (userProfile.dni) msg += `${cfg('whatsapp_label_dni', '• *DNI:*')} ${userProfile.dni}\n`;
     
     if (deliveryType === 'envio') {
-      const zoneLabels: Record<string, string> = { lima: 'Lima Metropolitana', provincia: 'Provincia', internacional: 'Internacional' };
+      const zoneLabels: Record<string, string> = { huamanga: 'Ayacucho / Huamanga', lima: 'Lima Metropolitana', provincia: 'Provincia', internacional: 'Internacional' };
       msg += `${cfg('whatsapp_delivery_home', '• *Modalidad:* 🚀 Envío a Domicilio')}\n`;
       msg += `• *Zona:* ${zoneLabels[shippingZone] || 'Lima'}\n`;
       msg += `${cfg('whatsapp_label_address', '• *Dirección:*')} ${userProfile.address || cfg('whatsapp_fallback_address', 'Por indicar por chat')}\n`;
@@ -534,7 +535,7 @@ export default function App() {
                   </span>
                   <span className={`text-xs font-mono ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>{cfg('brand_instagram', '@.lumin.shop')}</span>
                 </div>
-                <span className={`text-xs font-mono ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>{cfg('brand_location', '📍 Lima, Perú • Envíos a Nivel Nacional')}</span>
+                <span className={`text-xs font-mono ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>{cfg('brand_location', '📍 Ayacucho, Perú • Envíos a Nivel Nacional')}</span>
               </div>
 
               <h2 className={`font-display text-2xl sm:text-3xl font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
@@ -1128,9 +1129,10 @@ export default function App() {
                           <label className={`text-[10px] uppercase block font-bold ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
                             Zona de Envío:
                           </label>
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-4 gap-2">
                             {[
-                              { key: 'lima' as const, label: 'Lima', emoji: '🏙️', price: cfg('shipping_price_lima', '10') },
+                              { key: 'huamanga' as const, label: 'Huamanga', emoji: '🏠', price: '0' },
+                              { key: 'lima' as const, label: 'Lima', emoji: '🏙️', price: cfg('shipping_price_lima', '15') },
                               { key: 'provincia' as const, label: 'Provincia', emoji: '📦', price: cfg('shipping_price_provincia', '25') },
                               { key: 'internacional' as const, label: 'Internacional', emoji: '✈️', price: cfg('shipping_price_internacional', '80') },
                             ].map(zone => (
@@ -1145,7 +1147,7 @@ export default function App() {
                               >
                                 <span className="block text-sm">{zone.emoji}</span>
                                 <span className="block">{zone.label}</span>
-                                <span className="block text-[9px] opacity-70">S/ {zone.price}</span>
+                                <span className="block text-[9px] opacity-70">{zone.price === '0' ? 'GRATIS' : `S/ ${zone.price}`}</span>
                               </button>
                             ))}
                           </div>
@@ -1165,7 +1167,7 @@ export default function App() {
                       </div>
                       <div className="flex justify-between items-baseline text-xs">
                         <span className={isLight ? 'text-slate-600 font-bold' : 'text-gray-400'}>
-                          Envío ({deliveryType === 'recojo' ? 'Recojo' : shippingZone === 'lima' ? 'Lima' : shippingZone === 'provincia' ? 'Provincia' : 'Internacional'}):
+                          Envío ({deliveryType === 'recojo' ? 'Recojo' : shippingZone === 'huamanga' ? 'Ayacucho' : shippingZone === 'lima' ? 'Lima' : shippingZone === 'provincia' ? 'Provincia' : 'Internacional'}):
                         </span>
                         <span className={`font-bold ${shippingCost === 0 ? 'text-green-500' : isLight ? 'text-slate-900' : 'text-white'}`}>
                           {shippingCost === 0 ? 'GRATIS' : `S/ ${shippingCost.toFixed(2)}`}

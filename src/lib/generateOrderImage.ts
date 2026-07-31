@@ -90,7 +90,7 @@ export async function generateOrderImage(
   ctx.fillText(`Modalidad: ${deliveryType === 'envio' ? 'Envío a Domicilio' : 'Recojo en Tienda'}`, padding, y);
   y += lineHeight;
   if (deliveryType === 'envio' && shippingZone) {
-    const zoneLabels: Record<string, string> = { lima: 'Lima Metropolitana', provincia: 'Provincia', internacional: 'Internacional' };
+    const zoneLabels: Record<string, string> = { huamanga: 'Ayacucho / Huamanga', lima: 'Lima Metropolitana', provincia: 'Provincia', internacional: 'Internacional' };
     ctx.fillText(`Zona: ${zoneLabels[shippingZone] || shippingZone}`, padding, y);
     y += lineHeight;
   }
