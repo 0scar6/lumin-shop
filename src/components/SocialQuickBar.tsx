@@ -28,12 +28,12 @@ export const SocialQuickBar: React.FC<SocialQuickBarProps> = ({ themeMode = 'dar
           <div>
             <div className="flex items-center gap-2">
               <h4 className="font-extrabold text-sm sm:text-base uppercase tracking-tight">
-                WhatsApp & Redes Oficiales
+                {cfg('social_bar_title', 'WhatsApp & Redes Oficiales')}
               </h4>
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
             </div>
             <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
-              Contacto directo <strong>{cfg('brand_phone', '993 365 099')}</strong> • Respuesta inmediata
+              {cfg('social_bar_text', 'Contacto directo')} <strong>{cfg('brand_phone', '993 365 099')}</strong> • {cfg('social_bar_sub', 'Respuesta inmediata')}
             </p>
           </div>
         </div>
