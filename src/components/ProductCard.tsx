@@ -32,7 +32,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     >
       
       {/* Top Image Container */}
-      <div className="relative aspect-square w-full overflow-hidden bg-[#10120E]">
+      <div
+        onClick={() => onSelectProduct(product)}
+        className="relative aspect-square w-full overflow-hidden bg-[#10120E] cursor-pointer"
+      >
         <img
           src={product.image}
           alt={product.name}
