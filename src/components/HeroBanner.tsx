@@ -9,7 +9,22 @@ interface HeroMediaProps {
 
 const HeroMedia: React.FC<HeroMediaProps> = ({ url, alt, className }) => {
   const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
-  const isGif = /\.gif$/i.test(url);
+  const isTikTok = /tiktok\.com/i.test(url);
+
+  if (isTikTok) {
+    const videoId = url.match(/\/video\/(\d+)/)?.[1];
+    const embedUrl = videoId ? `https://www.tiktok.com/embed/v2/${videoId}` : url;
+    return (
+      <iframe
+        src={embedUrl}
+        title={alt}
+        className={className}
+        allow="autoplay; fullscreen"
+        allowFullScreen
+        sandbox="allow-scripts allow-same-origin"
+      />
+    );
+  }
 
   if (isVideo) {
     return (

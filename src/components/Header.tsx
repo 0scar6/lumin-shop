@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShoppingBag, Heart, MessageCircle, Search, User, ShieldCheck, Home, Grid, HelpCircle } from 'lucide-react';
+import { ShoppingBag, Heart, MessageCircle, Search, User } from 'lucide-react';
 import { GoogleUser, NavigationTab } from '../types';
 import { cfg } from '../lib/config';
 
@@ -77,74 +77,7 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Header Navigation Menu Bar for Desktop */}
-        {setActiveTab && (
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
-            <button
-              onClick={() => setActiveTab('home')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition-all ${
-                activeTab === 'home'
-                  ? isLight
-                    ? 'bg-slate-900 text-[#D2E8A3] shadow-sm'
-                    : 'bg-[#D2E8A3] text-[#0A0A0A] shadow-sm'
-                  : isLight
-                  ? 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
-                  : 'text-gray-200 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <Home className="w-3.5 h-3.5" />
-              <span>Inicio</span>
-            </button>
-
-            <button
-              onClick={() => setActiveTab('catalog')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition-all ${
-                activeTab === 'catalog'
-                  ? isLight
-                    ? 'bg-slate-900 text-[#D2E8A3] shadow-sm'
-                    : 'bg-[#D2E8A3] text-[#0A0A0A] shadow-sm'
-                  : isLight
-                  ? 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
-                  : 'text-gray-200 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <Grid className="w-3.5 h-3.5" />
-              <span>Catálogo</span>
-            </button>
-
-            <button
-              onClick={onOpenFavorites}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition-all ${
-                activeTab === 'favorites'
-                  ? isLight
-                    ? 'bg-slate-900 text-[#D2E8A3] shadow-sm'
-                    : 'bg-[#D2E8A3] text-[#0A0A0A] shadow-sm'
-                  : isLight
-                  ? 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
-                  : 'text-gray-200 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <Heart className="w-3.5 h-3.5" />
-              <span>Favoritos</span>
-            </button>
-
-            <button
-              onClick={onOpenProfile}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold transition-all ${
-                activeTab === 'profile'
-                  ? isLight
-                    ? 'bg-slate-900 text-[#D2E8A3] shadow-sm'
-                    : 'bg-[#D2E8A3] text-[#0A0A0A] shadow-sm'
-                  : isLight
-                  ? 'text-slate-800 hover:bg-slate-100 hover:text-slate-950'
-                  : 'text-gray-200 hover:bg-white/10 hover:text-white'
-              }`}
-            >
-              <User className="w-3.5 h-3.5" />
-              <span>Mi Cuenta</span>
-            </button>
-          </nav>
-        )}
+        {/* Nav removed — only bottom FloatingDock */}
 
         {/* Quick Search Input - ONLY visible in Catalog tab (showSearch = true) */}
         {showSearch && (
