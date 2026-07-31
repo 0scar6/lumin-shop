@@ -90,32 +90,56 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
   const inputCls = 'w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#1a1d1a] border-[#333] placeholder-gray-500 focus:outline-none focus:border-[#D2E8A3] focus:ring-1 focus:ring-[#D2E8A3]/30 transition-all';
   const labelCls = 'block text-[11px] font-bold text-gray-300 uppercase tracking-wider mb-1.5';
 
-  // Preview Banner
+  // Preview Banner — matches real HeroBanner layout exactly
   const PreviewBanner = () => (
-    <div className="rounded-xl overflow-hidden border border-white/10 bg-[#0F110D] p-3 space-y-2">
-      <p className="text-[9px] font-bold text-[#D2E8A3] uppercase">Preview — Hero</p>
-      <div className="rounded-lg overflow-hidden border border-white/10 bg-gradient-to-br from-[#161814] to-[#0A0A0A] p-3 space-y-2">
-        <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#D2E8A3]/10 border border-[#D2E8A3]/30">
-          <span className="text-[7px] font-bold text-[#D2E8A3]">{cfgEdit.hero_badge || 'Exclusivo'}</span>
+    <div className="rounded-3xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#161814] via-[#0F110D] to-[#0A0A0A] p-6 space-y-4 relative">
+      <div className="absolute top-0 right-0 -mt-8 -mr-8 w-40 h-40 rounded-full blur-3xl bg-[#D2E8A3]/10 pointer-events-none"></div>
+      <p className="text-[9px] font-bold text-[#D2E8A3] uppercase tracking-wider relative z-10">Preview — Hero Banner</p>
+      
+      <div className="relative z-10 grid grid-cols-12 gap-4 items-center">
+        {/* Left: Text */}
+        <div className="col-span-7 space-y-3">
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#D2E8A3]/10 border border-[#D2E8A3]/30">
+            <span className="text-[8px]">🔥</span>
+            <span className="text-[8px] font-bold text-[#D2E8A3] uppercase tracking-wider">{cfgEdit.hero_badge || 'Exclusivo — COLECCIÓN BAJO DEMANDA'}</span>
+          </div>
+          <h3 className="font-display font-extrabold leading-tight uppercase tracking-tight">
+            <span className="text-white text-sm block">{cfgEdit.hero_title_1 || 'MODA URBANA &'}</span>
+            <span className="text-[#D2E8A3] text-sm block">{cfgEdit.hero_title_2 || 'VASOS SUBLIMADOS'}</span>
+          </h3>
+          <p className="text-[9px] text-gray-400 leading-relaxed">
+            {cfgEdit.hero_subtitle_1 || 'Polos Sublimados con'}{' '}
+            <span className="text-white font-bold">{cfgEdit.hero_subtitle_2 || 'Estampado Urbano HD High-Density'}</span>
+            <br />{cfgEdit.hero_description || 'Sin sobre-stock. Fabricado especialmente para ti al confirmar tu orden.'}
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-black/60 border border-white/15 text-[7px] font-bold text-gray-200">
+              <span className="text-[#D2E8A3]">⚡</span> {cfgEdit.hero_badge_1 || 'Producción Express: 24 a 48 hrs'}
+            </span>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-black/60 border border-white/15 text-[7px] font-bold text-gray-200">
+              <span className="text-[#D2E8A3]">🛡️</span> {cfgEdit.hero_badge_2 || 'Garantía de Fijación Térmica & Color'}
+            </span>
+          </div>
+          <div className="flex gap-2 pt-1">
+            <span className="px-3 py-1.5 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] text-[8px] font-extrabold shadow-lg">{cfgEdit.hero_cta_catalogo || 'EXPLORAR CATÁLOGO'}</span>
+            <span className="px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 text-white text-[8px] font-bold">{cfgEdit.hero_cta_idea || 'Personalizar Mi Idea'}</span>
+          </div>
         </div>
-        <div className="grid grid-cols-12 gap-2">
-          <div className="col-span-7 space-y-1.5">
-            <p className="font-black text-[10px] leading-tight">
-              <span className="text-white">{cfgEdit.hero_title_1 || 'MODA URBANA &'}</span>{' '}
-              <span className="text-[#D2E8A3]">{cfgEdit.hero_title_2 || 'VASOS SUBLIMADOS'}</span>
-            </p>
-            <p className="text-[7px] text-gray-400">{cfgEdit.hero_description || 'Sin sobre-stock...'}</p>
-            <div className="flex gap-1">
-              <span className="px-1.5 py-0.5 rounded bg-[#D2E8A3] text-[#0A0A0A] text-[6px] font-extrabold">{cfgEdit.hero_cta_catalogo || 'EXPLORAR'}</span>
-              <span className="px-1.5 py-0.5 rounded border border-white/10 text-white text-[6px] font-bold">{cfgEdit.hero_cta_idea || 'Personalizar'}</span>
+        
+        {/* Right: Media */}
+        <div className="col-span-5 grid grid-cols-2 gap-2 relative">
+          <div className="relative group overflow-hidden rounded-2xl border border-white/10 aspect-[4/5]">
+            {cfgEdit.hero_media_1_url ? (/\.(mp4|webm)$/i.test(cfgEdit.hero_media_1_url) ? <video src={cfgEdit.hero_media_1_url} className="w-full h-full object-cover" autoPlay muted loop playsInline /> : <img src={cfgEdit.hero_media_1_url} className="w-full h-full object-cover" alt="" />) : <div className="w-full h-full flex items-center justify-center text-gray-600 text-[7px] bg-[#161814]">Media 1</div>}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-2 flex flex-col justify-end">
+              <span className="text-[7px] font-mono text-[#D2E8A3] uppercase">{cfgEdit.hero_street_title || 'STREETWEAR'}</span>
+              <span className="text-[8px] font-bold text-white">{cfgEdit.hero_street_sub || 'Acid Tokyo 1988'}</span>
             </div>
           </div>
-          <div className="col-span-5 grid grid-cols-2 gap-1">
-            <div className="aspect-[4/5] rounded overflow-hidden bg-black/40">
-              {cfgEdit.hero_media_1_url ? (/\.(mp4|webm)$/i.test(cfgEdit.hero_media_1_url) ? <video src={cfgEdit.hero_media_1_url} className="w-full h-full object-cover" autoPlay muted loop playsInline /> : <img src={cfgEdit.hero_media_1_url} className="w-full h-full object-cover" alt="" />) : <div className="w-full h-full flex items-center justify-center text-gray-600 text-[7px]">Media 1</div>}
-            </div>
-            <div className="aspect-[4/5] rounded overflow-hidden bg-black/40 mt-2">
-              {cfgEdit.hero_media_2_url ? (/\.(mp4|webm)$/i.test(cfgEdit.hero_media_2_url) ? <video src={cfgEdit.hero_media_2_url} className="w-full h-full object-cover" autoPlay muted loop playsInline /> : <img src={cfgEdit.hero_media_2_url} className="w-full h-full object-cover" alt="" />) : <div className="w-full h-full flex items-center justify-center text-gray-600 text-[7px]">Media 2</div>}
+          <div className="relative group overflow-hidden rounded-2xl border border-white/10 aspect-[4/5] mt-4">
+            {cfgEdit.hero_media_2_url ? (/\.(mp4|webm)$/i.test(cfgEdit.hero_media_2_url) ? <video src={cfgEdit.hero_media_2_url} className="w-full h-full object-cover" autoPlay muted loop playsInline /> : <img src={cfgEdit.hero_media_2_url} className="w-full h-full object-cover" alt="" />) : <div className="w-full h-full flex items-center justify-center text-gray-600 text-[7px] bg-[#161814]">Media 2</div>}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-2 flex flex-col justify-end">
+              <span className="text-[7px] font-mono text-[#D2E8A3] uppercase">{cfgEdit.hero_subli_title || 'SUBLIMACIÓN'}</span>
+              <span className="text-[8px] font-bold text-white">{cfgEdit.hero_subli_sub || 'Frosted Glass 16oz'}</span>
             </div>
           </div>
         </div>
@@ -221,17 +245,144 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
                   </div>
                   <div className="space-y-4">
                     {cfgSection === 'hero' && <PreviewBanner />}
-                    <div className="p-4 rounded-xl border border-white/5 bg-white/[0.02]">
-                      <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Valores actuales</p>
-                      <div className="space-y-1.5">
-                        {configRows.filter(r => r.seccion === cfgSection).map(r => (
-                          <div key={r.id} className="flex items-center gap-2">
-                            <span className="text-[10px] text-gray-500 w-28 truncate flex-shrink-0">{r.clave}:</span>
-                            <span className={`text-[11px] truncate ${cfgEdit[r.id] !== cfgOriginal[r.id] ? 'text-[#D2E8A3] font-bold' : 'text-gray-300'}`}>{cfgEdit[r.id] || '(vacío)'}</span>
+
+                    {cfgSection === 'marca' && (
+                      <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#070806] p-5 space-y-3">
+                        <p className="text-[9px] font-bold text-[#D2E8A3] uppercase tracking-wider">Preview — Header</p>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-[#D2E8A3] rounded-xl flex items-center justify-center shadow-lg shadow-[#D2E8A3]/20 ring-2 ring-[#D2E8A3]/30">
+                            <span className="text-[#0A0A0A] font-extrabold text-xl">L</span>
                           </div>
-                        ))}
+                          <div>
+                            <p className="text-white font-display font-black text-lg uppercase tracking-wider">{cfgEdit.brand_name || 'LUMIN SHOP'}<span className="text-[#D2E8A3]">.</span></p>
+                            <p className="text-gray-300 text-[9px] font-mono tracking-widest uppercase">{cfgEdit.brand_slogan || 'URBAN APPAREL & SUBLIMATION'}</p>
+                          </div>
+                        </div>
+                        <div className="flex flex-wrap gap-2 pt-1">
+                          <span className="text-[9px] text-gray-400">📱 {cfgEdit.brand_phone || '993 365 099'}</span>
+                          <span className="text-[9px] text-gray-400">📍 {cfgEdit.brand_location || 'Lima, Perú'}</span>
+                          <span className="text-[9px] text-gray-400">📸 {cfgEdit.brand_instagram || '@.lumin.shop'}</span>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {cfgSection === 'footer' && (
+                      <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#070806] p-5 space-y-4">
+                        <p className="text-[9px] font-bold text-[#D2E8A3] uppercase tracking-wider">Preview — Footer</p>
+                        <div className="grid grid-cols-4 gap-4">
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-[#D2E8A3]"></span><span className="font-display text-sm font-black text-white uppercase">{cfgEdit.brand_name || 'LUMIN SHOP'}<span className="text-[#D2E8A3]">.</span></span></div>
+                            <p className="text-gray-400 text-[8px] leading-relaxed">{cfgEdit.footer_description || 'Marca independiente...'}</p>
+                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#161814] border border-[#D2E8A3]/20 text-[#D2E8A3] text-[8px] font-mono">{cfgEdit.footer_production || 'Producción Express 24-48 hrs'}</span>
+                          </div>
+                          <div className="space-y-2">
+                            <p className="font-bold text-white text-[9px] uppercase font-mono">{cfgEdit.footer_collections || 'Colecciones'}</p>
+                            <div className="space-y-1">
+                              <p className="text-gray-400 text-[8px] flex items-center gap-1"><span className="text-[#D2E8A3]">👕</span> {cfgEdit.footer_col_1 || 'Polos Oversized & Boxy Fit'}</p>
+                              <p className="text-gray-400 text-[8px] flex items-center gap-1"><span className="text-[#D2E8A3]">☕</span> {cfgEdit.footer_col_2 || 'Vasos Frosted Glass 16oz'}</p>
+                              <p className="text-gray-400 text-[8px] flex items-center gap-1"><span className="text-[#D2E8A3]">🔥</span> {cfgEdit.footer_col_3 || 'Tazas Térmicas 11oz'}</p>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <p className="font-bold text-white text-[9px] uppercase font-mono">{cfgEdit.footer_guarantee_title || 'Garantía & Envíos'}</p>
+                            <div className="space-y-1">
+                              <p className="text-gray-400 text-[8px] flex items-center gap-1"><span className="text-[#D2E8A3]">✓</span> {cfgEdit.footer_guarantee_1 || 'Estampados HD de alta resistencia'}</p>
+                              <p className="text-gray-400 text-[8px] flex items-center gap-1"><span className="text-[#D2E8A3]">✓</span> {cfgEdit.footer_guarantee_2 || 'Envíos directos a todo el país'}</p>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <p className="font-bold text-white text-[9px] uppercase font-mono">{cfgEdit.footer_social_title || 'Síguenos en Redes'}</p>
+                            <p className="text-gray-400 text-[8px]">{cfgEdit.footer_social_text || 'Encuéntranos en'} <strong className="text-[#D2E8A3]">{cfgEdit.brand_instagram || '@.lumin.shop'}</strong></p>
+                            <div className="flex gap-1">
+                              <span className="px-2 py-0.5 rounded-full bg-[#161814] border border-white/10 text-white text-[7px] font-bold">WhatsApp</span>
+                              <span className="px-2 py-0.5 rounded-full bg-[#161814] border border-white/10 text-white text-[7px] font-bold">TikTok</span>
+                              <span className="px-2 py-0.5 rounded-full bg-[#161814] border border-white/10 text-white text-[7px] font-bold">Instagram</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="pt-3 border-t border-white/5 flex justify-between text-[8px] text-gray-500">
+                          <p>{cfgEdit.footer_copyright || '© 2026 LUMIN SHOP...'}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {cfgSection === 'carrito' && (
+                      <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#0F110D] p-5 space-y-3">
+                        <p className="text-[9px] font-bold text-[#D2E8A3] uppercase tracking-wider">Preview — Carrito Vacío</p>
+                        <div className="text-center space-y-3 py-6">
+                          <div className="w-16 h-16 mx-auto rounded-full bg-[#D2E8A3]/10 flex items-center justify-center">
+                            <span className="text-2xl">🛒</span>
+                          </div>
+                          <p className="text-white font-extrabold text-sm">{cfgEdit.cart_empty_title || 'Tu pedido está vacío'}</p>
+                          <p className="text-gray-400 text-[10px] max-w-xs mx-auto">{cfgEdit.cart_empty_desc || 'Agrega polos streetwear o vasos/tazas...'}</p>
+                          <span className="inline-block px-4 py-2 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] text-[10px] font-extrabold">{cfgEdit.cart_empty_cta || 'IR AL CATÁLOGO'}</span>
+                        </div>
+                        <div className="border-t border-white/10 pt-3 space-y-2">
+                          <p className="text-white text-[10px] font-extrabold">{cfgEdit.cart_process_title || 'PROCESO DE FABRICACIÓN BAJO PEDIDO:'}</p>
+                          <p className="text-gray-400 text-[9px]">{cfgEdit.cart_process_desc || 'Envías la orden a WhatsApp...'}</p>
+                          <span className="inline-block px-4 py-2 rounded-xl bg-green-500 text-black text-[10px] font-extrabold">{cfgEdit.cart_send_whatsapp || 'ENVIAR PEDIDO POR WHATSAPP'}</span>
+                        </div>
+                      </div>
+                    )}
+
+                    {cfgSection === 'badges' && (
+                      <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#0F110D] p-5 space-y-3">
+                        <p className="text-[9px] font-bold text-[#D2E8A3] uppercase tracking-wider">Preview — Barra de Proceso</p>
+                        <p className="text-white font-extrabold text-xs uppercase">{cfgEdit.badge_model_title || 'MODELO SUSTENTABLE BAJO DEMANDA'}</p>
+                        <p className="text-gray-400 text-[9px]">{cfgEdit.badge_model_subtitle || '¿CÓMO FUNCIONA LUMIN SHOP?'}</p>
+                        <div className="grid grid-cols-3 gap-2 pt-2">
+                          {[1, 2, 3].map(i => (
+                            <div key={i} className="p-2 rounded-xl bg-white/5 border border-white/10 text-center space-y-1">
+                              <div className="w-6 h-6 mx-auto rounded-full bg-[#D2E8A3]/20 flex items-center justify-center text-[#D2E8A3] text-[10px] font-bold">{i}</div>
+                              <p className="text-white text-[8px] font-bold">{cfgEdit[`badge_step${i}_title`] || `Paso ${i}`}</p>
+                              <p className="text-gray-500 text-[7px]">{cfgEdit[`badge_step${i}_desc`] || 'Descripción...'}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {cfgSection === 'perfil' && (
+                      <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#0F110D] p-5 space-y-3">
+                        <p className="text-[9px] font-bold text-[#D2E8A3] uppercase tracking-wider">Preview — Perfil / Conceptos</p>
+                        <p className="text-white font-extrabold text-xs">{cfgEdit.profile_title || 'MI CUENTA & PREFERENCIAS'}</p>
+                        <p className="text-gray-400 text-[9px]">{cfgEdit.profile_concepts || '3. Conceptos del Servicio LUMIN SHOP:'}</p>
+                        <div className="space-y-2">
+                          {[1, 2, 3].map(i => (
+                            <div key={i} className="p-2 rounded-lg bg-white/5 border border-white/5">
+                              <p className="text-white text-[9px] font-bold">{cfgEdit[`profile_concept_${i}_title`] || `Concepto ${i}`}</p>
+                              <p className="text-gray-500 text-[8px]">{cfgEdit[`profile_concept_${i}_desc`] || 'Descripción...'}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {(cfgSection === 'secciones') && (
+                      <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#0F110D] p-5 space-y-3">
+                        <p className="text-[9px] font-bold text-[#D2E8A3] uppercase tracking-wider">Preview — Secciones</p>
+                        <p className="text-white font-extrabold text-xs">{cfgEdit.section_about_title || 'Sobre LUMIN SHOP'}</p>
+                        <p className="text-gray-400 text-[9px]">{cfgEdit.section_about_subtitle || 'Ropa Urbana Streetwear & Sublimación...'}</p>
+                        <p className="text-gray-400 text-[8px] leading-relaxed" dangerouslySetInnerHTML={{ __html: cfgEdit.section_about_text || 'LUMIN SHOP es una marca independiente...' }}></p>
+                        <p className="text-[#D2E8A3] font-extrabold text-xs mt-2">{cfgEdit.section_featured_title || '🔥 SELECCIÓN DESTACADA DROP 04'}</p>
+                        <p className="text-gray-400 text-[9px]">{cfgEdit.section_featured_sub || 'Nuestros Más Pedidos'}</p>
+                      </div>
+                    )}
+
+                    {/* Default fallback */}
+                    {['secciones'].includes(cfgSection) && (
+                      <div className="p-4 rounded-xl border border-white/5 bg-white/[0.02]">
+                        <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Todos los valores — {cfgSections.find(s => s.key === cfgSection)?.label}</p>
+                        <div className="space-y-1.5">
+                          {configRows.filter(r => r.seccion === cfgSection).map(r => (
+                            <div key={r.id} className="flex items-center gap-2">
+                              <span className="text-[10px] text-gray-500 w-28 truncate flex-shrink-0">{r.clave}:</span>
+                              <span className={`text-[11px] truncate ${cfgEdit[r.id] !== cfgOriginal[r.id] ? 'text-[#D2E8A3] font-bold' : 'text-gray-300'}`}>{cfgEdit[r.id] || '(vacío)'}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
