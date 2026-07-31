@@ -24,6 +24,7 @@ import {
   loadCategoriesFromSupabase,
 } from './lib/supabase-data';
 import { loadConfig, reloadConfig, cfg } from './lib/config';
+import { supabase } from './lib/supabase';
 import { generateOrderImage } from './lib/generateOrderImage';
 import { Product, CartItem, NavigationTab, Category, ThemeMode, UserProfileData, GoogleUser } from './types';
 import {
@@ -155,6 +156,39 @@ export default function App() {
     }
   }, [googleUser]);
 
+  // Poll order statuses every 15 seconds
+  useEffect(() => {
+    if (!supabase) return;
+    const pollOrders = async () => {
+      try {
+        let identifier = googleUser?.id;
+        if (!identifier) {
+          identifier = localStorage.getItem('lumin_anon_id') || '';
+          if (!identifier) {
+            identifier = 'anon-' + crypto.randomUUID();
+            localStorage.setItem('lumin_anon_id', identifier);
+          }
+        }
+        const { data } = await supabase.from('pedidos').select('id,estado,productos,cliente_nombre,total,created_at').eq('usuario_id', identifier).order('created_at', { ascending: false }).limit(10);
+        if (data && data.length > 0) {
+          const prev = prevOrderStatusesRef.current;
+          data.forEach((order: any) => {
+            if (prev[order.id] && prev[order.id] !== order.estado) {
+              const labels: Record<string, string> = { pendiente: 'Pendiente', produccion: 'En Producción', enviado: 'Enviado', entregado: 'Entregado' };
+              setOrderUpdateMsg(`Pedido #${order.id.slice(0, 8)}... → ${labels[order.estado] || order.estado}`);
+              setTimeout(() => setOrderUpdateMsg(''), 5000);
+            }
+            prev[order.id] = order.estado;
+          });
+          setMyOrders(data);
+        }
+      } catch {}
+    };
+    pollOrders();
+    const interval = setInterval(pollOrders, 15000);
+    return () => clearInterval(interval);
+  }, [googleUser?.id]);
+
   const handleGoogleLogin = (user: GoogleUser) => {
     setGoogleUser(user);
     setUserProfile((prev) => ({
@@ -180,6 +214,11 @@ export default function App() {
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [copiedOrder, setCopiedOrder] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'envio' | 'recojo'>('envio');
+
+  // Order status tracking
+  const [myOrders, setMyOrders] = useState<any[]>([]);
+  const [orderUpdateMsg, setOrderUpdateMsg] = useState('');
+  const prevOrderStatusesRef = React.useRef<Record<string, string>>({});
 
   useEffect(() => {
     setProfileForm(userProfile);
@@ -1187,6 +1226,66 @@ export default function App() {
                 </div>
               </div>
             </div>
+
+            {/* Order Status Notification */}
+            {orderUpdateMsg && (
+              <div className="p-3 rounded-2xl bg-[#D2E8A3]/10 border border-[#D2E8A3]/30 text-[#D2E8A3] text-xs font-bold text-center animate-pulse">
+                {orderUpdateMsg}
+              </div>
+            )}
+
+            {/* My Orders */}
+            {myOrders.length > 0 && (
+              <section className={`p-6 rounded-3xl border space-y-4 ${
+                isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10'
+              }`}>
+                <div className="flex items-center gap-2">
+                  <ShoppingBag className="w-5 h-5 text-[#D2E8A3]" />
+                  <h3 className="font-display text-lg font-bold uppercase">
+                    {cfg('profile_my_orders_title', 'Mis Pedidos')}
+                  </h3>
+                </div>
+                <div className="space-y-3">
+                  {myOrders.map((order: any) => {
+                    const statusColors: Record<string, string> = {
+                      pendiente: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+                      produccion: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
+                      enviado: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
+                      entregado: 'bg-green-500/20 text-green-400 border-green-500/30',
+                    };
+                    const statusLabels: Record<string, string> = {
+                      pendiente: 'Pendiente', produccion: 'En Producción',
+                      enviado: 'Enviado', entregado: 'Entregado',
+                    };
+                    const items = order.productos || [];
+                    return (
+                      <div key={order.id} className={`p-4 rounded-2xl border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#0F110D] border-white/10'}`}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="space-y-1 flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-[10px] font-mono text-gray-500">#{order.id.slice(0, 8)}</span>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusColors[order.estado] || 'bg-white/10 text-gray-400'}`}>
+                                {statusLabels[order.estado] || order.estado}
+                              </span>
+                            </div>
+                            <div className="space-y-0.5">
+                              {items.map((item: any, i: number) => (
+                                <p key={i} className="text-[11px] text-gray-400">
+                                  {item.product_name} x{item.quantity}
+                                  {item.selected_size && ` • ${item.selected_size}`}
+                                </p>
+                              ))}
+                            </div>
+                            <p className="text-xs text-gray-500">{order.created_at ? new Date(order.created_at).toLocaleDateString('es-PE') : ''}</p>
+                          </div>
+                          <p className="text-sm font-extrabold text-[#D2E8A3]">S/ {order.total?.toFixed(2)}</p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
 
             {/* Section 1: Appearance Selector */}
             <section className={`p-6 rounded-3xl border space-y-4 ${
