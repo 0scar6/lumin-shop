@@ -639,6 +639,33 @@ const TabCuenta = memo(({ cfgEdit, setCfg, configRows, inputCls, labelCls }: any
       </div>
     </Section>
 
+    {/* Envíos / Shipping */}
+    <Section title="Envíos & Zonas" icon={<Package className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+      <p className="text-[10px] text-gray-400 mb-2">Precios de envío por zona. El recojo en tienda es GRATIS.</p>
+      <div className="grid grid-cols-3 gap-3">
+        <CfgField id="shipping_price_lima" label="Lima (S/)" value={cfgEdit.shipping_price_lima || '10'} onChange={(v: string) => setCfg('shipping_price_lima', v)} type="number" />
+        <CfgField id="shipping_price_provincia" label="Provincia (S/)" value={cfgEdit.shipping_price_provincia || '25'} onChange={(v: string) => setCfg('shipping_price_provincia', v)} type="number" />
+        <CfgField id="shipping_price_internacional" label="Internacional (S/)" value={cfgEdit.shipping_price_internacional || '80'} onChange={(v: string) => setCfg('shipping_price_internacional', v)} type="number" />
+      </div>
+      {/* Shipping Preview */}
+      <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#0F110D] p-5 space-y-3 mt-4">
+        <p className="text-[9px] font-bold text-[#D2E8A3] uppercase tracking-wider">Preview — Envío</p>
+        <div className="grid grid-cols-3 gap-2">
+          {[
+            { emoji: '🏙️', label: 'Lima', price: cfgEdit.shipping_price_lima || '10' },
+            { emoji: '📦', label: 'Provincia', price: cfgEdit.shipping_price_provincia || '25' },
+            { emoji: '✈️', label: 'Internacional', price: cfgEdit.shipping_price_internacional || '80' },
+          ].map(z => (
+            <div key={z.label} className="p-3 rounded-xl bg-white/5 border border-white/10 text-center space-y-1">
+              <span className="text-lg block">{z.emoji}</span>
+              <span className="text-white text-[10px] font-bold block">{z.label}</span>
+              <span className="text-[#D2E8A3] text-[10px] font-bold block">S/ {z.price}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </Section>
+
     {/* Footer */}
     <Section title="Footer" icon={<FileText className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
       <CfgField id="footer_description" label="Descripción" value={cfgEdit.footer_description || ''} onChange={(v: string) => setCfg('footer_description', v)} multiline rows={2} />

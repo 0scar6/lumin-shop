@@ -214,6 +214,7 @@ export default function App() {
   const [copiedPhone, setCopiedPhone] = useState(false);
   const [copiedOrder, setCopiedOrder] = useState(false);
   const [deliveryType, setDeliveryType] = useState<'envio' | 'recojo'>('envio');
+  const [shippingZone, setShippingZone] = useState<'lima' | 'provincia' | 'internacional'>('lima');
 
   // Order status tracking
   const [myOrders, setMyOrders] = useState<any[]>([]);
@@ -360,6 +361,14 @@ export default function App() {
     return acc + getUnitPrice(item) * item.quantity;
   }, 0);
 
+  // Shipping cost
+  const shippingCost = deliveryType === 'recojo' ? 0 : (
+    shippingZone === 'lima' ? parseFloat(cfg('shipping_price_lima', '10')) :
+    shippingZone === 'provincia' ? parseFloat(cfg('shipping_price_provincia', '25')) :
+    parseFloat(cfg('shipping_price_internacional', '80'))
+  );
+  const grandTotal = totalCartAmount + shippingCost;
+
   // Generate WhatsApp Message
   const buildWhatsAppMessage = () => {
     const nameStr = userProfile.name.trim() || '';
@@ -371,8 +380,11 @@ export default function App() {
     if (userProfile.dni) msg += `${cfg('whatsapp_label_dni', '• *DNI:*')} ${userProfile.dni}\n`;
     
     if (deliveryType === 'envio') {
+      const zoneLabels: Record<string, string> = { lima: 'Lima Metropolitana', provincia: 'Provincia', internacional: 'Internacional' };
       msg += `${cfg('whatsapp_delivery_home', '• *Modalidad:* 🚀 Envío a Domicilio')}\n`;
+      msg += `• *Zona:* ${zoneLabels[shippingZone] || 'Lima'}\n`;
       msg += `${cfg('whatsapp_label_address', '• *Dirección:*')} ${userProfile.address || cfg('whatsapp_fallback_address', 'Por indicar por chat')}\n`;
+      msg += `• *Costo de envío:* S/ ${shippingCost.toFixed(2)}\n`;
     } else {
       msg += `${cfg('whatsapp_delivery_pickup', '• *Modalidad:* 🏪 Recojo en Tienda')}\n`;
     }
@@ -393,18 +405,21 @@ export default function App() {
       msg += `   ${cfg('whatsapp_item_subtotal', '• Subtotal:')} S/ ${itemTotal.toFixed(2)}\n`;
     });
 
-    msg += `\n💰 *${cfg('whatsapp_order_total', 'TOTAL DE MI ORDEN:')} S/ ${totalCartAmount.toFixed(2)}*\n\n`;
+    if (shippingCost > 0) {
+      msg += `\n🚚 *Costo de Envío:* S/ ${shippingCost.toFixed(2)}\n`;
+    }
+    msg += `\n💰 *${cfg('whatsapp_order_total', 'TOTAL DE MI ORDEN:')} S/ ${grandTotal.toFixed(2)}*\n\n`;
     msg += cfg('whatsapp_order_closing', 'Por favor confírmenme los datos de pago y el tiempo de entrega. ¡Muchas gracias!');
 
     return msg;
   };
 
   const handleSendWhatsAppOrder = async () => {
-    syncCartToSupabase(cart, userProfile, deliveryType, googleUser?.id);
+    syncCartToSupabase(cart, userProfile, deliveryType, googleUser?.id, deliveryType === 'envio' ? shippingZone : undefined, deliveryType === 'envio' ? shippingCost : 0);
 
     // Generate order image
     try {
-      const blob = await generateOrderImage(cart, userProfile, deliveryType, totalCartAmount, getUnitPrice);
+      const blob = await generateOrderImage(cart, userProfile, deliveryType, grandTotal, getUnitPrice, shippingZone, shippingCost);
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
@@ -1086,7 +1101,7 @@ export default function App() {
 
                       <div className="flex gap-2 pt-1">
                         <button
-                          onClick={() => setDeliveryType('envio')}
+                          onClick={() => { setDeliveryType('envio'); }}
                           className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-all ${
                             deliveryType === 'envio'
                               ? isLight ? 'bg-slate-900 text-white border-slate-900' : 'bg-[#D2E8A3] text-[#0A0A0A] border-[#D2E8A3]'
@@ -1106,6 +1121,36 @@ export default function App() {
                           {cfg('cart_delivery_pickup', '🏪 Recojo en Tienda')}
                         </button>
                       </div>
+
+                      {/* Shipping Zone Selector */}
+                      {deliveryType === 'envio' && (
+                        <div className="space-y-2 pt-2">
+                          <label className={`text-[10px] uppercase block font-bold ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
+                            Zona de Envío:
+                          </label>
+                          <div className="grid grid-cols-3 gap-2">
+                            {[
+                              { key: 'lima' as const, label: 'Lima', emoji: '🏙️', price: cfg('shipping_price_lima', '10') },
+                              { key: 'provincia' as const, label: 'Provincia', emoji: '📦', price: cfg('shipping_price_provincia', '25') },
+                              { key: 'internacional' as const, label: 'Internacional', emoji: '✈️', price: cfg('shipping_price_internacional', '80') },
+                            ].map(zone => (
+                              <button
+                                key={zone.key}
+                                onClick={() => setShippingZone(zone.key)}
+                                className={`py-2 px-2 rounded-xl text-[10px] font-bold border transition-all text-center ${
+                                  shippingZone === zone.key
+                                    ? isLight ? 'bg-slate-900 text-white border-slate-900' : 'bg-[#D2E8A3]/20 text-[#D2E8A3] border-[#D2E8A3]/50'
+                                    : isLight ? 'bg-slate-100 text-slate-700 border-slate-300' : 'bg-black/30 text-gray-400 border-white/10'
+                                }`}
+                              >
+                                <span className="block text-sm">{zone.emoji}</span>
+                                <span className="block">{zone.label}</span>
+                                <span className="block text-[9px] opacity-70">S/ {zone.price}</span>
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -1113,15 +1158,27 @@ export default function App() {
                   <div className={`p-5 rounded-3xl border space-y-4 ${
                     isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#0A0A0A] border-white/10 text-white'
                   }`}>
-                    <div className={`flex justify-between items-baseline border-b pb-3 ${
-                      isLight ? 'border-slate-200' : 'border-white/10'
-                    }`}>
-                      <span className={`text-xs font-mono uppercase ${isLight ? 'text-slate-600 font-bold' : 'text-gray-400'}`}>
-                        {cfg('cart_total_label', 'Total a Pagar:')}
-                      </span>
-                      <span className={`text-3xl font-black ${isLight ? 'text-slate-900' : 'text-[#D2E8A3]'}`}>
-                        S/ {totalCartAmount.toFixed(2)}
-                      </span>
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-baseline text-xs">
+                        <span className={isLight ? 'text-slate-600 font-bold' : 'text-gray-400'}>Subtotal:</span>
+                        <span className={`font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>S/ {totalCartAmount.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between items-baseline text-xs">
+                        <span className={isLight ? 'text-slate-600 font-bold' : 'text-gray-400'}>
+                          Envío ({deliveryType === 'recojo' ? 'Recojo' : shippingZone === 'lima' ? 'Lima' : shippingZone === 'provincia' ? 'Provincia' : 'Internacional'}):
+                        </span>
+                        <span className={`font-bold ${shippingCost === 0 ? 'text-green-500' : isLight ? 'text-slate-900' : 'text-white'}`}>
+                          {shippingCost === 0 ? 'GRATIS' : `S/ ${shippingCost.toFixed(2)}`}
+                        </span>
+                      </div>
+                      <div className={`border-t pt-2 flex justify-between items-baseline ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
+                        <span className={`text-xs font-mono uppercase font-bold ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
+                          {cfg('cart_total_label', 'Total a Pagar:')}
+                        </span>
+                        <span className={`text-3xl font-black ${isLight ? 'text-slate-900' : 'text-[#D2E8A3]'}`}>
+                          S/ {grandTotal.toFixed(2)}
+                        </span>
+                      </div>
                     </div>
 
                     <div className="space-y-2">

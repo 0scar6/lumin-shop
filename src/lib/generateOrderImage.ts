@@ -16,7 +16,9 @@ export async function generateOrderImage(
   userProfile: UserProfileData,
   deliveryType: string,
   total: number,
-  getUnitPrice: (item: CartItem) => number
+  getUnitPrice: (item: CartItem) => number,
+  shippingZone?: string,
+  shippingCost?: number
 ): Promise<Blob> {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d')!;
@@ -87,6 +89,18 @@ export async function generateOrderImage(
   if (userProfile.address) { ctx.fillText(`Dirección: ${userProfile.address}`, padding, y); y += lineHeight; }
   ctx.fillText(`Modalidad: ${deliveryType === 'envio' ? 'Envío a Domicilio' : 'Recojo en Tienda'}`, padding, y);
   y += lineHeight;
+  if (deliveryType === 'envio' && shippingZone) {
+    const zoneLabels: Record<string, string> = { lima: 'Lima Metropolitana', provincia: 'Provincia', internacional: 'Internacional' };
+    ctx.fillText(`Zona: ${zoneLabels[shippingZone] || shippingZone}`, padding, y);
+    y += lineHeight;
+  }
+  if (shippingCost && shippingCost > 0) {
+    ctx.fillText(`Costo de envío: S/ ${shippingCost.toFixed(2)}`, padding, y);
+    y += lineHeight;
+  } else if (deliveryType === 'recojo') {
+    ctx.fillText('Costo de envío: GRATIS', padding, y);
+    y += lineHeight;
+  }
 
   // Divider
   y += 10;

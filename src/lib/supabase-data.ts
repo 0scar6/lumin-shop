@@ -110,15 +110,18 @@ export async function syncCartToSupabase(
   cart: CartItem[],
   userProfile: UserProfileData,
   deliveryType: string,
-  userId?: string
+  userId?: string,
+  shippingZone?: string,
+  shippingCost?: number
 ): Promise<void> {
   if (!supabase || cart.length === 0) return;
   try {
     const identifier = userId || getAnonymousId();
-    const total = cart.reduce((acc, item) => {
+    const subtotal = cart.reduce((acc, item) => {
       const extra = item.product.cupOptions?.types.find((t) => t.name === item.selectedCupType)?.extraPrice || 0;
       return acc + (item.product.price + extra) * item.quantity;
     }, 0);
+    const total = subtotal + (shippingCost || 0);
 
     const orderItems = cart.map((item) => ({
       product_id: item.product.id,
@@ -144,6 +147,8 @@ export async function syncCartToSupabase(
       total,
       estado: 'pendiente',
       metodo_envio: deliveryType || 'domicilio',
+      zona_envio: shippingZone || 'lima',
+      costo_envio: shippingCost || 0,
     });
   } catch {
     // Silent fail
