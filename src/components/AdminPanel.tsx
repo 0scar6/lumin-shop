@@ -3,7 +3,7 @@ import { X, Upload, Save, Eye, EyeOff, Lock, Package, Settings, Image, Plus, Tra
 import { supabase } from '../lib/supabase';
 import { reloadConfig } from '../lib/config';
 
-const ADMIN_PASS = 'Ratitaxd12';
+const DEFAULT_ADMIN_PASS = 'Ratitaxd12';
 
 interface AdminPanelProps { isOpen: boolean; onClose: () => void; themeMode?: 'dark' | 'light' | 'amoled'; onConfigChange?: () => void; }
 interface ConfigRow { id: string; seccion: string; clave: string; valor: string; }
@@ -16,6 +16,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
   const [pwError, setPwError] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [mainTab, setMainTab] = useState<'config' | 'products' | 'orders'>('config');
+  const [adminPass, setAdminPass] = useState(DEFAULT_ADMIN_PASS);
 
   // Config
   const [configRows, setConfigRows] = useState<ConfigRow[]>([]);
@@ -36,7 +37,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
   const [orders, setOrders] = useState<PedidoRow[]>([]);
 
   useEffect(() => { if (!isOpen) { setAuthenticated(false); setPw(''); setEditingProduct(null); } }, [isOpen]);
-  const handleLogin = () => { if (pw === ADMIN_PASS) { setAuthenticated(true); setPwError(false); } else { setPwError(true); setTimeout(() => setPwError(false), 2000); } };
+  useEffect(() => { if (isOpen && supabase) { supabase.from('configuracion').select('valor').eq('id', 'admin_password').single().then(({ data }) => { if (data?.valor) setAdminPass(data.valor); }); } }, [isOpen]);
+  const handleLogin = () => { if (pw === adminPass) { setAuthenticated(true); setPwError(false); } else { setPwError(true); setTimeout(() => setPwError(false), 2000); } };
 
   useEffect(() => { if (!authenticated || !supabase) return; loadConfig(); loadProducts(); loadOrders(); }, [authenticated]);
 
@@ -350,8 +352,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
                         <div className="space-y-2">
                           {[1, 2, 3].map(i => (
                             <div key={i} className="p-2 rounded-lg bg-white/5 border border-white/5">
-                              <p className="text-white text-[9px] font-bold">{cfgEdit[`profile_concept_${i}_title`] || `Concepto ${i}`}</p>
-                              <p className="text-gray-500 text-[8px]">{cfgEdit[`profile_concept_${i}_desc`] || 'Descripción...'}</p>
+                              <p className="text-white text-[9px] font-bold">{cfgEdit[`concept_${i}_title`] || `Concepto ${i}`}</p>
+                              <p className="text-gray-500 text-[8px]">{cfgEdit[`concept_${i}_desc`] || 'Descripción...'}</p>
                             </div>
                           ))}
                         </div>
