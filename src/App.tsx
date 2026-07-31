@@ -23,7 +23,7 @@ import {
   syncCustomIdeaToSupabase,
   loadCategoriesFromSupabase,
 } from './lib/supabase-data';
-import { loadConfig, cfg } from './lib/config';
+import { loadConfig, reloadConfig, cfg } from './lib/config';
 import { generateOrderImage } from './lib/generateOrderImage';
 import { Product, CartItem, NavigationTab, Category, ThemeMode, UserProfileData, GoogleUser } from './types';
 import {
@@ -1613,7 +1613,7 @@ export default function App() {
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
         themeMode={themeMode}
-        onConfigChange={() => { loadConfig().then(() => setConfigKey(k => k + 1)); }}
+        onConfigChange={() => { reloadConfig().then(() => setConfigKey(k => k + 1)); }}
       />
 
     </div>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { X, Upload, Save, Eye, EyeOff, Lock, Package, Settings, Image, Plus, Trash2, ArrowLeft, Check } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import { reloadConfig } from '../lib/config';
 
 const ADMIN_PASS = 'Ratitaxd12';
 
@@ -99,6 +100,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, themeMo
       }
       setCfgOriginal({ ...cfgEdit });
       setCfgSaved(true);
+      await reloadConfig();
       onConfigChange?.();
       setTimeout(() => setCfgSaved(false), 2000);
     } catch {}
@@ -188,30 +190,76 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, themeMo
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, estado: status } : o));
   };
 
-  // --- PREVIEW (live banner preview) ---
+  // --- PREVIEW (live banner preview matching real HeroBanner) ---
   const PreviewBanner = () => (
-    <div className="rounded-2xl overflow-hidden border border-white/10 bg-[#161814] p-4 space-y-3">
+    <div className="rounded-2xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#161814] via-[#0F110D] to-[#0A0A0A] p-4 space-y-3">
       <p className="text-[10px] font-bold text-[#D2E8A3] uppercase tracking-wider">Vista Previa — Hero Banner</p>
-      <div className="grid grid-cols-2 gap-2">
-        <div className="aspect-square rounded-xl overflow-hidden bg-black/40">
-          {cfgEdit.hero_media_1_url ? (
-            /\.(mp4|webm)$/i.test(cfgEdit.hero_media_1_url)
-              ? <video src={cfgEdit.hero_media_1_url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
-              : <img src={cfgEdit.hero_media_1_url} className="w-full h-full object-cover" alt="" />
-          ) : <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">Sin media</div>}
+      
+      <div className="rounded-xl overflow-hidden border border-white/10 bg-gradient-to-br from-[#161814] via-[#0F110D] to-[#0A0A0A] p-4 space-y-3">
+        {/* Badge */}
+        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#D2E8A3]/10 border border-[#D2E8A3]/30">
+          <span className="text-[8px] text-[#D2E8A3]">🔥</span>
+          <span className="text-[8px] font-bold text-[#D2E8A3] uppercase">{cfgEdit.hero_badge || 'Exclusivo — COLECCIÓN BAJO DEMANDA'}</span>
         </div>
-        <div className="aspect-square rounded-xl overflow-hidden bg-black/40">
-          {cfgEdit.hero_media_2_url ? (
-            /\.(mp4|webm)$/i.test(cfgEdit.hero_media_2_url)
-              ? <video src={cfgEdit.hero_media_2_url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
-              : <img src={cfgEdit.hero_media_2_url} className="w-full h-full object-cover" alt="" />
-          ) : <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">Sin media</div>}
+
+        <div className="grid grid-cols-12 gap-3 items-center">
+          {/* Text side */}
+          <div className="col-span-7 space-y-2">
+            <h3 className="font-black text-xs uppercase leading-tight">
+              <span className="text-white">{cfgEdit.hero_title_1 || 'MODA URBANA &'}</span>
+              <br />
+              <span className="text-[#D2E8A3]">{cfgEdit.hero_title_2 || 'VASOS SUBLIMADOS'}</span>
+            </h3>
+            <p className="text-[9px] text-gray-400 leading-snug">
+              {cfgEdit.hero_subtitle_1 || 'Polos Sublimados con'}{' '}
+              <span className="text-white font-bold">{cfgEdit.hero_subtitle_2 || 'Estampado Urbano HD High-Density'}</span>
+              <br />
+              {cfgEdit.hero_description || 'Sin sobre-stock. Fabricado especialmente para ti al confirmar tu orden.'}
+            </p>
+            <div className="flex gap-1">
+              <span className="px-2 py-0.5 rounded bg-black/60 border border-white/15 text-[7px] text-gray-200 font-bold">
+                {cfgEdit.hero_badge_1 || '⚡ Producción Express: 24 a 48 hrs'}
+              </span>
+              <span className="px-2 py-0.5 rounded bg-black/60 border border-white/15 text-[7px] text-gray-200 font-bold">
+                {cfgEdit.hero_badge_2 || '🛡️ Garantía de Fijación Térmica'}
+              </span>
+            </div>
+            <div className="flex gap-1.5">
+              <span className="px-3 py-1.5 rounded-lg bg-[#D2E8A3] text-[#0A0A0A] text-[8px] font-extrabold">
+                {cfgEdit.hero_cta_catalogo || 'EXPLORAR CATÁLOGO'}
+              </span>
+              <span className="px-3 py-1.5 rounded-lg border border-white/10 text-white text-[8px] font-bold">
+                {cfgEdit.hero_cta_idea || 'Personalizar Mi Idea'}
+              </span>
+            </div>
+          </div>
+
+          {/* Media side */}
+          <div className="col-span-5 grid grid-cols-2 gap-1.5">
+            <div className="aspect-[4/5] rounded-lg overflow-hidden bg-black/40">
+              {cfgEdit.hero_media_1_url ? (
+                /\.(mp4|webm)$/i.test(cfgEdit.hero_media_1_url)
+                  ? <video src={cfgEdit.hero_media_1_url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+                  : <img src={cfgEdit.hero_media_1_url} className="w-full h-full object-cover" alt="" />
+              ) : <div className="w-full h-full flex items-center justify-center text-gray-600 text-[8px]">Media 1</div>}
+              <div className="relative -mt-6 p-1 bg-gradient-to-t from-black/80 to-transparent">
+                <span className="text-[6px] font-mono text-[#D2E8A3]">{cfgEdit.hero_street_title || 'STREETWEAR'}</span>
+                <span className="text-[7px] font-bold text-white block">{cfgEdit.hero_street_sub || 'Acid Tokyo 1988'}</span>
+              </div>
+            </div>
+            <div className="aspect-[4/5] rounded-lg overflow-hidden bg-black/40 mt-3">
+              {cfgEdit.hero_media_2_url ? (
+                /\.(mp4|webm)$/i.test(cfgEdit.hero_media_2_url)
+                  ? <video src={cfgEdit.hero_media_2_url} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+                  : <img src={cfgEdit.hero_media_2_url} className="w-full h-full object-cover" alt="" />
+              ) : <div className="w-full h-full flex items-center justify-center text-gray-600 text-[8px]">Media 2</div>}
+              <div className="relative -mt-6 p-1 bg-gradient-to-t from-black/80 to-transparent">
+                <span className="text-[6px] font-mono text-[#D2E8A3]">{cfgEdit.hero_subli_title || 'SUBLIMACIÓN'}</span>
+                <span className="text-[7px] font-bold text-white block">{cfgEdit.hero_subli_sub || 'Frosted Glass 16oz'}</span>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="text-center space-y-1">
-        <p className="text-white font-black text-sm uppercase">{cfgEdit.hero_title_1 || 'MODA URBANA &'}</p>
-        <p className="text-[#D2E8A3] font-black text-sm uppercase">{cfgEdit.hero_title_2 || 'VASOS SUBLIMADOS'}</p>
-        <p className="text-gray-400 text-[10px]">{cfgEdit.hero_description || 'Sin sobre-stock...'}</p>
       </div>
     </div>
   );
@@ -340,19 +388,68 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, themeMo
                   {/* Live Preview */}
                   <div className="space-y-4">
                     {cfgSection === 'hero' && <PreviewBanner />}
-                    <div className={`p-4 rounded-xl border ${isLight ? 'border-slate-200 bg-slate-50' : 'border-white/10 bg-white/5'}`}>
-                      <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Vista Previa Textos</p>
-                      <div className="space-y-1.5">
-                        {configRows.filter(r => r.seccion === cfgSection).slice(0, 8).map(r => (
-                          <div key={r.id} className="flex items-center gap-2">
-                            <span className="text-[10px] text-gray-500 w-24 truncate flex-shrink-0">{r.clave}:</span>
-                            <span className={`text-xs truncate ${cfgEdit[r.id] !== cfgOriginal[r.id] ? 'text-[#D2E8A3] font-bold' : 'text-gray-300'}`}>
-                              {cfgEdit[r.id] || '(vacío)'}
-                            </span>
+                    
+                    {cfgSection === 'marca' && (
+                      <div className="rounded-xl overflow-hidden border border-white/10 bg-[#161814] p-4 space-y-2">
+                        <p className="text-[10px] font-bold text-[#D2E8A3] uppercase">Vista Previa — Header / Marca</p>
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-[#D2E8A3] rounded-lg flex items-center justify-center">
+                            <span className="text-[#0A0A0A] font-extrabold text-sm">L</span>
                           </div>
-                        ))}
+                          <div>
+                            <p className="text-white font-black text-sm">{cfgEdit.brand_name || 'LUMIN SHOP'}<span className="text-[#D2E8A3]">.</span></p>
+                            <p className="text-gray-400 text-[8px] font-mono uppercase">{cfgEdit.brand_slogan || 'URBAN APPAREL & SUBLIMATION'}</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2 text-[9px] text-gray-400">
+                          <span>📱 {cfgEdit.brand_phone || '993 365 099'}</span>
+                          <span>📍 {cfgEdit.brand_location || 'Lima, Perú'}</span>
+                          <span>📸 {cfgEdit.brand_instagram || '@.lumin.shop'}</span>
+                        </div>
                       </div>
-                    </div>
+                    )}
+
+                    {cfgSection === 'footer' && (
+                      <div className="rounded-xl overflow-hidden border border-white/10 bg-[#161814] p-4 space-y-2">
+                        <p className="text-[10px] font-bold text-[#D2E8A3] uppercase">Vista Previa — Footer</p>
+                        <p className="text-white font-bold text-xs">{cfgEdit.brand_name || 'LUMIN SHOP'}</p>
+                        <p className="text-gray-400 text-[9px]">{cfgEdit.footer_description || 'Marca independiente...'}</p>
+                        <p className="text-[#D2E8A3] text-[9px] font-bold">{cfgEdit.footer_production || 'Producción Express 24-48 hrs'}</p>
+                        <div className="flex gap-2">
+                          <span className="text-[8px] text-gray-500">{cfgEdit.brand_instagram || '@.lumin.shop'}</span>
+                          <span className="text-[8px] text-gray-500">{cfgEdit.brand_tiktok || '@.lumin.shop'}</span>
+                          <span className="text-[8px] text-gray-500">{cfgEdit.brand_facebook || '@.lumin.shop'}</span>
+                        </div>
+                        <p className="text-gray-600 text-[7px]">{cfgEdit.footer_copyright || '© 2026 LUMIN SHOP...'}</p>
+                      </div>
+                    )}
+
+                    {cfgSection === 'carrito' && (
+                      <div className="rounded-xl overflow-hidden border border-white/10 bg-[#161814] p-4 space-y-2">
+                        <p className="text-[10px] font-bold text-[#D2E8A3] uppercase">Vista Previa — Carrito</p>
+                        <p className="text-white font-bold text-xs">{cfgEdit.cart_empty_title || 'Tu pedido está vacío'}</p>
+                        <p className="text-gray-400 text-[9px]">{cfgEdit.cart_empty_desc || 'Agrega polos...'}</p>
+                        <span className="inline-block px-3 py-1.5 rounded-lg bg-[#D2E8A3] text-[#0A0A0A] text-[8px] font-extrabold">{cfgEdit.cart_empty_cta || 'IR AL CATÁLOGO'}</span>
+                        <p className="text-white text-[9px] font-bold mt-2">{cfgEdit.cart_process_title || 'PROCESO DE FABRICACIÓN:'}</p>
+                        <p className="text-gray-400 text-[8px]">{cfgEdit.cart_process_desc || 'Envías la orden...'}</p>
+                      </div>
+                    )}
+
+                    {(cfgSection !== 'hero' && cfgSection !== 'marca' && cfgSection !== 'footer' && cfgSection !== 'carrito') && (
+                      <div className={`p-4 rounded-xl border ${isLight ? 'border-slate-200 bg-slate-50' : 'border-white/10 bg-white/5'}`}>
+                        <p className="text-[10px] font-bold text-gray-400 uppercase mb-2">Valores — {cfgSections.find(s => s.key === cfgSection)?.label}</p>
+                        <div className="space-y-1.5">
+                          {configRows.filter(r => r.seccion === cfgSection).map(r => (
+                            <div key={r.id} className="flex items-center gap-2">
+                              <span className="text-[10px] text-gray-500 w-24 truncate flex-shrink-0">{r.clave}:</span>
+                              <span className={`text-xs truncate ${cfgEdit[r.id] !== cfgOriginal[r.id] ? 'text-[#D2E8A3] font-bold' : 'text-gray-300'}`}>
+                                {cfgEdit[r.id] || '(vacío)'}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
