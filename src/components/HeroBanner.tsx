@@ -15,14 +15,15 @@ const HeroMedia: React.FC<HeroMediaProps> = ({ url, alt, className }) => {
     const videoId = url.match(/\/video\/(\d+)/)?.[1];
     const embedUrl = videoId ? `https://www.tiktok.com/embed/v2/${videoId}` : url;
     return (
-      <iframe
-        src={embedUrl}
-        title={alt}
-        className={className}
-        allow="autoplay; fullscreen"
-        allowFullScreen
-        sandbox="allow-scripts allow-same-origin"
-      />
+      <div className={`${className} relative overflow-hidden`}>
+        <iframe
+          src={embedUrl}
+          title={alt}
+          className="absolute inset-0 w-[170%] h-[170%] -left-[35%] -top-[20%] border-0 pointer-events-none"
+          allow="autoplay; fullscreen"
+          allowFullScreen
+        />
+      </div>
     );
   }
 
