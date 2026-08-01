@@ -525,6 +525,151 @@ const TabCatalogo = ({ cfgEdit, setCfg, products, editingProduct, setEditingProd
                 </label>
               ))}
             </div>
+            {/* ── OPCIONES DE PRODUCTO (dentro del Section) ── */}
+            <div className="border-t border-white/10 pt-4 space-y-4">
+              <p className="text-[11px] font-extrabold text-[#D2E8A3] uppercase tracking-wider flex items-center gap-2"><Shirt className="w-3.5 h-3.5" /> Opciones de Polos (Tallas con precio extra / Cortes / Colores)</p>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Tallas (nombre + precio extra)</label>
+                <div className="space-y-1.5">
+                  {(editingProduct.opciones_ropa?.sizes || []).map((s: any, i: number) => {
+                    const name = typeof s === 'string' ? s : s.name;
+                    const extra = typeof s === 'string' ? 0 : (s.extraPrice || 0);
+                    return (
+                      <div key={i} className="flex items-center gap-2">
+                        <TextInput value={name} onChange={v => {
+                          const sizes = [...(editingProduct.opciones_ropa?.sizes || [])];
+                          sizes[i] = extra > 0 ? { name: v, extraPrice: extra } : v;
+                          setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), sizes } } : p);
+                        }} placeholder="Ej: S" />
+                        <div className="flex items-center gap-1 shrink-0">
+                          <span className="text-[10px] text-gray-500">+S/</span>
+                          <TextInput type="number" value={String(extra)} onChange={v => {
+                            const sizes = [...(editingProduct.opciones_ropa?.sizes || [])];
+                            const val = parseInt(v) || 0;
+                            sizes[i] = val > 0 ? { name, extraPrice: val } : name;
+                            setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), sizes } } : p);
+                          }} />
+                        </div>
+                        <button onClick={() => {
+                          const sizes = (editingProduct.opciones_ropa?.sizes || []).filter((_: any, j: number) => j !== i);
+                          setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), sizes } } : p);
+                        }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
+                      </div>
+                    );
+                  })}
+                  <button onClick={() => {
+                    const sizes = [...(editingProduct.opciones_ropa?.sizes || []), 'M'];
+                    setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), sizes } } : p);
+                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar talla</button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Cortes / Fits</label>
+                <div className="space-y-1.5">
+                  {(editingProduct.opciones_ropa?.fits || []).map((fit: string, i: number) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <TextInput value={fit} onChange={v => {
+                        const fits = [...(editingProduct.opciones_ropa?.fits || [])];
+                        fits[i] = v;
+                        setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), fits } } : p);
+                      }} placeholder="Ej: Oversized Streetwear" />
+                      <button onClick={() => {
+                        const fits = (editingProduct.opciones_ropa?.fits || []).filter((_: any, j: number) => j !== i);
+                        setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), fits } } : p);
+                      }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
+                    </div>
+                  ))}
+                  <button onClick={() => {
+                    const fits = [...(editingProduct.opciones_ropa?.fits || []), ''];
+                    setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), fits } } : p);
+                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar corte</button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Colores de tela</label>
+                <div className="space-y-1.5">
+                  {(editingProduct.opciones_ropa?.colors || []).map((c: any, i: number) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input type="color" value={c.hex || '#000000'} onChange={e => {
+                        const colors = [...(editingProduct.opciones_ropa?.colors || [])];
+                        colors[i] = { ...colors[i], hex: e.target.value };
+                        setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), colors } } : p);
+                      }} className="w-8 h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent shrink-0" />
+                      <TextInput value={c.name} onChange={v => {
+                        const colors = [...(editingProduct.opciones_ropa?.colors || [])];
+                        colors[i] = { ...colors[i], name: v };
+                        setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), colors } } : p);
+                      }} placeholder="Nombre del color" />
+                      <button onClick={() => {
+                        const colors = (editingProduct.opciones_ropa?.colors || []).filter((_: any, j: number) => j !== i);
+                        setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), colors } } : p);
+                      }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
+                    </div>
+                  ))}
+                  <button onClick={() => {
+                    const colors = [...(editingProduct.opciones_ropa?.colors || []), { name: 'Negro', hex: '#0A0A0A' }];
+                    setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), colors } } : p);
+                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar color</button>
+                </div>
+              </div>
+            </div>
+
+            <div className="border-t border-white/10 pt-4 space-y-4">
+              <p className="text-[11px] font-extrabold text-[#D2E8A3] uppercase tracking-wider flex items-center gap-2"><Coffee className="w-3.5 h-3.5" /> Opciones de Vasos / Tazas / Placas</p>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">{editingProduct.categoria_id === 'drops' ? 'Medidas' : 'Tipos'}</label>
+                <div className="space-y-1.5">
+                  {(editingProduct.opciones_vaso?.types || []).map((t: any, i: number) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <TextInput value={t.name} onChange={v => {
+                        const types = [...(editingProduct.opciones_vaso?.types || [])];
+                        types[i] = { ...types[i], name: v };
+                        setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
+                      }} placeholder={editingProduct.categoria_id === 'drops' ? 'Ej: 20x30cm' : 'Ej: Vaso Frosted 16oz'} />
+                      <div className="flex items-center gap-1 shrink-0">
+                        <span className="text-[10px] text-gray-500">+S/</span>
+                        <TextInput type="number" value={String(t.extraPrice || 0)} onChange={v => {
+                          const types = [...(editingProduct.opciones_vaso?.types || [])];
+                          types[i] = { ...types[i], extraPrice: parseInt(v) || 0 };
+                          setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
+                        }} />
+                      </div>
+                      <button onClick={() => {
+                        const types = (editingProduct.opciones_vaso?.types || []).filter((_: any, j: number) => j !== i);
+                        setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
+                      }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
+                    </div>
+                  ))}
+                  <button onClick={() => {
+                    const types = [...(editingProduct.opciones_vaso?.types || []), { name: '', extraPrice: 0 }];
+                    setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
+                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar {editingProduct.categoria_id === 'drops' ? 'medida' : 'tipo'}</button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Acabados</label>
+                <div className="space-y-1.5">
+                  {(editingProduct.opciones_vaso?.finishes || []).map((f: string, i: number) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <TextInput value={f} onChange={v => {
+                        const finishes = [...(editingProduct.opciones_vaso?.finishes || [])];
+                        finishes[i] = v;
+                        setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), finishes } } : p);
+                      }} placeholder="Ej: Acabado Mate" />
+                      <button onClick={() => {
+                        const finishes = (editingProduct.opciones_vaso?.finishes || []).filter((_: any, j: number) => j !== i);
+                        setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), finishes } } : p);
+                      }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
+                    </div>
+                  ))}
+                  <button onClick={() => {
+                    const finishes = [...(editingProduct.opciones_vaso?.finishes || []), ''];
+                    setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), finishes } } : p);
+                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar acabado</button>
+                </div>
+              </div>
+            </div>
+
           </Section>
           <div className="space-y-4">
             <PreviewBox title="Vista Previa del Producto">
@@ -556,152 +701,6 @@ const TabCatalogo = ({ cfgEdit, setCfg, products, editingProduct, setEditingProd
             </div>
           </div>
         </div>
-
-        {/* ── OPCIONES DE PRODUCTO (fuera del grid, ancho completo) ── */}
-        <div className="rounded-2xl border border-white/5 bg-[#111311] p-5 space-y-5">
-          <p className="text-[11px] font-extrabold text-[#D2E8A3] uppercase tracking-wider flex items-center gap-2"><Shirt className="w-3.5 h-3.5" /> Opciones de Polos (Tallas con precio extra / Cortes / Colores)</p>
-          <div>
-            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Tallas (nombre + precio extra)</label>
-            <div className="space-y-1.5">
-              {(editingProduct.opciones_ropa?.sizes || []).map((s: any, i: number) => {
-                const name = typeof s === 'string' ? s : s.name;
-                const extra = typeof s === 'string' ? 0 : (s.extraPrice || 0);
-                return (
-                  <div key={i} className="flex items-center gap-2">
-                    <TextInput value={name} onChange={v => {
-                      const sizes = [...(editingProduct.opciones_ropa?.sizes || [])];
-                      sizes[i] = extra > 0 ? { name: v, extraPrice: extra } : v;
-                      setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), sizes } } : p);
-                    }} placeholder="Ej: S" />
-                    <div className="flex items-center gap-1 shrink-0">
-                      <span className="text-[10px] text-gray-500">+S/</span>
-                      <TextInput type="number" value={String(extra)} onChange={v => {
-                        const sizes = [...(editingProduct.opciones_ropa?.sizes || [])];
-                        const val = parseInt(v) || 0;
-                        sizes[i] = val > 0 ? { name, extraPrice: val } : name;
-                        setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), sizes } } : p);
-                      }} />
-                    </div>
-                    <button onClick={() => {
-                      const sizes = (editingProduct.opciones_ropa?.sizes || []).filter((_: any, j: number) => j !== i);
-                      setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), sizes } } : p);
-                    }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
-                  </div>
-                );
-              })}
-              <button onClick={() => {
-                const sizes = [...(editingProduct.opciones_ropa?.sizes || []), 'M'];
-                setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), sizes } } : p);
-              }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar talla</button>
-            </div>
-          </div>
-          <div>
-            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Cortes / Fits</label>
-            <div className="space-y-1.5">
-              {(editingProduct.opciones_ropa?.fits || []).map((fit: string, i: number) => (
-                <div key={i} className="flex items-center gap-2">
-                  <TextInput value={fit} onChange={v => {
-                    const fits = [...(editingProduct.opciones_ropa?.fits || [])];
-                    fits[i] = v;
-                    setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), fits } } : p);
-                  }} placeholder="Ej: Oversized Streetwear" />
-                  <button onClick={() => {
-                    const fits = (editingProduct.opciones_ropa?.fits || []).filter((_: any, j: number) => j !== i);
-                    setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), fits } } : p);
-                  }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
-                </div>
-              ))}
-              <button onClick={() => {
-                const fits = [...(editingProduct.opciones_ropa?.fits || []), ''];
-                setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), fits } } : p);
-              }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar corte</button>
-            </div>
-          </div>
-          <div>
-            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Colores de tela</label>
-            <div className="space-y-1.5">
-              {(editingProduct.opciones_ropa?.colors || []).map((c: any, i: number) => (
-                <div key={i} className="flex items-center gap-2">
-                  <input type="color" value={c.hex || '#000000'} onChange={e => {
-                    const colors = [...(editingProduct.opciones_ropa?.colors || [])];
-                    colors[i] = { ...colors[i], hex: e.target.value };
-                    setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), colors } } : p);
-                  }} className="w-8 h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent shrink-0" />
-                  <TextInput value={c.name} onChange={v => {
-                    const colors = [...(editingProduct.opciones_ropa?.colors || [])];
-                    colors[i] = { ...colors[i], name: v };
-                    setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), colors } } : p);
-                  }} placeholder="Nombre del color" />
-                  <button onClick={() => {
-                    const colors = (editingProduct.opciones_ropa?.colors || []).filter((_: any, j: number) => j !== i);
-                    setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), colors } } : p);
-                  }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
-                </div>
-              ))}
-              <button onClick={() => {
-                const colors = [...(editingProduct.opciones_ropa?.colors || []), { name: 'Negro', hex: '#0A0A0A' }];
-                setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), colors } } : p);
-              }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar color</button>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-white/5 bg-[#111311] p-5 space-y-5">
-          <p className="text-[11px] font-extrabold text-[#D2E8A3] uppercase tracking-wider flex items-center gap-2"><Coffee className="w-3.5 h-3.5" /> Opciones de Vasos / Tazas / Placas</p>
-          <div>
-            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">{editingProduct.categoria_id === 'drops' ? 'Medidas' : 'Tipos'}</label>
-            <div className="space-y-1.5">
-              {(editingProduct.opciones_vaso?.types || []).map((t: any, i: number) => (
-                <div key={i} className="flex items-center gap-2">
-                  <TextInput value={t.name} onChange={v => {
-                    const types = [...(editingProduct.opciones_vaso?.types || [])];
-                    types[i] = { ...types[i], name: v };
-                    setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
-                  }} placeholder={editingProduct.categoria_id === 'drops' ? 'Ej: 20x30cm' : 'Ej: Vaso Frosted 16oz'} />
-                  <div className="flex items-center gap-1 shrink-0">
-                    <span className="text-[10px] text-gray-500">+S/</span>
-                    <TextInput type="number" value={String(t.extraPrice || 0)} onChange={v => {
-                      const types = [...(editingProduct.opciones_vaso?.types || [])];
-                      types[i] = { ...types[i], extraPrice: parseInt(v) || 0 };
-                      setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
-                    }} />
-                  </div>
-                  <button onClick={() => {
-                    const types = (editingProduct.opciones_vaso?.types || []).filter((_: any, j: number) => j !== i);
-                    setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
-                  }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
-                </div>
-              ))}
-              <button onClick={() => {
-                const types = [...(editingProduct.opciones_vaso?.types || []), { name: '', extraPrice: 0 }];
-                setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
-              }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar {editingProduct.categoria_id === 'drops' ? 'medida' : 'tipo'}</button>
-            </div>
-          </div>
-          <div>
-            <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Acabados</label>
-            <div className="space-y-1.5">
-              {(editingProduct.opciones_vaso?.finishes || []).map((f: string, i: number) => (
-                <div key={i} className="flex items-center gap-2">
-                  <TextInput value={f} onChange={v => {
-                    const finishes = [...(editingProduct.opciones_vaso?.finishes || [])];
-                    finishes[i] = v;
-                    setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), finishes } } : p);
-                  }} placeholder="Ej: Acabado Mate" />
-                  <button onClick={() => {
-                    const finishes = (editingProduct.opciones_vaso?.finishes || []).filter((_: any, j: number) => j !== i);
-                    setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), finishes } } : p);
-                  }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
-                </div>
-              ))}
-              <button onClick={() => {
-                const finishes = [...(editingProduct.opciones_vaso?.finishes || []), ''];
-                setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), finishes } } : p);
-              }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar acabado</button>
-            </div>
-          </div>
-        </div>
-
         </div>
     );
   }
