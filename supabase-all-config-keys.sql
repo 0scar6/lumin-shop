@@ -1,178 +1,161 @@
 -- ============================================
--- TODAS LAS KEYS DE CONFIGURACION FALTANTES
+-- TODAS LAS KEYS DE CONFIGURACION
 -- Ejecutar en SQL Editor de Supabase
+-- SAFE TO RE-RUN: actualiza valores existentes
 -- ============================================
 
 -- Admin password
 INSERT INTO configuracion (id, seccion, clave, valor) VALUES
   ('admin_password', 'admin', 'password', 'Ratitaxd12')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;
 
--- Hero media URLs
+-- Hero
 INSERT INTO configuracion (id, seccion, clave, valor) VALUES
+  ('hero_badge', 'hero', 'badge', 'Exclusivo — COLECCIÓN BAJO DEMANDA'),
+  ('hero_title_1', 'hero', 'titulo_1', 'MODA URBANA &'),
+  ('hero_title_2', 'hero', 'titulo_2', 'VASOS SUBLIMADOS'),
+  ('hero_subtitle_1', 'hero', 'subtitulo_1', 'Polos Sublimados con'),
+  ('hero_subtitle_2', 'hero', 'subtitulo_2', 'Estampado Urbano HD High-Density'),
+  ('hero_description', 'hero', 'descripcion', 'Sin sobre-stock. Fabricado especialmente para ti al confirmar tu orden.'),
+  ('hero_badge_1', 'hero', 'badge_1', '⚡ Producción Express: 24 a 48 hrs'),
+  ('hero_badge_2', 'hero', 'badge_2', '🛡️ Garantía de Fijación Térmica & Color'),
+  ('hero_cta_catalogo', 'hero', 'cta_catalogo', 'EXPLORAR CATÁLOGO'),
+  ('hero_cta_idea', 'hero', 'cta_idea', 'Personalizar Mi Idea'),
   ('hero_media_1_url', 'hero', 'media_1_url', ''),
-  ('hero_media_2_url', 'hero', 'media_2_url', '')
-ON CONFLICT (id) DO NOTHING;
-
--- Hero sub-labels
-INSERT INTO configuracion (id, seccion, clave, valor) VALUES
+  ('hero_media_2_url', 'hero', 'media_2_url', ''),
+  ('hero_media_1_scale', 'hero', 'media_1_scale', '100'),
+  ('hero_media_1_opacity', 'hero', 'media_1_opacity', '100'),
+  ('hero_media_2_scale', 'hero', 'media_2_scale', '100'),
+  ('hero_media_2_opacity', 'hero', 'media_2_opacity', '100'),
   ('hero_street_title', 'hero', 'street_titulo', 'STREETWEAR'),
-  ('hero_street_sub', 'hero', 'street_subtitulo', 'Acid Tokyo 1988'),
+  ('hero_street_sub', 'hero', 'street_sub', 'Acid Tokyo 1988'),
   ('hero_subli_title', 'hero', 'subli_titulo', 'SUBLIMACIÓN'),
-  ('hero_subli_sub', 'hero', 'subli_subtitulo', 'Frosted Glass 16oz')
-ON CONFLICT (id) DO NOTHING;
+  ('hero_subli_sub', 'hero', 'subli_sub', 'Frosted Glass 16oz')
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;
 
--- Social bar
+-- Brand
 INSERT INTO configuracion (id, seccion, clave, valor) VALUES
-  ('social_bar_title', 'social', 'titulo', 'WhatsApp & Redes Oficiales'),
-  ('social_bar_text', 'social', 'texto', 'Contacto directo'),
-  ('social_bar_sub', 'social', 'subtitulo', 'Respuesta inmediata')
-ON CONFLICT (id) DO NOTHING;
+  ('brand_name', 'marca', 'nombre', 'LUMIN SHOP'),
+  ('brand_slogan', 'marca', 'slogan', 'URBAN APPAREL & SUBLIMATION'),
+  ('brand_phone', 'marca', 'telefono', '993 365 099'),
+  ('brand_phone_raw', 'marca', 'telefono_raw', '51993365099'),
+  ('brand_location', 'marca', 'ubicacion', 'Ayacucho, Perú'),
+  ('brand_instagram', 'marca', 'instagram', '@.lumin.shop'),
+  ('brand_whatsapp', 'marca', 'whatsapp', 'https://wa.me/51993365099'),
+  ('brand_whatsapp_msg', 'marca', 'whatsapp_msg', '¡Hola LUMIN! ⚡ Quisiera realizar el siguiente pedido:'),
+  ('brand_whatsapp_idea', 'marca', 'whatsapp_idea', '⚡ *CONSULTA DE IDEA PERSONALIZADA LUMIN SHOP*')
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;
 
--- Header
+-- Social
 INSERT INTO configuracion (id, seccion, clave, valor) VALUES
-  ('header_badge', 'header', 'badge', 'Atención por Pedido'),
-  ('header_search', 'header', 'buscar', 'Buscar polo, taza, oversized...'),
-  ('header_search_mobile', 'header', 'buscar_mobile', 'Buscar por modelo o tipo...'),
-  ('header_profile_btn', 'header', 'perfil_btn', 'Yo'),
-  ('header_whatsapp_btn', 'header', 'whatsapp_btn', 'Ayuda'),
-  ('header_cart_btn', 'header', 'carrito_btn', 'Mi Pedido')
-ON CONFLICT (id) DO NOTHING;
+  ('social_title', 'social', 'titulo', 'WhatsApp & Redes Oficiales'),
+  ('social_text', 'social', 'texto', 'Contacto directo'),
+  ('social_subtitle', 'social', 'subtitulo', 'Respuesta inmediata')
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;
 
--- Floating Dock nav
+-- Badges / Process
+INSERT INTO configuracion (id, seccion, clave, valor) VALUES
+  ('badge_model_title', 'badges', 'titulo', 'MODELO SUSTENTABLE BAJO DEMANDA'),
+  ('badge_model_subtitle', 'badges', 'subtitulo', '¿CÓMO FUNCIONA LUMIN SHOP?'),
+  ('badge_step1_title', 'badges', 'paso1_titulo', 'Confirmas tu diseño'),
+  ('badge_step1_desc', 'badges', 'paso1_desc', 'Envías tu arte o idea por WhatsApp'),
+  ('badge_step2_title', 'badges', 'paso2_titulo', 'Producimos en 24-48h'),
+  ('badge_step2_desc', 'badges', 'paso2_desc', 'Sublimamos tu pedido con acabado HD'),
+  ('badge_step3_title', 'badges', 'paso3_titulo', 'Despachamos'),
+  ('badge_step3_desc', 'badges', 'paso3_desc', 'Envío a todo el país o recojo en tienda')
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;
+
+-- Sections
+INSERT INTO configuracion (id, seccion, clave, valor) VALUES
+  ('section_about_title', 'secciones', 'sobre_titulo', 'SOBRE LUMIN SHOP'),
+  ('section_about_subtitle', 'secciones', 'sobre_sub', 'Ropa Urbana Streetwear & Sublimación Premium'),
+  ('section_about_text', 'secciones', 'sobre_texto', 'LUMIN SHOP es una marca independiente de Ayacucho especializada en polos sublimados y vasos/tazas con acabado HD. Todo es producido bajo demanda.'),
+  ('section_featured_title', 'secciones', 'destacados_titulo', '🔥 SELECCIÓN DESTACADA'),
+  ('section_featured_sub', 'secciones', 'destacados_sub', 'Nuestros Más Pedidos')
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;
+
+-- Navigation
 INSERT INTO configuracion (id, seccion, clave, valor) VALUES
   ('nav_home', 'navegacion', 'inicio', 'Inicio'),
   ('nav_catalog', 'navegacion', 'catalogo', 'Catálogo'),
   ('nav_favorites', 'navegacion', 'favoritos', 'Favoritos'),
   ('nav_cart', 'navegacion', 'pedido', 'Pedido'),
-  ('nav_profile', 'navegacion', 'mi_cuenta', 'Mi Cuenta')
-ON CONFLICT (id) DO NOTHING;
+  ('nav_profile', 'navegacion', 'mi_cuenta', 'Mi Cuenta'),
+  ('nav_custom', 'navegacion', 'idea', 'Idea')
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;
 
 -- Catalog
 INSERT INTO configuracion (id, seccion, clave, valor) VALUES
-  ('catalog_label', 'catalogo', 'label', 'PANTALLA DE CATÁLOGO & PRODUCTOS'),
   ('catalog_title', 'catalogo', 'titulo', 'COLECCIÓN DISPONIBLE'),
   ('catalog_subtitle', 'catalogo', 'subtitulo', 'Explora nuestra colección de productos sublimados'),
-  ('catalog_filter_technique', 'catalogo', 'filtro_tecnica', 'Técnica:'),
-  ('catalog_filter_all', 'catalogo', 'filtro_todas', 'Todas'),
-  ('catalog_filter_textile', 'catalogo', 'filtro_textil', 'Textil HD'),
-  ('catalog_filter_sublimation', 'catalogo', 'filtro_sublimado', 'Sublimado 200°C'),
-  ('catalog_sort_featured', 'catalogo', 'orden_destacados', 'Destacados Drop'),
-  ('catalog_sort_price_asc', 'catalogo', 'orden_precio_menor', 'Precio: Menor a Mayor'),
-  ('catalog_sort_price_desc', 'catalogo', 'orden_precio_mayor', 'Precio: Mayor a Menor'),
-  ('catalog_empty', 'catalogo', 'vacio', 'No se encontraron productos con los filtros seleccionados.'),
-  ('catalog_reset_filters', 'catalogo', 'resetear_filtros', 'Restablecer Filtros')
-ON CONFLICT (id) DO NOTHING;
+  ('catalog_empty', 'catalogo', 'vacio', 'No se encontraron productos con los filtros seleccionados.')
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;
 
 -- Favorites
 INSERT INTO configuracion (id, seccion, clave, valor) VALUES
-  ('favorites_label', 'favoritos', 'label', 'PANTALLA DE MIS FAVORITOS'),
   ('favorites_title', 'favoritos', 'titulo', 'PRODUCTOS GUARDADOS'),
-  ('favorites_clear', 'favoritos', 'vaciar', 'Vaciar Favoritos'),
+  ('favorites_desc', 'favoritos', 'desc', 'Tus polos, vasos y placas favoritos'),
   ('favorites_empty_title', 'favoritos', 'vacio_titulo', 'Aún no tienes productos guardados'),
-  ('favorites_empty_desc', 'favoritos', 'vacio_desc', 'Explora el catálogo y presiona el corazón en los polos o vasos que más te gusten para guardarlos aquí.'),
+  ('favorites_empty_desc', 'favoritos', 'vacio_desc', 'Explora el catálogo y presiona el corazón para guardar.'),
   ('favorites_empty_cta', 'favoritos', 'vacio_cta', 'EXPLORAR CATÁLOGO')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;
 
 -- Cart
 INSERT INTO configuracion (id, seccion, clave, valor) VALUES
-  ('cart_label', 'carrito', 'label', 'PANTALLA DE PEDIDO & PROCESAMIENTO'),
-  ('cart_title', 'carrito', 'titulo', 'MI PEDIDO LUMIN'),
-  ('cart_clear', 'carrito', 'vaciar', 'Vaciar Carrito'),
-  ('cart_empty_title', 'carrito', 'vacio_titulo', 'Tu pedido está vacío por el momento'),
-  ('cart_empty_desc', 'carrito', 'vacio_desc', 'Agrega polos streetwear o vasos/tazas con tu personalización preferida para generar tu orden.'),
+  ('cart_empty_title', 'carrito', 'vacio_titulo', 'Tu pedido está vacío'),
+  ('cart_empty_desc', 'carrito', 'vacio_desc', 'Agrega polos o vasos/tazas para generar tu orden.'),
   ('cart_empty_cta', 'carrito', 'vacio_cta', 'IR AL CATÁLOGO'),
   ('cart_process_title', 'carrito', 'proceso_titulo', 'PROCESO DE FABRICACIÓN BAJO PEDIDO:'),
-  ('cart_process_desc', 'carrito', 'proceso_desc', 'Envías la orden a WhatsApp, iniciamos producción digital/artesanal (24-48h) y despachamos a tu domicilio.'),
-  ('cart_payment_title', 'carrito', 'pago_titulo', 'Pago Yape / Plin Directo'),
-  ('cart_payment_holder', 'carrito', 'pago_titular', 'Titular: Oscar Daniel (LUMIN SHOP)'),
-  ('cart_phone_copied', 'carrito', 'telefono_copiado', '¡Número 993365099 Copiado!'),
-  ('cart_phone_copy', 'carrito', 'copiar_telefono', 'Copiar Número Yape / Plin'),
-  ('cart_shipping_title', 'carrito', 'envio_titulo', 'Datos para el envío:'),
-  ('cart_form_name_label', 'carrito', 'form_nombre_label', 'Nombre Completo:'),
-  ('cart_form_name_placeholder', 'carrito', 'form_nombre_placeholder', 'Tu nombre...'),
-  ('cart_form_address_label', 'carrito', 'form_direccion_label', 'Dirección de Entrega:'),
-  ('cart_form_address_placeholder', 'carrito', 'form_direccion_placeholder', 'Av, Calle, Dpto y Referencia...'),
-  ('cart_delivery_home', 'carrito', 'envio_domicilio', '🚀 Envío Domicilio'),
-  ('cart_delivery_pickup', 'carrito', 'envio_tienda', '🏪 Recojo en Tienda'),
+  ('cart_process_desc', 'carrito', 'proceso_desc', 'Envías la orden a WhatsApp, iniciamos producción y despachamos a tu domicilio.'),
+  ('cart_send_whatsapp', 'carrito', 'enviar_whatsapp', 'ENVIAR PEDIDO POR WHATSAPP'),
   ('cart_total_label', 'carrito', 'total_label', 'Total a Pagar:'),
-  ('cart_item_size', 'carrito', 'item_talla', 'Talla:'),
-  ('cart_item_fit', 'carrito', 'item_corte', 'Fit:'),
-  ('cart_item_custom_text', 'carrito', 'item_texto', 'Texto personalizado:'),
-  ('cart_order_copied', 'carrito', 'orden_copiada', '¡Texto de Orden Copiado!'),
-  ('cart_copy_order', 'carrito', 'copiar_orden', 'Copiar Texto de Pedido Completo')
-ON CONFLICT (id) DO NOTHING;
+  ('cart_shipping_title', 'carrito', 'envio_titulo', 'Datos para el envío:'),
+  ('cart_form_name_label', 'carrito', 'form_nombre', 'Nombre Completo:'),
+  ('cart_form_address_label', 'carrito', 'form_direccion', 'Dirección de Entrega:'),
+  ('cart_delivery_home', 'carrito', 'envio_domicilio', '🚀 Envío Domicilio'),
+  ('cart_delivery_pickup', 'carrito', 'envio_tienda', '🏪 Recojo en Tienda')
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;
 
 -- Profile
 INSERT INTO configuracion (id, seccion, clave, valor) VALUES
-  ('profile_label', 'perfil', 'label', 'PANTALLA DE PERFIL & CONFIGURACIÓN "YO"'),
   ('profile_title', 'perfil', 'titulo', 'MI CUENTA & PREFERENCIAS'),
-  ('profile_stat_activity', 'perfil', 'stat_actividad', 'Actividad'),
-  ('profile_stat_products_viewed', 'perfil', 'stat_vistos', 'Productos vistos'),
-  ('profile_stat_collection', 'perfil', 'stat_coleccion', 'Colección'),
-  ('profile_stat_favorites', 'perfil', 'stat_favoritos', 'Favoritos'),
-  ('profile_stat_history', 'perfil', 'stat_historial', 'Historial'),
-  ('profile_stat_orders', 'perfil', 'stat_pedidos', 'Pedidos'),
-  ('profile_appearance_title', 'perfil', 'apariencia_titulo', '1. Apariencia Visual del Sitio Web'),
-  ('theme_dark_label', 'perfil', 'tema_oscuro', 'Oscuro (Clásico)'),
-  ('theme_dark_desc', 'perfil', 'tema_oscuro_desc', 'Verde Neón & Negro'),
-  ('theme_amoled_desc', 'perfil', 'tema_amoled_desc', 'Negro Absoluto #000'),
-  ('theme_light_label', 'perfil', 'tema_claro', 'Modo Claro'),
-  ('theme_light_desc', 'perfil', 'tema_claro_desc', 'Fondo Claro Limpio'),
-  ('profile_data_title', 'perfil', 'datos_titulo', '2. Mis Datos para Autocompletar Pedidos'),
-  ('profile_label_name', 'perfil', 'label_nombre', 'Nombre y Apellido'),
-  ('profile_placeholder_name', 'perfil', 'placeholder_nombre', 'Ej. Carlos Mendoza'),
-  ('profile_label_phone', 'perfil', 'label_telefono', 'WhatsApp / Teléfono'),
-  ('profile_placeholder_phone', 'perfil', 'placeholder_telefono', 'Ej. 987654321'),
-  ('profile_label_dni', 'perfil', 'label_dni', 'DNI / RUC (Comprobante)'),
-  ('profile_placeholder_dni', 'perfil', 'placeholder_dni', 'Ej. 72839401'),
-  ('profile_label_address', 'perfil', 'label_direccion', 'Dirección de Entrega'),
-  ('profile_placeholder_address', 'perfil', 'placeholder_direccion', 'Av, Calle y Distrito...'),
-  ('profile_save_success', 'perfil', 'guardado_exito', '¡INFORMACIÓN GUARDADA CON ÉXITO!'),
-  ('profile_save_button', 'perfil', 'guardar_btn', 'GUARDAR MI INFORMACIÓN EN MI NAVEGADOR'),
-  ('profile_concepts_title', 'perfil', 'conceptos_titulo', '3. Conceptos Clave del Servicio LUMIN SHOP')
-ON CONFLICT (id) DO NOTHING;
+  ('profile_concepts', 'perfil', 'conceptos_titulo', '3. Conceptos del Servicio LUMIN SHOP:'),
+  ('concept_1_title', 'perfil', 'concepto_1_titulo', '1. Elaboración Bajo Pedido'),
+  ('concept_1_desc', 'perfil', 'concepto_1_desc', 'Producción personalizada en 24 a 48 hrs hábiles.'),
+  ('concept_2_title', 'perfil', 'concepto_2_titulo', '2. Pagos Yape / Plin / Bancos'),
+  ('concept_2_desc', 'perfil', 'concepto_2_desc', 'Pago directo al 993 365 099 a nombre de Oscar Daniel.'),
+  ('concept_3_title', 'perfil', 'concepto_3_titulo', '3. Envíos a Todo el País'),
+  ('concept_3_desc', 'perfil', 'concepto_3_desc', 'Envío por Olva Courier, Shalom o Express.')
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;
 
--- Custom Idea
+-- Shipping
 INSERT INTO configuracion (id, seccion, clave, valor) VALUES
-  ('custom_idea_badge', 'idea_personalizada', 'badge', 'COTIZACIÓN DE PRODUCTO SUBLIMADO'),
-  ('custom_idea_title', 'idea_personalizada', 'titulo', '¿Tienes un diseño en mente?'),
-  ('custom_idea_desc', 'idea_personalizada', 'desc', 'Escríbenos tu idea, logo o frase y te ayudaremos a sublimarlo en vasos, tazas, polos o placas de aluminio.'),
-  ('custom_idea_type_label', 'idea_personalizada', 'tipo_label', 'Tipo de Producto:'),
-  ('custom_idea_type_polo', 'idea_personalizada', 'tipo_polo', '👕 Polo Sublimado'),
-  ('custom_idea_type_cup', 'idea_personalizada', 'tipo_vaso', '☕ Vaso/Taza'),
-  ('custom_idea_type_other', 'idea_personalizada', 'tipo_otro', '⚡ Otro'),
-  ('custom_idea_text_label', 'idea_personalizada', 'texto_label', 'Describe tu idea o mensaje:'),
-  ('custom_idea_placeholder', 'idea_personalizada', 'placeholder', 'Ej: Quiero un polo oversized negro...'),
-  ('custom_idea_cta', 'idea_personalizada', 'cta', 'COTIZAR IDEA POR WHATSAPP')
-ON CONFLICT (id) DO NOTHING;
+  ('shipping_price_lima', 'envios', 'precio_lima', '15'),
+  ('shipping_price_provincia', 'envios', 'precio_provincia', '25'),
+  ('shipping_price_internacional', 'envios', 'precio_internacional', '80')
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;
 
--- Footer columns
+-- Footer
 INSERT INTO configuracion (id, seccion, clave, valor) VALUES
+  ('footer_description', 'footer', 'descripcion', 'Marca independiente de Ayacucho especializada en sublimación premium.'),
+  ('footer_production', 'footer', 'produccion', 'Producción Express 24-48 hrs'),
+  ('footer_collections', 'footer', 'colecciones', 'Colecciones'),
   ('footer_col_1', 'footer', 'col_1', 'Polos Oversized & Boxy Fit'),
   ('footer_col_2', 'footer', 'col_2', 'Vasos Frosted Glass 16oz'),
   ('footer_col_3', 'footer', 'col_3', 'Tazas Térmicas 11oz'),
-  ('footer_col_4', 'footer', 'col_4', 'Edición Especial Drop 04')
-ON CONFLICT (id) DO NOTHING;
+  ('footer_guarantee_title', 'footer', 'garantia_titulo', 'Garantía & Envíos'),
+  ('footer_guarantee_1', 'footer', 'garantia_1', 'Estampados HD de alta resistencia'),
+  ('footer_guarantee_2', 'footer', 'garantia_2', 'Envíos directos a todo el país'),
+  ('footer_social_title', 'footer', 'social_titulo', 'Síguenos en Redes'),
+  ('footer_social_text', 'footer', 'social_texto', 'Encuéntranos en'),
+  ('footer_copyright', 'footer', 'copyright', '© 2026 LUMIN SHOP — Ayacucho, Perú. Todos los derechos reservados.')
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;
 
--- Profile concepts (nombres correctos)
-DELETE FROM configuracion WHERE id IN (
-  'profile_concept_1', 'profile_concept_1_desc',
-  'profile_concept_2', 'profile_concept_2_desc',
-  'profile_concept_3', 'profile_concept_3_desc'
-);
-
+-- WhatsApp order messages
 INSERT INTO configuracion (id, seccion, clave, valor) VALUES
-  ('concept_1_title', 'perfil', 'concepto_1_titulo', '1. Elaboración Bajo Pedido'),
-  ('concept_1_desc', 'perfil', 'concepto_1_descripcion', 'Producción y sublimación personalizada en 24 a 48 hrs hábiles antes de despachar.'),
-  ('concept_2_title', 'perfil', 'concepto_2_titulo', '2. Pagos Yape / Plin / Bancos'),
-  ('concept_2_desc', 'perfil', 'concepto_2_descripcion', 'Pago directo al 993 365 099 a nombre de Oscar Daniel (LUMIN SHOP) o BCP / Interbank.'),
-  ('concept_3_title', 'perfil', 'concepto_3_titulo', '3. Envíos Gratis (S/ 200+)'),
-  ('concept_3_desc', 'perfil', 'concepto_3_descripcion', 'Envío sin costo en compras mayores a S/ 200 vía Olva Courier, Shalom o Express.'),
-  ('concept_4_title', 'perfil', 'concepto_4_titulo', '4. Algodón Reactivo & Sublimado HD'),
-  ('concept_4_desc', 'perfil', 'concepto_4_descripcion', 'Telas 24/1 de alto gramaje y sublimación térmica 1200 DPI que no se despinta ni se agrieta.'),
-  ('concept_5_title', 'perfil', 'concepto_5_titulo', '5. Verificación por WhatsApp'),
-  ('concept_5_desc', 'perfil', 'concepto_5_descripcion', 'Atención personalizada humana para revisar tu diseño, confirmación de talla y datos antes del envío.'),
-  ('concept_6_title', 'perfil', 'concepto_6_titulo', '6. Garantía de Satisfacción'),
-  ('concept_6_desc', 'perfil', 'concepto_6_descripcion', 'Reemplazo o reembolso inmediato ante cualquier falla de fábrica o problemas en el estampado.')
-ON CONFLICT (id) DO NOTHING;
+  ('whatsapp_order_header', 'whatsapp', 'orden_header', '📦 *DETALLE DE MI PEDIDO*'),
+  ('whatsapp_order_total', 'whatsapp', 'orden_total', 'TOTAL DE MI ORDEN:'),
+  ('whatsapp_order_closing', 'whatsapp', 'orden_cierre', 'Por favor confírmenme los datos de pago y el tiempo de entrega. ¡Muchas gracias!'),
+  ('whatsapp_delivery_home', 'whatsapp', 'envio_domicilio', '🚀 Envío a Domicilio'),
+  ('whatsapp_delivery_pickup', 'whatsapp', 'envio_tienda', '🏪 Recojo en Tienda')
+ON CONFLICT (id) DO UPDATE SET valor = EXCLUDED.valor;

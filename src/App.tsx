@@ -75,12 +75,15 @@ export default function App() {
   const [products, setProducts] = useState<Product[]>(PRODUCTS_STATIC);
   const [categories, setCategories] = useState(CATEGORIES_STATIC);
 
+  // Config state
+  const [configLoaded, setConfigLoaded] = useState(false);
+
   useEffect(() => {
     loadProductsFromSupabase().then(setProducts);
     loadCategoriesFromSupabase().then((cats) => {
       if (cats.length > 0) setCategories(cats);
     });
-    loadConfig();
+    loadConfig().then(() => setConfigLoaded(true));
   }, []);
 
   // Interactive Modals
@@ -916,7 +919,20 @@ export default function App() {
                       const itemUnitPrice = getUnitPrice(item);
                       const itemTotal = itemUnitPrice * item.quantity;
 
-                      return (
+  if (!configLoaded) {
+    return (
+      <div className="min-h-screen w-full bg-[#0A0A0A] flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="w-10 h-10 mx-auto rounded-xl bg-[#D2E8A3]/20 flex items-center justify-center animate-pulse">
+            <Zap className="w-5 h-5 text-[#D2E8A3]" />
+          </div>
+          <p className="text-[#D2E8A3] text-xs font-bold uppercase tracking-widest">LUMIN SHOP</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
                         <div
                           key={item.cartItemId}
                           className={`p-4 rounded-2xl border flex gap-3 sm:gap-4 relative group ${
