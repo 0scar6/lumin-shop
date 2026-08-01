@@ -464,7 +464,7 @@ TabInicio.displayName = 'TabInicio';
 /* ═══════════════════════════════════════════════════════
    TAB: CATÁLOGO
    ═══════════════════════════════════════════════════════ */
-const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditingProduct, isNewProduct, startNewProduct, handleProdSave, handleProdDelete, handleProdImageUpload, prodSaving, uploading }: any) => {
+const TabCatalogo = ({ cfgEdit, setCfg, products, editingProduct, setEditingProduct, isNewProduct, startNewProduct, handleProdSave, handleProdDelete, handleProdImageUpload, prodSaving, uploading }: any) => {
   const _labelCls = 'block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5';
   const _inputCls = 'w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#1a1d1a] border-white/10 placeholder-gray-500 focus:outline-none focus:border-[#D2E8A3] focus:ring-1 focus:ring-[#D2E8A3]/30 transition-all';
   const streetProducts = useMemo(() => products.filter((p: ProductoRow) => p.categoria_id === 'streetwear'), [products]);
@@ -759,7 +759,7 @@ const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditin
       ))}
     </div>
   );
-});
+};
 TabCatalogo.displayName = 'TabCatalogo';
 
 /* ═══════════════════════════════════════════════════════
