@@ -521,7 +521,32 @@ const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditin
             </div>
           </Section>
 
-          {editingProduct.categoria_id === 'streetwear' && (
+          <Section title="Opciones del Producto" icon={<Package className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+            <div className="flex gap-2 flex-wrap">
+              <button onClick={() => setEditingProduct((p: any) => p ? { ...p, opciones_ropa: p.opciones_ropa || { sizes: ['S', 'M', 'L', 'XL'], fits: ['Oversized Streetwear'], colors: [{ name: 'Negro', hex: '#0A0A0A' }] } } : p)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${editingProduct.opciones_ropa ? 'bg-[#D2E8A3]/20 border-[#D2E8A3] text-[#D2E8A3]' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30'}`}>
+                <Shirt className="w-3 h-3 inline mr-1" /> Polos (Tallas/Cortes/Colores)
+              </button>
+              <button onClick={() => setEditingProduct((p: any) => p ? { ...p, opciones_vaso: p.opciones_vaso || { types: [{ name: '', extraPrice: 0 }], finishes: [''] } } : p)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${editingProduct.opciones_vaso ? 'bg-[#D2E8A3]/20 border-[#D2E8A3] text-[#D2E8A3]' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30'}`}>
+                <Coffee className="w-3 h-3 inline mr-1" /> Vasos/Tazas/Placas
+              </button>
+              {editingProduct.opciones_ropa && (
+                <button onClick={() => setEditingProduct((p: any) => p ? { ...p, opciones_ropa: null } : p)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold border bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all">
+                  Quitar Polos
+                </button>
+              )}
+              {editingProduct.opciones_vaso && (
+                <button onClick={() => setEditingProduct((p: any) => p ? { ...p, opciones_vaso: null } : p)}
+                  className="px-3 py-1.5 rounded-lg text-xs font-bold border bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all">
+                  Quitar Vasos
+                </button>
+              )}
+            </div>
+          </Section>
+
+          {editingProduct.opciones_ropa && (
             <Section title="Opciones de Polo" icon={<Shirt className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
               <div>
                 <label className={labelCls}>Tallas disponibles</label>
@@ -607,10 +632,10 @@ const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditin
             </Section>
           )}
 
-          {editingProduct.categoria_id === 'cups' && (
-            <Section title="Opciones de Vaso / Taza" icon={<Coffee className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+          {editingProduct.opciones_vaso && (
+            <Section title={editingProduct.categoria_id === 'drops' ? 'Opciones de Placa de Aluminio' : 'Opciones de Vaso / Taza'} icon={editingProduct.categoria_id === 'drops' ? <Package className="w-3.5 h-3.5 text-[#D2E8A3]" /> : <Coffee className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
               <div>
-                <label className={labelCls}>Tipos de vaso/taza</label>
+                <label className={labelCls}>{editingProduct.categoria_id === 'drops' ? 'Medidas disponibles' : 'Tipos de vaso/taza'}</label>
                 <div className="space-y-1.5">
                   {(editingProduct.opciones_vaso?.types || []).map((t: any, i: number) => (
                     <div key={i} className="flex items-center gap-2">
@@ -618,7 +643,7 @@ const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditin
                         const types = [...(editingProduct.opciones_vaso?.types || [])];
                         types[i] = { ...types[i], name: v };
                         setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...p.opciones_vaso, types } } : p);
-                      }} placeholder="Ej: Vaso Frosted 16oz" />
+                      }} placeholder={editingProduct.categoria_id === 'drops' ? 'Ej: 20x30cm' : 'Ej: Vaso Frosted 16oz'} />
                       <div className="flex items-center gap-1">
                         <span className="text-[10px] text-gray-500">+S/</span>
                         <TextInput type="number" value={String(t.extraPrice || 0)} onChange={v => {
@@ -636,11 +661,11 @@ const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditin
                   <button onClick={() => {
                     const types = [...(editingProduct.opciones_vaso?.types || []), { name: '', extraPrice: 0 }];
                     setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...p.opciones_vaso, types } } : p);
-                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar tipo</button>
+                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> {editingProduct.categoria_id === 'drops' ? 'Agregar medida' : 'Agregar tipo'}</button>
                 </div>
               </div>
               <div>
-                <label className={labelCls}>Acabados</label>
+                <label className={labelCls}>{editingProduct.categoria_id === 'drops' ? 'Materiales / Acabados' : 'Acabados'}</label>
                 <div className="space-y-1.5">
                   {(editingProduct.opciones_vaso?.finishes || []).map((f: string, i: number) => (
                     <div key={i} className="flex items-center gap-2">
@@ -648,64 +673,7 @@ const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditin
                         const finishes = [...(editingProduct.opciones_vaso?.finishes || [])];
                         finishes[i] = v;
                         setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...p.opciones_vaso, finishes } } : p);
-                      }} placeholder="Ej: Acabado Mate" />
-                      <button onClick={() => {
-                        const finishes = (editingProduct.opciones_vaso?.finishes || []).filter((_: any, j: number) => j !== i);
-                        setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...p.opciones_vaso, finishes } } : p);
-                      }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
-                    </div>
-                  ))}
-                  <button onClick={() => {
-                    const finishes = [...(editingProduct.opciones_vaso?.finishes || []), ''];
-                    setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...p.opciones_vaso, finishes } } : p);
-                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar acabado</button>
-                </div>
-              </div>
-            </Section>
-          )}
-
-          {editingProduct.categoria_id === 'drops' && (
-            <Section title="Opciones de Placa de Aluminio" icon={<Package className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
-              <div>
-                <label className={labelCls}>Medidas disponibles</label>
-                <div className="space-y-1.5">
-                  {(editingProduct.opciones_vaso?.types || []).map((t: any, i: number) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <TextInput value={t.name} onChange={v => {
-                        const types = [...(editingProduct.opciones_vaso?.types || [])];
-                        types[i] = { ...types[i], name: v };
-                        setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...p.opciones_vaso, types } } : p);
-                      }} placeholder="Ej: 20x30cm" />
-                      <div className="flex items-center gap-1">
-                        <span className="text-[10px] text-gray-500">+S/</span>
-                        <TextInput type="number" value={String(t.extraPrice || 0)} onChange={v => {
-                          const types = [...(editingProduct.opciones_vaso?.types || [])];
-                          types[i] = { ...types[i], extraPrice: parseInt(v) || 0 };
-                          setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...p.opciones_vaso, types } } : p);
-                        }} />
-                      </div>
-                      <button onClick={() => {
-                        const types = (editingProduct.opciones_vaso?.types || []).filter((_: any, j: number) => j !== i);
-                        setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...p.opciones_vaso, types } } : p);
-                      }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
-                    </div>
-                  ))}
-                  <button onClick={() => {
-                    const types = [...(editingProduct.opciones_vaso?.types || []), { name: '', extraPrice: 0 }];
-                    setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...p.opciones_vaso, types } } : p);
-                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar medida</button>
-                </div>
-              </div>
-              <div>
-                <label className={labelCls}>Materiales / Acabados</label>
-                <div className="space-y-1.5">
-                  {(editingProduct.opciones_vaso?.finishes || []).map((f: string, i: number) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <TextInput value={f} onChange={v => {
-                        const finishes = [...(editingProduct.opciones_vaso?.finishes || [])];
-                        finishes[i] = v;
-                        setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...p.opciones_vaso, finishes } } : p);
-                      }} placeholder="Ej: Aluminio Brillante" />
+                      }} placeholder={editingProduct.categoria_id === 'drops' ? 'Ej: Aluminio Brillante' : 'Ej: Acabado Mate'} />
                       <button onClick={() => {
                         const finishes = (editingProduct.opciones_vaso?.finishes || []).filter((_: any, j: number) => j !== i);
                         setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...p.opciones_vaso, finishes } } : p);
