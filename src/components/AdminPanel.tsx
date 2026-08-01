@@ -465,6 +465,8 @@ TabInicio.displayName = 'TabInicio';
    TAB: CATÁLOGO
    ═══════════════════════════════════════════════════════ */
 const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditingProduct, isNewProduct, startNewProduct, handleProdSave, handleProdDelete, handleProdImageUpload, prodSaving, uploading }: any) => {
+  const _labelCls = 'block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5';
+  const _inputCls = 'w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#1a1d1a] border-white/10 placeholder-gray-500 focus:outline-none focus:border-[#D2E8A3] focus:ring-1 focus:ring-[#D2E8A3]/30 transition-all';
   if (editingProduct) {
     return (
       <div className="p-5 sm:p-8 max-w-[1200px] mx-auto space-y-4">
@@ -511,7 +513,7 @@ const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditin
             <div className="border-t border-white/10 pt-4 space-y-4">
               <p className="text-[11px] font-extrabold text-[#D2E8A3] uppercase tracking-wider flex items-center gap-2"><Shirt className="w-3.5 h-3.5" /> Opciones de Polos (Tallas / Cortes / Colores)</p>
               <div>
-                <label className={labelCls}>Tallas</label>
+                <label className={_labelCls}>Tallas</label>
                 <div className="space-y-1.5">
                   {(editingProduct.opciones_ropa?.sizes || []).map((s: any, i: number) => {
                     const name = typeof s === 'string' ? s : s.name;
@@ -546,7 +548,7 @@ const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditin
                 </div>
               </div>
               <div>
-                <label className={labelCls}>Cortes / Fits</label>
+                <label className={_labelCls}>Cortes / Fits</label>
                 <div className="space-y-1.5">
                   {(editingProduct.opciones_ropa?.fits || []).map((fit: string, i: number) => (
                     <div key={i} className="flex items-center gap-2">
@@ -568,7 +570,7 @@ const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditin
                 </div>
               </div>
               <div>
-                <label className={labelCls}>Colores de tela</label>
+                <label className={_labelCls}>Colores de tela</label>
                 <div className="space-y-1.5">
                   {(editingProduct.opciones_ropa?.colors || []).map((c: any, i: number) => (
                     <div key={i} className="flex items-center gap-2">
@@ -599,7 +601,7 @@ const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditin
             <div className="border-t border-white/10 pt-4 space-y-4">
               <p className="text-[11px] font-extrabold text-[#D2E8A3] uppercase tracking-wider flex items-center gap-2"><Coffee className="w-3.5 h-3.5" /> Opciones de Vasos / Tazas / Placas</p>
               <div>
-                <label className={labelCls}>{editingProduct.categoria_id === 'drops' ? 'Medidas' : 'Tipos'}</label>
+                <label className={_labelCls}>{editingProduct.categoria_id === 'drops' ? 'Medidas' : 'Tipos'}</label>
                 <div className="space-y-1.5">
                   {(editingProduct.opciones_vaso?.types || []).map((t: any, i: number) => (
                     <div key={i} className="flex items-center gap-2">
@@ -629,7 +631,7 @@ const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditin
                 </div>
               </div>
               <div>
-                <label className={labelCls}>Acabados</label>
+                <label className={_labelCls}>Acabados</label>
                 <div className="space-y-1.5">
                   {(editingProduct.opciones_vaso?.finishes || []).map((f: string, i: number) => (
                     <div key={i} className="flex items-center gap-2">
