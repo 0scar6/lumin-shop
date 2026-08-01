@@ -64,8 +64,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
   // Calculate Total Unit Price
   const basePrice = product.price;
-  const extraPrice = !isApparel && selectedCupTypeObj ? selectedCupTypeObj.extraPrice : 0;
-  const unitPrice = basePrice + extraPrice;
+  const selectedSizeObj = product.apparelOptions?.sizes.find(s => {
+    const name = typeof s === 'string' ? s : s.name;
+    return name === selectedSize;
+  });
+  const apparelSizeExtra = isApparel && selectedSizeObj && typeof selectedSizeObj !== 'string' ? selectedSizeObj.extraPrice : 0;
+  const cupTypeExtra = !isApparel && selectedCupTypeObj ? selectedCupTypeObj.extraPrice : 0;
+  const unitPrice = basePrice + apparelSizeExtra + cupTypeExtra;
   const totalPrice = unitPrice * quantity;
 
   const handleAdd = () => {

@@ -286,7 +286,7 @@ const MediaUpload = memo(({ id, label, value, onChange, handleFileUpload, upload
 MediaUpload.displayName = 'MediaUpload';
 
 const Section = memo(({ title, icon, children, badge }: { title: string; icon?: React.ReactNode; children: React.ReactNode; badge?: string }) => (
-  <div className="rounded-2xl border border-white/5 bg-[#111311] overflow-hidden">
+  <div className="rounded-2xl border border-white/5 bg-[#111311]">
     <div className="px-5 py-3.5 border-b border-white/5 flex items-center justify-between">
       <div className="flex items-center gap-2.5">
         <div className="w-6 h-6 rounded-lg bg-[#D2E8A3]/10 flex items-center justify-center">{icon}</div>
