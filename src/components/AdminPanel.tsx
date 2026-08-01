@@ -520,34 +520,64 @@ const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditin
               ))}
             </div>
           </Section>
-
-          <Section title="Opciones del Producto" icon={<Package className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
-            <div className="flex gap-2 flex-wrap">
-              <button onClick={() => setEditingProduct((p: any) => p ? { ...p, opciones_ropa: p.opciones_ropa || { sizes: ['S', 'M', 'L', 'XL'], fits: ['Oversized Streetwear'], colors: [{ name: 'Negro', hex: '#0A0A0A' }] } } : p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${editingProduct.opciones_ropa ? 'bg-[#D2E8A3]/20 border-[#D2E8A3] text-[#D2E8A3]' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30'}`}>
-                <Shirt className="w-3 h-3 inline mr-1" /> Polos (Tallas/Cortes/Colores)
-              </button>
-              <button onClick={() => setEditingProduct((p: any) => p ? { ...p, opciones_vaso: p.opciones_vaso || { types: [{ name: '', extraPrice: 0 }], finishes: [''] } } : p)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${editingProduct.opciones_vaso ? 'bg-[#D2E8A3]/20 border-[#D2E8A3] text-[#D2E8A3]' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30'}`}>
-                <Coffee className="w-3 h-3 inline mr-1" /> Vasos/Tazas/Placas
-              </button>
-              {editingProduct.opciones_ropa && (
-                <button onClick={() => setEditingProduct((p: any) => p ? { ...p, opciones_ropa: null } : p)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold border bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all">
-                  Quitar Polos
+          <div className="space-y-4">
+            <PreviewBox title="Vista Previa del Producto">
+              <div className="rounded-xl overflow-hidden bg-[#161814]">
+                <div className="aspect-square overflow-hidden bg-black/40">{editingProduct.imagen ? <img src={editingProduct.imagen} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">Sin imagen</div>}</div>
+                <div className="p-4 space-y-2">
+                  {editingProduct.etiqueta && <span className="inline-block px-2 py-0.5 rounded bg-black/80 text-[#D2E8A3] text-[10px] font-bold">{editingProduct.etiqueta}</span>}
+                  <p className="text-white font-extrabold text-sm">{editingProduct.nombre || 'Nombre del producto'}</p>
+                  <p className="text-gray-400 text-xs line-clamp-2">{editingProduct.descripcion || 'Descripción del producto...'}</p>
+                  <div className="flex items-baseline gap-2 pt-1">
+                    <span className="text-[#D2E8A3] font-black text-lg">S/ {editingProduct.precio.toFixed(2)}</span>
+                    {editingProduct.precio_original && <span className="text-gray-500 text-xs line-through">S/ {editingProduct.precio_original.toFixed(2)}</span>}
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    {!editingProduct.activo && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-bold">INACTIVO</span>}
+                    {editingProduct.destacado && <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#D2E8A3]/20 text-[#D2E8A3] font-bold">DESTACADO</span>}
+                  </div>
+                </div>
+              </div>
+            </PreviewBox>
+            <div className="flex items-center justify-between pt-3 border-t border-white/5">
+              {!isNewProduct ? <button onClick={() => handleProdDelete(editingProduct.id)} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-500/10 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all"><Trash2 className="w-3.5 h-3.5" /> Eliminar</button> : <div />}
+              <div className="flex gap-2 ml-auto">
+                <button onClick={() => setEditingProduct(null)} className="px-4 py-2.5 rounded-xl bg-white/5 text-gray-400 text-xs font-bold hover:bg-white/10 transition-all">Cancelar</button>
+                <button onClick={handleProdSave} disabled={prodSaving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-sm hover:bg-[#c2e088] shadow-lg shadow-[#D2E8A3]/20 disabled:opacity-50 transition-all">
+                  {prodSaving ? 'Guardando...' : <><Check className="w-4 h-4" /> Guardar</>}
                 </button>
-              )}
-              {editingProduct.opciones_vaso && (
-                <button onClick={() => setEditingProduct((p: any) => p ? { ...p, opciones_vaso: null } : p)}
-                  className="px-3 py-1.5 rounded-lg text-xs font-bold border bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all">
-                  Quitar Vasos
-                </button>
-              )}
+              </div>
             </div>
-          </Section>
+          </div>
+        </div>
 
-          {editingProduct.opciones_ropa && (
-            <Section title="Opciones de Polo" icon={<Shirt className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+        <Section title="Opciones del Producto" icon={<Package className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+          <div className="flex gap-2 flex-wrap">
+            <button onClick={() => setEditingProduct((p: any) => p ? { ...p, opciones_ropa: p.opciones_ropa || { sizes: ['S', 'M', 'L', 'XL'], fits: ['Oversized Streetwear'], colors: [{ name: 'Negro', hex: '#0A0A0A' }] } } : p)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${editingProduct.opciones_ropa ? 'bg-[#D2E8A3]/20 border-[#D2E8A3] text-[#D2E8A3]' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30'}`}>
+              <Shirt className="w-3 h-3 inline mr-1" /> Polos (Tallas/Cortes/Colores)
+            </button>
+            <button onClick={() => setEditingProduct((p: any) => p ? { ...p, opciones_vaso: p.opciones_vaso || { types: [{ name: '', extraPrice: 0 }], finishes: [''] } } : p)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${editingProduct.opciones_vaso ? 'bg-[#D2E8A3]/20 border-[#D2E8A3] text-[#D2E8A3]' : 'bg-white/5 border-white/10 text-gray-400 hover:border-white/30'}`}>
+              <Coffee className="w-3 h-3 inline mr-1" /> Vasos/Tazas/Placas
+            </button>
+            {editingProduct.opciones_ropa && (
+              <button onClick={() => setEditingProduct((p: any) => p ? { ...p, opciones_ropa: null } : p)}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold border bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all">
+                Quitar Polos
+              </button>
+            )}
+            {editingProduct.opciones_vaso && (
+              <button onClick={() => setEditingProduct((p: any) => p ? { ...p, opciones_vaso: null } : p)}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold border bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20 transition-all">
+                Quitar Vasos
+              </button>
+            )}
+          </div>
+        </Section>
+
+        {editingProduct.opciones_ropa && (
+          <Section title="Opciones de Polo" icon={<Shirt className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
               <div>
                 <label className={labelCls}>Tallas disponibles</label>
                 <div className="space-y-1.5">
@@ -688,37 +718,7 @@ const TabCatalogo = memo(({ cfgEdit, setCfg, products, editingProduct, setEditin
               </div>
             </Section>
           )}
-          <div className="space-y-4">
-            <PreviewBox title="Vista Previa del Producto">
-              <div className="rounded-xl overflow-hidden bg-[#161814]">
-                <div className="aspect-square overflow-hidden bg-black/40">{editingProduct.imagen ? <img src={editingProduct.imagen} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">Sin imagen</div>}</div>
-                <div className="p-4 space-y-2">
-                  {editingProduct.etiqueta && <span className="inline-block px-2 py-0.5 rounded bg-black/80 text-[#D2E8A3] text-[10px] font-bold">{editingProduct.etiqueta}</span>}
-                  <p className="text-white font-extrabold text-sm">{editingProduct.nombre || 'Nombre del producto'}</p>
-                  <p className="text-gray-400 text-xs line-clamp-2">{editingProduct.descripcion || 'Descripción del producto...'}</p>
-                  <div className="flex items-baseline gap-2 pt-1">
-                    <span className="text-[#D2E8A3] font-black text-lg">S/ {editingProduct.precio.toFixed(2)}</span>
-                    {editingProduct.precio_original && <span className="text-gray-500 text-xs line-through">S/ {editingProduct.precio_original.toFixed(2)}</span>}
-                  </div>
-                  <div className="flex gap-2 pt-1">
-                    {!editingProduct.activo && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-bold">INACTIVO</span>}
-                    {editingProduct.destacado && <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#D2E8A3]/20 text-[#D2E8A3] font-bold">DESTACADO</span>}
-                  </div>
-                </div>
-              </div>
-            </PreviewBox>
-            <div className="flex items-center justify-between pt-3 border-t border-white/5">
-              {!isNewProduct ? <button onClick={() => handleProdDelete(editingProduct.id)} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-500/10 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all"><Trash2 className="w-3.5 h-3.5" /> Eliminar</button> : <div />}
-              <div className="flex gap-2 ml-auto">
-                <button onClick={() => setEditingProduct(null)} className="px-4 py-2.5 rounded-xl bg-white/5 text-gray-400 text-xs font-bold hover:bg-white/10 transition-all">Cancelar</button>
-                <button onClick={handleProdSave} disabled={prodSaving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-sm hover:bg-[#c2e088] shadow-lg shadow-[#D2E8A3]/20 disabled:opacity-50 transition-all">
-                  {prodSaving ? 'Guardando...' : <><Check className="w-4 h-4" /> Guardar</>}
-                </button>
-              </div>
-            </div>
-          </div>
         </div>
-      </div>
     );
   }
 
