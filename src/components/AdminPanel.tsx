@@ -3,7 +3,7 @@ import {
   X, Upload, Save, Eye, EyeOff, Lock, Package, Settings, Image, Plus, Trash2,
   ArrowLeft, Check, ShoppingCart, Sliders, Sun, Home, LayoutGrid, Heart, FileText,
   User, ChevronDown, ChevronRight, Shirt, Coffee, Pencil, Type, MessageCircle,
-  Clock, ShieldCheck, Truck, RefreshCw, Tag, HelpCircle, ChevronUp,
+  Clock, ShieldCheck, Truck, RefreshCw, Tag, HelpCircle, ChevronUp, Download,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { reloadConfig } from '../lib/config';
@@ -87,6 +87,115 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
   const setCfg = useCallback((key: string, value: string) => {
     setCfgEdit(prev => ({ ...prev, [key]: value }));
   }, []);
+
+  // ===== BACKUP / RESTORE =====
+  const [backupStatus, setBackupStatus] = useState<'idle' | 'backing_up' | 'done' | 'restoring' | 'restored' | 'error'>('idle');
+  const [restorePreview, setRestorePreview] = useState<any>(null);
+
+  const handleBackup = async () => {
+    if (!supabase) return;
+    setBackupStatus('backing_up');
+    try {
+      const [configRes, productsRes, ordersRes, categoriesRes] = await Promise.all([
+        supabase.from('configuracion').select('*'),
+        supabase.from('productos').select('*'),
+        supabase.from('pedidos').select('*'),
+        supabase.from('categorias').select('*'),
+      ]);
+
+      const backup = {
+        version: '1.0',
+        created_at: new Date().toISOString(),
+        shop: 'LUMIN SHOP',
+        data: {
+          configuracion: configRes.data || [],
+          productos: productsRes.data || [],
+          pedidos: ordersRes.data || [],
+          categorias: categoriesRes.data || [],
+        },
+      };
+
+      const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `lumin-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      setBackupStatus('done');
+      setTimeout(() => setBackupStatus('idle'), 3000);
+    } catch {
+      setBackupStatus('error');
+      setTimeout(() => setBackupStatus('idle'), 3000);
+    }
+  };
+
+  const handleRestoreFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const parsed = JSON.parse(ev.target?.result as string);
+        if (parsed.data && parsed.shop === 'LUMIN SHOP') {
+          setRestorePreview(parsed);
+        } else {
+          alert('Archivo de backup no válido de LUMIN SHOP');
+        }
+      } catch {
+        alert('Error al leer el archivo JSON');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleRestoreConfirm = async () => {
+    if (!supabase || !restorePreview) return;
+    setBackupStatus('restoring');
+    try {
+      const { configuracion, productos, pedidos, categorias } = restorePreview.data;
+
+      // Restore configuracion
+      if (configuracion?.length) {
+        for (const row of configuracion) {
+          await supabase.from('configuracion').upsert(row, { onConflict: 'id' });
+        }
+      }
+      // Restore categorias
+      if (categorias?.length) {
+        for (const row of categorias) {
+          await supabase.from('categorias').upsert(row, { onConflict: 'id' });
+        }
+      }
+      // Restore productos
+      if (productos?.length) {
+        for (const row of productos) {
+          await supabase.from('productos').upsert(row, { onConflict: 'id' });
+        }
+      }
+      // Restore pedidos
+      if (pedidos?.length) {
+        for (const row of pedidos) {
+          await supabase.from('pedidos').upsert(row, { onConflict: 'id' });
+        }
+      }
+
+      setRestorePreview(null);
+      setBackupStatus('restored');
+      await reloadConfig();
+      onConfigChange?.();
+      loadConfig();
+      loadProducts();
+      loadOrders();
+      setTimeout(() => setBackupStatus('idle'), 3000);
+    } catch {
+      setBackupStatus('error');
+      setTimeout(() => setBackupStatus('idle'), 3000);
+    }
+  };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
     const file = e.target.files?.[0]; if (!file || !supabase) return;
@@ -222,7 +331,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
           {mainTab === 'catalogo' && <TabCatalogo cfgEdit={cfgEdit} setCfg={setCfg} products={products} editingProduct={editingProduct} setEditingProduct={setEditingProduct} isNewProduct={isNewProduct} startNewProduct={startNewProduct} handleProdSave={handleProdSave} handleProdDelete={handleProdDelete} handleProdImageUpload={handleProdImageUpload} prodSaving={prodSaving} uploading={uploading} />}
           {mainTab === 'favoritos' && <TabFavoritos cfgEdit={cfgEdit} setCfg={setCfg} />}
           {mainTab === 'pedidos' && <TabPedidos orders={orders} handleOrderStatus={handleOrderStatus} />}
-          {mainTab === 'cuenta' && <TabCuenta cfgEdit={cfgEdit} setCfg={setCfg} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} />}
+          {mainTab === 'cuenta' && <TabCuenta cfgEdit={cfgEdit} setCfg={setCfg} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} backupStatus={backupStatus} handleBackup={handleBackup} handleRestoreFile={handleRestoreFile} handleRestoreConfirm={handleRestoreConfirm} restorePreview={restorePreview} />}
         </div>
       </div>
     </div>
@@ -1187,7 +1296,7 @@ TabPedidos.displayName = 'TabPedidos';
 /* ═══════════════════════════════════════════════════════
    TAB: MI CUENTA
    ═══════════════════════════════════════════════════════ */
-const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTarget }: any) => (
+const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTarget, backupStatus, handleBackup, handleRestoreFile, handleRestoreConfirm, restorePreview }: any) => (
   <div className="p-5 sm:p-8 space-y-6 max-w-[1200px] mx-auto">
 
     {/* Brand */}
@@ -1375,6 +1484,106 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
         <Field label="Nav Carrito"><TextInput value={cfgEdit.nav_cart || ''} onChange={(v: string) => setCfg('nav_cart', v)} /></Field>
         <Field label="Nav Perfil"><TextInput value={cfgEdit.nav_profile || ''} onChange={(v: string) => setCfg('nav_profile', v)} /></Field>
         <Field label="Nav Idea"><TextInput value={cfgEdit.nav_custom || ''} onChange={(v: string) => setCfg('nav_custom', v)} /></Field>
+      </div>
+    </Section>
+
+    {/* Backup & Restore */}
+    <Section title="Backup & Restaurar Datos" icon={<RefreshCw className="w-3.5 h-3.5 text-[#D2E8A3]" />} badge="Seguridad">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          {/* Backup */}
+          <div className="p-4 rounded-xl bg-[#0A0B0A] border border-white/5 space-y-3">
+            <h4 className="text-xs font-bold text-white uppercase flex items-center gap-2">
+              <Download className="w-3.5 h-3.5 text-[#D2E8A3]" />
+              Descargar Backup Completo
+            </h4>
+            <p className="text-[11px] text-gray-400">
+              Exporta todos tus productos, configuración, pedidos y categorías como archivo JSON.
+              Úsalo para restaurar tu tienda si algo sale mal.
+            </p>
+            <button
+              onClick={handleBackup}
+              disabled={backupStatus === 'backing_up'}
+              className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+                backupStatus === 'done'
+                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                  : 'bg-[#D2E8A3]/10 text-[#D2E8A3] border border-[#D2E8A3]/30 hover:bg-[#D2E8A3]/20'
+              }`}
+            >
+              {backupStatus === 'backing_up' ? (
+                <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Generando backup...</>
+              ) : backupStatus === 'done' ? (
+                <><Check className="w-3.5 h-3.5" /> Backup descargado</>
+              ) : (
+                <><Download className="w-3.5 h-3.5" /> Descargar Backup JSON</>
+              )}
+            </button>
+          </div>
+
+          {/* Restore */}
+          <div className="p-4 rounded-xl bg-[#0A0B0A] border border-white/5 space-y-3">
+            <h4 className="text-xs font-bold text-white uppercase flex items-center gap-2">
+              <Upload className="w-3.5 h-3.5 text-[#D2E8A3]" />
+              Restaurar desde Backup
+            </h4>
+            <p className="text-[11px] text-gray-400">
+              Sube un archivo de backup JSON para restaurar todos tus datos. Esto reemplazará la configuración actual.
+            </p>
+            <label className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border ${
+              backupStatus === 'restored'
+                ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+            }`}>
+              {backupStatus === 'restoring' ? (
+                <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Restaurando...</>
+              ) : backupStatus === 'restored' ? (
+                <><Check className="w-3.5 h-3.5" /> Datos restaurados</>
+              ) : (
+                <><Upload className="w-3.5 h-3.5" /> Seleccionar Archivo de Backup</>
+              )}
+              <input type="file" accept=".json" className="hidden" onChange={handleRestoreFile} disabled={backupStatus === 'restoring'} />
+            </label>
+          </div>
+        </div>
+
+        {/* Restore Preview */}
+        <div className="space-y-3">
+          {restorePreview ? (
+            <div className="p-4 rounded-xl bg-[#0A0B0A] border border-[#D2E8A3]/30 space-y-3">
+              <h4 className="text-xs font-bold text-[#D2E8A3] uppercase">Vista Previa del Backup</h4>
+              <div className="space-y-1.5 text-[11px]">
+                <p className="text-gray-400"><span className="text-white font-bold">Tienda:</span> {restorePreview.shop}</p>
+                <p className="text-gray-400"><span className="text-white font-bold">Fecha:</span> {new Date(restorePreview.created_at).toLocaleString('es-PE')}</p>
+                <p className="text-gray-400"><span className="text-white font-bold">Productos:</span> {restorePreview.data?.productos?.length || 0}</p>
+                <p className="text-gray-400"><span className="text-white font-bold">Pedidos:</span> {restorePreview.data?.pedidos?.length || 0}</p>
+                <p className="text-gray-400"><span className="text-white font-bold">Configuraciones:</span> {restorePreview.data?.configuracion?.length || 0}</p>
+                <p className="text-gray-400"><span className="text-white font-bold">Categorías:</span> {restorePreview.data?.categorias?.length || 0}</p>
+              </div>
+              <div className="flex gap-2 pt-2">
+                <button
+                  onClick={handleRestoreConfirm}
+                  disabled={backupStatus === 'restoring'}
+                  className="flex-1 py-2 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] text-xs font-bold hover:bg-[#c2e088] transition-all"
+                >
+                  Confirmar Restauración
+                </button>
+                <button
+                  onClick={() => setRestorePreview(null)}
+                  className="px-4 py-2 rounded-xl bg-white/5 text-gray-400 text-xs font-bold border border-white/10 hover:bg-white/10 transition-all"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="p-4 rounded-xl bg-[#0A0B0A] border border-white/5 space-y-2 text-center">
+              <RefreshCw className="w-8 h-8 text-gray-600 mx-auto" />
+              <p className="text-[11px] text-gray-500">
+                Selecciona un archivo de backup JSON para vista previa antes de restaurar.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </Section>
   </div>
