@@ -42,6 +42,15 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   const isLight = themeMode === 'light';
   const isApparel = product?.category === 'streetwear';
 
+  // Push history state when modal opens so back button closes it
+  useEffect(() => {
+    if (!product) return;
+    window.history.pushState({ modal: 'product' }, '');
+    const handlePopState = () => onClose();
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [product, onClose]);
+
   // Apparel State
   const firstSize = product?.apparelOptions?.sizes[0];
   const defaultSize = firstSize ? (typeof firstSize === 'string' ? firstSize : firstSize.name) : 'M';
@@ -84,6 +93,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   }, [product]);
 
   if (!product) return null;
+
+  // Build gallery: always include main image first, then any extra gallery images
+  const allGalleryImages = React.useMemo(() => {
+    const main = product.image;
+    const extras = (product.galleryImages || []).filter(img => img && img !== main);
+    return [main, ...extras].filter(Boolean);
+  }, [product.image, product.galleryImages]);
 
   // Calculate Total Unit Price
   const basePrice = product.price;
@@ -160,11 +176,11 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               </div>
 
               {/* Gallery Thumbnails */}
-              {product.galleryImages && product.galleryImages.length > 1 && (
+              {allGalleryImages.length > 1 && (
                 <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                  {product.galleryImages.map((imgUrl, idx) => (
+                  {allGalleryImages.map((imgUrl, idx) => (
                     <button
-                      key={idx}
+                      key={`${imgUrl}-${idx}`}
                       onClick={() => setActiveImage(imgUrl)}
                       className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all ${
                         activeImage === imgUrl

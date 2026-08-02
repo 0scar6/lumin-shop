@@ -943,6 +943,53 @@ const TabCatalogo = ({ cfgEdit, setCfg, products, editingProduct, setEditingProd
             <Field label="Descripción"><TextArea value={editingProduct.descripcion || ''} onChange={v => setEditingProduct((p: any) => p ? { ...p, descripcion: v } : p)} rows={3} /></Field>
             <MediaUpload id="product_image" label="Imagen del producto" value={editingProduct.imagen || ''} onChange={v => setEditingProduct((p: any) => p ? { ...p, imagen: v } : p)} handleFileUpload={handleProdImageUpload} uploading={uploading} uploadTarget="product_image" />
 
+            {/* Gallery Images Editor */}
+            <div className="space-y-2">
+              <label className={_labelCls}>Galería de Imágenes</label>
+              <p className="text-[10px] text-gray-500">Imágenes adicionales que se muestran al cliente al abrir el producto.</p>
+              <div className="flex flex-wrap gap-2">
+                {(editingProduct.galeria || []).map((img: string, i: number) => (
+                  <div key={i} className="relative group w-16 h-16 rounded-lg overflow-hidden border border-white/10">
+                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => {
+                        const gal = (editingProduct.galeria || []).filter((_: string, j: number) => j !== i);
+                        setEditingProduct((p: any) => p ? { ...p, galeria: gal.length > 0 ? gal : null } : p);
+                      }}
+                      className="absolute top-0.5 right-0.5 p-0.5 rounded bg-black/70 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+                <label className="w-16 h-16 rounded-lg border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-gray-500 hover:border-[#D2E8A3]/50 hover:text-[#D2E8A3] transition-all cursor-pointer">
+                  <Plus className="w-4 h-4" />
+                  <span className="text-[8px] font-bold mt-0.5">Agregar</span>
+                  <input
+                    type="file"
+                    accept="image/*,video/mp4,video/webm"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file || !supabase || !editingProduct) return;
+                      try {
+                        const ext = file.name.split('.').pop() || 'jpg';
+                        const path = `products/${editingProduct.id}_gallery_${Date.now()}.${ext}`;
+                        const { error } = await supabase.storage.from('media').upload(path, file, { cacheControl: '3600', upsert: false });
+                        if (error) throw error;
+                        const { data: urlData } = supabase.storage.from('media').getPublicUrl(path);
+                        if (urlData?.publicUrl) {
+                          const gal = [...(editingProduct.galeria || []), urlData.publicUrl];
+                          setEditingProduct((p: any) => p ? { ...p, galeria: gal } : p);
+                        }
+                      } catch (err: any) { alert('Error: ' + err.message); }
+                      e.target.value = '';
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
+
             <div className="flex items-center gap-6 pt-2">
               {[{ key: 'activo', label: 'Activo' }, { key: 'destacado', label: 'Destacado' }, { key: 'personalizable', label: 'Personalizable' }].map((cb: any) => (
                 <label key={cb.key} className="flex items-center gap-2 cursor-pointer group">
