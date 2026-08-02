@@ -1392,23 +1392,22 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
 
     {/* Shipping */}
     <Section title="Envíos & Zonas" icon={<Package className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
-      <p className="text-[10px] text-gray-500">Precios de envío por zona. Ayacucho/Huamanga y Recojo en Tienda son GRATIS.</p>
+      <p className="text-[10px] text-gray-500">Precios de envío por zona. Recojo en Tienda es GRATIS.</p>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Lima (S/)"><TextInput type="number" value={cfgEdit.shipping_price_lima || '15'} onChange={(v: string) => setCfg('shipping_price_lima', v)} /></Field>
+        <div className="grid grid-cols-3 gap-3">
+          <Field label="Ayacucho/Huamanga (S/)"><TextInput type="number" value={cfgEdit.shipping_price_huamanga || '0'} onChange={(v: string) => setCfg('shipping_price_huamanga', v)} /></Field>
           <Field label="Provincia (S/)"><TextInput type="number" value={cfgEdit.shipping_price_provincia || '25'} onChange={(v: string) => setCfg('shipping_price_provincia', v)} /></Field>
           <Field label="Internac. (S/)"><TextInput type="number" value={cfgEdit.shipping_price_internacional || '80'} onChange={(v: string) => setCfg('shipping_price_internacional', v)} /></Field>
         </div>
         <PreviewBox title="Vista Previa — Envíos">
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             {[
-              { emoji: '🏠', label: 'Huamanga', price: 'GRATIS' },
-              { emoji: '🏙️', label: 'Lima', price: `S/ ${cfgEdit.shipping_price_lima || '15'}` },
-              { emoji: '📦', label: 'Provincia', price: `S/ ${cfgEdit.shipping_price_provincia || '25'}` },
-              { emoji: '✈️', label: 'Internac.', price: `S/ ${cfgEdit.shipping_price_internacional || '80'}` },
+              { icon: '📍', label: 'Ayacucho', price: cfgEdit.shipping_price_huamanga === '0' || !cfgEdit.shipping_price_huamanga ? 'GRATIS' : `S/ ${cfgEdit.shipping_price_huamanga}` },
+              { icon: '📦', label: 'Provincia', price: `S/ ${cfgEdit.shipping_price_provincia || '25'}` },
+              { icon: '✈️', label: 'Internac.', price: `S/ ${cfgEdit.shipping_price_internacional || '80'}` },
             ].map(z => (
               <div key={z.label} className="p-3 rounded-xl bg-white/5 border border-white/5 text-center space-y-1">
-                <span className="text-lg block">{z.emoji}</span>
+                <span className="text-lg block">{z.icon}</span>
                 <span className="text-white text-[10px] font-bold block">{z.label}</span>
                 <span className="text-[#D2E8A3] text-[10px] font-bold block">{z.price}</span>
               </div>
