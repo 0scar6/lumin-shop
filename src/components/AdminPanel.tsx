@@ -216,11 +216,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     if (!editingProduct.nombre.trim()) { alert('El nombre es obligatorio'); return; }
     setProdSaving(true);
     try {
+      // Auto-populate gallery with main image if empty
+      let galeria = editingProduct.galeria;
+      if ((!galeria || galeria.length === 0) && editingProduct.imagen) {
+        galeria = [editingProduct.imagen];
+      }
       const { error } = await supabase.from('productos').upsert({
         id: editingProduct.id, nombre: editingProduct.nombre, categoria_id: editingProduct.categoria_id,
         precio: editingProduct.precio, precio_original: editingProduct.precio_original,
         tecnica: editingProduct.tecnica, tiempo_produccion: editingProduct.tiempo_produccion,
-        imagen: editingProduct.imagen, galeria: editingProduct.galeria, descripcion: editingProduct.descripcion,
+        imagen: editingProduct.imagen, galeria, descripcion: editingProduct.descripcion,
         etiqueta: editingProduct.etiqueta, opciones_ropa: editingProduct.opciones_ropa, opciones_vaso: editingProduct.opciones_vaso,
         personalizable: editingProduct.personalizable, activo: editingProduct.activo, destacado: editingProduct.destacado,
       }, { onConflict: 'id' });
@@ -237,6 +242,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     setUploading(false);
   };
   const handleOrderStatus = async (orderId: string, status: string) => { if (!supabase) return; await supabase.from('pedidos').update({ estado: status }).eq('id', orderId); setOrders(prev => prev.map(o => o.id === orderId ? { ...o, estado: status } : o)); };
+
+  // Sync all products: ensure gallery has main image
+  const handleSyncGalleries = async () => {
+    if (!supabase || !confirm('Esto sincronizará la galería de TODOS los productos. ¿Continuar?')) return;
+    const { data } = await supabase.from('productos').select('id, imagen, galeria');
+    if (!data) return;
+    let count = 0;
+    for (const row of data) {
+      const mainImage = row.imagen || '';
+      let gallery = row.galeria;
+      if ((!gallery || gallery.length === 0) && mainImage) {
+        gallery = [mainImage];
+        await supabase.from('productos').update({ galeria: gallery }).eq('id', row.id);
+        count++;
+      }
+    }
+    alert(`Sincronizados ${count} productos. Galería actualizada.`);
+    await loadProducts();
+  };
 
   const inputCls = 'w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#1a1d1a] border-white/10 placeholder-gray-500 focus:outline-none focus:border-[#D2E8A3] focus:ring-1 focus:ring-[#D2E8A3]/30 transition-all';
   const labelCls = 'block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5';
@@ -1212,6 +1236,7 @@ const TabCatalogo = ({ cfgEdit, setCfg, products, editingProduct, setEditingProd
           </div>
         </div>
         <button onClick={startNewProduct} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs hover:bg-[#c2e088] shadow-lg shadow-[#D2E8A3]/20 transition-all"><Plus className="w-4 h-4" /> Nuevo</button>
+        <button onClick={handleSyncGalleries} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 text-gray-400 text-[10px] hover:text-[#D2E8A3] hover:bg-[#D2E8A3]/10 transition-all border border-white/5" title="Sincronizar galerías de productos existentes">🔄 Sincronizar galerías</button>
       </div>
 
       <Section title="Texto del Catálogo" icon={<Settings className="w-3.5 h-3.5 text-[#D2E8A3]" />}>

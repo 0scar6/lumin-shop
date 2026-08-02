@@ -243,6 +243,19 @@ interface SupabaseProductRow {
 }
 
 function mapSupabaseToProduct(row: SupabaseProductRow): Product {
+  // Gallery: use galeria from DB, or create from main image
+  const mainImage = row.imagen ?? '';
+  let gallery: string[] | undefined;
+  if (row.galeria && Array.isArray(row.galeria) && row.galeria.length > 0) {
+    // Filter out nulls/empties and ensure main image is first
+    gallery = row.galeria.filter((img: string) => img && img.length > 0);
+    if (mainImage && !gallery.includes(mainImage)) {
+      gallery.unshift(mainImage);
+    }
+  } else if (mainImage) {
+    gallery = [mainImage];
+  }
+
   return {
     id: row.id,
     name: row.nombre,
@@ -251,8 +264,8 @@ function mapSupabaseToProduct(row: SupabaseProductRow): Product {
     originalPrice: row.precio_original ?? undefined,
     technique: row.tecnica ?? '',
     productionTime: row.tiempo_produccion ?? '',
-    image: row.imagen ?? '',
-    galleryImages: row.galeria ?? undefined,
+    image: mainImage,
+    galleryImages: gallery,
     description: row.descripcion ?? '',
     tag: row.etiqueta ?? undefined,
     apparelOptions: row.opciones_ropa
