@@ -92,27 +92,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
   const [backupStatus, setBackupStatus] = useState<'idle' | 'backing_up' | 'done' | 'restoring' | 'restored' | 'error'>('idle');
   const [restorePreview, setRestorePreview] = useState<any>(null);
 
+  // Known Supabase tables — add new table names here when you create them
+  const TABLES_TO_BACKUP = [
+    'configuracion', 'productos', 'categorias', 'pedidos',
+    'usuarios', 'perfiles', 'favoritos', 'carrito', 'ideas_personalizadas',
+  ];
+
   const handleBackup = async () => {
     if (!supabase) return;
     setBackupStatus('backing_up');
     try {
-      const [configRes, productsRes, ordersRes, categoriesRes] = await Promise.all([
-        supabase.from('configuracion').select('*'),
-        supabase.from('productos').select('*'),
-        supabase.from('pedidos').select('*'),
-        supabase.from('categorias').select('*'),
-      ]);
+      const results: Record<string, any[]> = {};
+      const countPromises = TABLES_TO_BACKUP.map(async (table) => {
+        try {
+          const { data, error } = await supabase.from(table).select('*');
+          if (!error && data) results[table] = data;
+        } catch {}
+      });
+      await Promise.all(countPromises);
 
       const backup = {
-        version: '1.0',
+        version: '2.0',
         created_at: new Date().toISOString(),
         shop: 'LUMIN SHOP',
-        data: {
-          configuracion: configRes.data || [],
-          productos: productsRes.data || [],
-          pedidos: ordersRes.data || [],
-          categorias: categoriesRes.data || [],
-        },
+        tables: Object.keys(results),
+        data: results,
       };
 
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -139,7 +143,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     reader.onload = (ev) => {
       try {
         const parsed = JSON.parse(ev.target?.result as string);
-        if (parsed.data && parsed.shop === 'LUMIN SHOP') {
+        if (parsed.data && (parsed.shop === 'LUMIN SHOP' || parsed.version)) {
           setRestorePreview(parsed);
         } else {
           alert('Archivo de backup no válido de LUMIN SHOP');
@@ -156,30 +160,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     if (!supabase || !restorePreview) return;
     setBackupStatus('restoring');
     try {
-      const { configuracion, productos, pedidos, categorias } = restorePreview.data;
+      const tablesToRestore = restorePreview.tables || Object.keys(restorePreview.data);
 
-      // Restore configuracion
-      if (configuracion?.length) {
-        for (const row of configuracion) {
-          await supabase.from('configuracion').upsert(row, { onConflict: 'id' });
-        }
-      }
-      // Restore categorias
-      if (categorias?.length) {
-        for (const row of categorias) {
-          await supabase.from('categorias').upsert(row, { onConflict: 'id' });
-        }
-      }
-      // Restore productos
-      if (productos?.length) {
-        for (const row of productos) {
-          await supabase.from('productos').upsert(row, { onConflict: 'id' });
-        }
-      }
-      // Restore pedidos
-      if (pedidos?.length) {
-        for (const row of pedidos) {
-          await supabase.from('pedidos').upsert(row, { onConflict: 'id' });
+      for (const table of tablesToRestore) {
+        const rows = restorePreview.data[table];
+        if (!rows?.length) continue;
+
+        // Detect primary key from first row
+        const firstRow = rows[0];
+        const pk = firstRow.id ? 'id' : firstRow.usuario_id ? 'usuario_id' : null;
+
+        for (const row of rows) {
+          if (pk) {
+            await supabase.from(table).upsert(row, { onConflict: pk });
+          } else {
+            await supabase.from(table).insert(row);
+          }
         }
       }
 
@@ -1554,10 +1550,12 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
               <div className="space-y-1.5 text-[11px]">
                 <p className="text-gray-400"><span className="text-white font-bold">Tienda:</span> {restorePreview.shop}</p>
                 <p className="text-gray-400"><span className="text-white font-bold">Fecha:</span> {new Date(restorePreview.created_at).toLocaleString('es-PE')}</p>
-                <p className="text-gray-400"><span className="text-white font-bold">Productos:</span> {restorePreview.data?.productos?.length || 0}</p>
-                <p className="text-gray-400"><span className="text-white font-bold">Pedidos:</span> {restorePreview.data?.pedidos?.length || 0}</p>
-                <p className="text-gray-400"><span className="text-white font-bold">Configuraciones:</span> {restorePreview.data?.configuracion?.length || 0}</p>
-                <p className="text-gray-400"><span className="text-white font-bold">Categorías:</span> {restorePreview.data?.categorias?.length || 0}</p>
+                <p className="text-gray-400"><span className="text-white font-bold">Tablas:</span> {(restorePreview.tables || Object.keys(restorePreview.data)).length}</p>
+                {(restorePreview.tables || Object.keys(restorePreview.data)).map((t: string) => (
+                  <p key={t} className="text-gray-400 pl-3">
+                    <span className="text-[#D2E8A3] font-mono">{t}:</span> {restorePreview.data[t]?.length || 0} registros
+                  </p>
+                ))}
               </div>
               <div className="flex gap-2 pt-2">
                 <button
