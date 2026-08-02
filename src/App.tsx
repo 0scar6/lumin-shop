@@ -391,43 +391,43 @@ export default function App() {
   // Generate WhatsApp Message
   const buildWhatsAppMessage = useCallback(() => {
     const nameStr = userProfile.name.trim() || '';
-    let msg = `${cfg('brand_whatsapp_msg', '¡Hola LUMIN SHOP! ⚡ Quisiera realizar el siguiente pedido:')}\n\n`;
+    let msg = `${cfg('brand_whatsapp_msg', 'Hola LUMIN SHOP! Quisiera realizar el siguiente pedido:')}\n\n`;
 
-    msg += `${cfg('whatsapp_contact_header', '👤 *MIS DATOS DE CONTACTO:*')}\n`;
-    msg += `${cfg('whatsapp_label_name', '• *Nombre:*')} ${nameStr || cfg('whatsapp_fallback_name', 'Por indicar por chat')}\n`;
-    if (userProfile.phone) msg += `${cfg('whatsapp_label_phone', '• *Teléfono:*')} ${userProfile.phone}\n`;
-    if (userProfile.dni) msg += `${cfg('whatsapp_label_dni', '• *DNI:*')} ${userProfile.dni}\n`;
+    msg += `${cfg('whatsapp_contact_header', '*MIS DATOS DE CONTACTO:*')}\n`;
+    msg += `${cfg('whatsapp_label_name', '*Nombre:*')} ${nameStr || cfg('whatsapp_fallback_name', 'Por indicar por chat')}\n`;
+    if (userProfile.phone) msg += `${cfg('whatsapp_label_phone', '*Teléfono:*')} ${userProfile.phone}\n`;
+    if (userProfile.dni) msg += `${cfg('whatsapp_label_dni', '*DNI:*')} ${userProfile.dni}\n`;
     
     if (deliveryType === 'envio') {
       const zoneLabels: Record<string, string> = { huamanga: 'Ayacucho / Huamanga', provincia: 'Provincia', internacional: 'Internacional' };
-      msg += `${cfg('whatsapp_delivery_home', '• *Modalidad:* 🚀 Envío a Domicilio')}\n`;
-      msg += `• *Zona:* ${zoneLabels[shippingZone] || 'Provincia'}\n`;
-      msg += `${cfg('whatsapp_label_address', '• *Dirección:*')} ${userProfile.address || cfg('whatsapp_fallback_address', 'Por indicar por chat')}\n`;
-      msg += `• *Costo de envío:* S/ ${shippingCost.toFixed(2)}\n`;
+      msg += `${cfg('whatsapp_delivery_home', '*Modalidad:* Envio a Domicilio')}\n`;
+      msg += `*Zona:* ${zoneLabels[shippingZone] || 'Provincia'}\n`;
+      msg += `${cfg('whatsapp_label_address', '*Direccion:*')} ${userProfile.address || cfg('whatsapp_fallback_address', 'Por indicar por chat')}\n`;
+      msg += `*Costo de envio:* S/ ${shippingCost.toFixed(2)}\n`;
     } else {
-      msg += `${cfg('whatsapp_delivery_pickup', '• *Modalidad:* 🏪 Recojo en Tienda')}\n`;
+      msg += `${cfg('whatsapp_delivery_pickup', '*Modalidad:* Recojo en Tienda')}\n`;
     }
 
-    msg += `\n${cfg('whatsapp_order_header', '📦 *DETALLE DE MI PEDIDO*')} (${cart.reduce((sum, i) => sum + i.quantity, 0)} ítems):\n`;
+    msg += `\n${cfg('whatsapp_order_header', '*DETALLE DE MI PEDIDO*')} (${cart.reduce((sum, i) => sum + i.quantity, 0)} items):\n`;
 
     cart.forEach((item, index) => {
       const unitPrice = getUnitPrice(item);
       const itemTotal = unitPrice * item.quantity;
 
       msg += `\n*${index + 1}. ${item.product.name}* (Cant: ${item.quantity})\n`;
-      if (item.selectedSize) msg += `   ${cfg('whatsapp_item_size', '• Talla:')} ${item.selectedSize}\n`;
-      if (item.selectedFit) msg += `   ${cfg('whatsapp_item_fit', '• Fit/Corte:')} ${item.selectedFit}\n`;
-      if (item.selectedColor) msg += `   ${cfg('whatsapp_item_color', '• Color:')} ${item.selectedColor.name}\n`;
-      if (item.selectedCupType) msg += `   ${cfg('whatsapp_item_type', '• Tipo:')} ${item.selectedCupType}\n`;
-      if (item.selectedFinish) msg += `   ${cfg('whatsapp_item_finish', '• Acabado:')} ${item.selectedFinish}\n`;
-      if (item.customText) msg += `   ${cfg('whatsapp_item_custom_text', '• Texto Personalizado:')} "${item.customText}"\n`;
-      msg += `   ${cfg('whatsapp_item_subtotal', '• Subtotal:')} S/ ${itemTotal.toFixed(2)}\n`;
+      if (item.selectedSize) msg += `   ${cfg('whatsapp_item_size', 'Talla:')} ${item.selectedSize}\n`;
+      if (item.selectedFit) msg += `   ${cfg('whatsapp_item_fit', 'Fit/Corte:')} ${item.selectedFit}\n`;
+      if (item.selectedColor) msg += `   ${cfg('whatsapp_item_color', 'Color:')} ${item.selectedColor.name}\n`;
+      if (item.selectedCupType) msg += `   ${cfg('whatsapp_item_type', 'Tipo:')} ${item.selectedCupType}\n`;
+      if (item.selectedFinish) msg += `   ${cfg('whatsapp_item_finish', 'Acabado:')} ${item.selectedFinish}\n`;
+      if (item.customText) msg += `   ${cfg('whatsapp_item_custom_text', 'Texto Personalizado:')} "${item.customText}"\n`;
+      msg += `   ${cfg('whatsapp_item_subtotal', 'Subtotal:')} S/ ${itemTotal.toFixed(2)}\n`;
     });
 
     if (shippingCost > 0) {
-      msg += `\n🚚 *Costo de Envío:* S/ ${shippingCost.toFixed(2)}\n`;
+      msg += `\n*Costo de Envio:* S/ ${shippingCost.toFixed(2)}\n`;
     }
-    msg += `\n💰 *${cfg('whatsapp_order_total', 'TOTAL DE MI ORDEN:')} S/ ${grandTotal.toFixed(2)}*\n\n`;
+    msg += `\n*${cfg('whatsapp_order_total', 'TOTAL DE MI ORDEN:')} S/ ${grandTotal.toFixed(2)}*\n\n`;
     msg += cfg('whatsapp_order_closing', 'Por favor confírmenme los datos de pago y el tiempo de entrega. ¡Muchas gracias!');
 
     return msg;
@@ -436,24 +436,46 @@ export default function App() {
   const handleSendWhatsAppOrder = useCallback(async () => {
     syncCartToSupabase(cart, userProfile, deliveryType, googleUser?.id, deliveryType === 'envio' ? shippingZone : undefined, deliveryType === 'envio' ? shippingCost : 0);
 
-    // Generate order image
+    // Generate order image and upload to Supabase Storage
+    let imageUrl = '';
     try {
       const blob = await generateOrderImage(cart, userProfile, deliveryType, grandTotal, getUnitPrice, shippingZone, shippingCost);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `pedido-lumin-${Date.now()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+
+      // Upload to Supabase Storage for direct sharing
+      if (supabase) {
+        const fileName = `pedidos/pedido-${Date.now()}.jpg`;
+        const { error } = await supabase.storage.from('media').upload(fileName, blob, {
+          contentType: 'image/jpeg',
+          cacheControl: '3600',
+        });
+        if (!error) {
+          const { data: urlData } = supabase.storage.from('media').getPublicUrl(fileName);
+          if (urlData?.publicUrl) imageUrl = urlData.publicUrl;
+        }
+      }
+
+      // Also download as backup in case storage fails
+      if (!imageUrl) {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `pedido-lumin-${Date.now()}.jpg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
     } catch {
-      // Fallback to text if image fails
+      // Fallback to text-only if image fails
     }
 
-    // Open WhatsApp with short message
-    const shortMsg = `${cfg('brand_whatsapp_msg', '¡Hola LUMIN! ⚡ Quisiera realizar el siguiente pedido:')} Adjunto imagen del pedido.`;
-    window.open(`https://wa.me/${cfg('brand_phone_raw', '51993365099')}?text=${encodeURIComponent(shortMsg)}`, '_blank');
+    // Build WhatsApp message with image link
+    const phone = cfg('brand_phone_raw', '51993365099');
+    let msg = cfg('brand_whatsapp_msg', 'Hola LUMIN! Quisiera realizar el siguiente pedido:');
+    if (imageUrl) {
+      msg += `\n\nAdjunto imagen del pedido:\n${imageUrl}`;
+    }
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
   }, [cart, userProfile, deliveryType, googleUser?.id, shippingZone, shippingCost, grandTotal]);
 
   const handleCopyOrderSummary = useCallback(() => {
@@ -474,11 +496,11 @@ export default function App() {
     e.preventDefault();
     if (!customIdeaText.trim()) return;
 
-    let text = `${cfg('brand_whatsapp_idea', '⚡ *CONSULTA DE IDEA PERSONALIZADA LUMIN SHOP*')}\n`;
-    if (userProfile.name) text += `${cfg('whatsapp_idea_client', '👤 *Cliente:*')} ${userProfile.name}\n`;
-    if (userProfile.phone) text += `${cfg('whatsapp_idea_phone', '📞 *Teléfono:*')} ${userProfile.phone}\n`;
-    text += `${cfg('whatsapp_idea_type', '• *Tipo:*')} ${customIdeaType === 'polo' ? cfg('whatsapp_idea_type_polo', 'Polo Sublimado') : customIdeaType === 'vaso' ? cfg('whatsapp_idea_type_cup', 'Vaso / Taza Sublimada') : cfg('whatsapp_idea_type_other', 'Placa de Aluminio / Otro')}\n`;
-    text += `${cfg('whatsapp_idea_detail', '• *Detalle de mi idea:*')} ${customIdeaText.trim()}\n`;
+    let text = `${cfg('brand_whatsapp_idea', 'CONSULTA DE IDEA PERSONALIZADA LUMIN SHOP')}\n`;
+    if (userProfile.name) text += `${cfg('whatsapp_idea_client', '*Cliente:*')} ${userProfile.name}\n`;
+    if (userProfile.phone) text += `${cfg('whatsapp_idea_phone', '*Telefono:*')} ${userProfile.phone}\n`;
+    text += `${cfg('whatsapp_idea_type', '*Tipo:*')} ${customIdeaType === 'polo' ? cfg('whatsapp_idea_type_polo', 'Polo Sublimado') : customIdeaType === 'vaso' ? cfg('whatsapp_idea_type_cup', 'Vaso / Taza Sublimada') : cfg('whatsapp_idea_type_other', 'Placa de Aluminio / Otro')}\n`;
+    text += `${cfg('whatsapp_idea_detail', '*Detalle de mi idea:*')} ${customIdeaText.trim()}\n`;
     text += `\n${cfg('whatsapp_idea_closing', 'Quisiera cotización y asesoría de diseño por favor.')}`;
 
     syncCustomIdeaToSupabase(
