@@ -3,13 +3,16 @@
 -- Execute this in Supabase SQL Editor AFTER enabling auth
 -- ============================================================
 
+-- STEP 0: Add 'rol' column to usuarios table (run once)
+-- ============================================================
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS rol TEXT DEFAULT 'user';
+
 -- STEP 1: Disable overly permissive policies
 -- ============================================================
 
 -- Drop the old "pub" policies that allow everything
 DO $$
 BEGIN
-  -- Drop policies on all tables
   DROP POLICY IF EXISTS "pub" ON categorias;
   DROP POLICY IF EXISTS "pub" ON productos;
   DROP POLICY IF EXISTS "pub" ON usuarios;
@@ -30,17 +33,17 @@ CREATE POLICY "productos_public_read" ON productos
 
 CREATE POLICY "productos_admin_insert" ON productos
   FOR INSERT WITH CHECK (auth.uid()::text IN (
-    SELECT usuario_id FROM usuarios WHERE rol = 'admin'
+    SELECT id FROM usuarios WHERE rol = 'admin'
   ));
 
 CREATE POLICY "productos_admin_update" ON productos
   FOR UPDATE USING (auth.uid()::text IN (
-    SELECT usuario_id FROM usuarios WHERE rol = 'admin'
+    SELECT id FROM usuarios WHERE rol = 'admin'
   ));
 
 CREATE POLICY "productos_admin_delete" ON productos
   FOR DELETE USING (auth.uid()::text IN (
-    SELECT usuario_id FROM usuarios WHERE rol = 'admin'
+    SELECT id FROM usuarios WHERE rol = 'admin'
   ));
 
 -- Categorías: Public read
@@ -53,7 +56,7 @@ CREATE POLICY "config_public_read" ON configuracion
 
 CREATE POLICY "config_admin_update" ON configuracion
   FOR UPDATE USING (auth.uid()::text IN (
-    SELECT usuario_id FROM usuarios WHERE rol = 'admin'
+    SELECT id FROM usuarios WHERE rol = 'admin'
   ));
 
 -- STEP 3: Authenticated user policies
@@ -62,24 +65,24 @@ CREATE POLICY "config_admin_update" ON configuracion
 -- Usuarios: Users can only read/update their own record
 CREATE POLICY "usuarios_own_read" ON usuarios
   FOR SELECT USING (
-    auth.uid()::text = usuario_id OR
-    auth.uid()::text IN (SELECT usuario_id FROM usuarios WHERE rol = 'admin')
+    auth.uid()::text = id OR
+    auth.uid()::text IN (SELECT id FROM usuarios WHERE rol = 'admin')
   );
 
 CREATE POLICY "usuarios_own_insert" ON usuarios
-  FOR INSERT WITH CHECK (auth.uid()::text = usuario_id);
+  FOR INSERT WITH CHECK (auth.uid()::text = id);
 
 CREATE POLICY "usuarios_own_update" ON usuarios
   FOR UPDATE USING (
-    auth.uid()::text = usuario_id OR
-    auth.uid()::text IN (SELECT usuario_id FROM usuarios WHERE rol = 'admin')
+    auth.uid()::text = id OR
+    auth.uid()::text IN (SELECT id FROM usuarios WHERE rol = 'admin')
   );
 
 -- Perfiles: Users can read/update their own profile
 CREATE POLICY "perfiles_own_read" ON perfiles
   FOR SELECT USING (
     auth.uid()::text = usuario_id OR
-    auth.uid()::text IN (SELECT usuario_id FROM usuarios WHERE rol = 'admin')
+    auth.uid()::text IN (SELECT id FROM usuarios WHERE rol = 'admin')
   );
 
 CREATE POLICY "perfiles_own_insert" ON perfiles
@@ -88,14 +91,14 @@ CREATE POLICY "perfiles_own_insert" ON perfiles
 CREATE POLICY "perfiles_own_update" ON perfiles
   FOR UPDATE USING (
     auth.uid()::text = usuario_id OR
-    auth.uid()::text IN (SELECT usuario_id FROM usuarios WHERE rol = 'admin')
+    auth.uid()::text IN (SELECT id FROM usuarios WHERE rol = 'admin')
   );
 
 -- Favoritos: Users manage their own favorites
 CREATE POLICY "favoritos_own_read" ON favoritos
   FOR SELECT USING (
     auth.uid()::text = usuario_id OR
-    auth.uid()::text IN (SELECT usuario_id FROM usuarios WHERE rol = 'admin')
+    auth.uid()::text IN (SELECT id FROM usuarios WHERE rol = 'admin')
   );
 
 CREATE POLICY "favoritos_own_insert" ON favoritos
@@ -104,14 +107,14 @@ CREATE POLICY "favoritos_own_insert" ON favoritos
 CREATE POLICY "favoritos_own_delete" ON favoritos
   FOR DELETE USING (
     auth.uid()::text = usuario_id OR
-    auth.uid()::text IN (SELECT usuario_id FROM usuarios WHERE rol = 'admin')
+    auth.uid()::text IN (SELECT id FROM usuarios WHERE rol = 'admin')
   );
 
 -- Carrito: Users manage their own cart
 CREATE POLICY "carrito_own_read" ON carrito
   FOR SELECT USING (
     auth.uid()::text = usuario_id OR
-    auth.uid()::text IN (SELECT usuario_id FROM usuarios WHERE rol = 'admin')
+    auth.uid()::text IN (SELECT id FROM usuarios WHERE rol = 'admin')
   );
 
 CREATE POLICY "carrito_own_insert" ON carrito
@@ -120,20 +123,20 @@ CREATE POLICY "carrito_own_insert" ON carrito
 CREATE POLICY "carrito_own_update" ON carrito
   FOR UPDATE USING (
     auth.uid()::text = usuario_id OR
-    auth.uid()::text IN (SELECT usuario_id FROM usuarios WHERE rol = 'admin')
+    auth.uid()::text IN (SELECT id FROM usuarios WHERE rol = 'admin')
   );
 
 CREATE POLICY "carrito_own_delete" ON carrito
   FOR DELETE USING (
     auth.uid()::text = usuario_id OR
-    auth.uid()::text IN (SELECT usuario_id FROM usuarios WHERE rol = 'admin')
+    auth.uid()::text IN (SELECT id FROM usuarios WHERE rol = 'admin')
   );
 
 -- Pedidos: Users can read their own orders, admin can read all
 CREATE POLICY "pedidos_own_read" ON pedidos
   FOR SELECT USING (
     auth.uid()::text = usuario_id OR
-    auth.uid()::text IN (SELECT usuario_id FROM usuarios WHERE rol = 'admin')
+    auth.uid()::text IN (SELECT id FROM usuarios WHERE rol = 'admin')
   );
 
 CREATE POLICY "pedidos_own_insert" ON pedidos
@@ -142,7 +145,7 @@ CREATE POLICY "pedidos_own_insert" ON pedidos
 -- Admin can update order status
 CREATE POLICY "pedidos_admin_update" ON pedidos
   FOR UPDATE USING (
-    auth.uid()::text IN (SELECT usuario_id FROM usuarios WHERE rol = 'admin')
+    auth.uid()::text IN (SELECT id FROM usuarios WHERE rol = 'admin')
   );
 
 -- Ideas personalizadas: Users can insert, admin can read all
@@ -151,16 +154,17 @@ CREATE POLICY "ideas_own_insert" ON ideas_personalizadas
 
 CREATE POLICY "ideas_admin_read" ON ideas_personalizadas
   FOR SELECT USING (
-    auth.uid()::text IN (SELECT usuario_id FROM usuarios WHERE rol = 'admin')
+    auth.uid()::text IN (SELECT id FROM usuarios WHERE rol = 'admin')
   );
 
 -- STEP 4: Create admin user (run once)
 -- ============================================================
--- You need to first create a user via Supabase Auth, then set them as admin:
--- 
--- INSERT INTO usuarios (usuario_id, nombre, email, rol) 
--- VALUES ('YOUR_AUTH_USER_ID', 'Admin', 'admin@luminshop.com', 'admin')
--- ON CONFLICT (usuario_id) DO UPDATE SET rol = 'admin';
+-- First create a user via Supabase Auth (sign up in the dashboard or via API),
+-- then get their auth.uid() and run:
+--
+-- INSERT INTO usuarios (id, email, nombre, rol) 
+-- VALUES ('YOUR_AUTH_USER_ID', 'admin@luminshop.com', 'Admin', 'admin')
+-- ON CONFLICT (id) DO UPDATE SET rol = 'admin';
 
 -- STEP 5: Remove admin password from configuracion (security)
 -- ============================================================
