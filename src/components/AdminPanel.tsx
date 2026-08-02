@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback, useMemo, memo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, memo, useRef } from 'react';
 import {
   X, Upload, Save, Eye, EyeOff, Lock, Package, Settings, Image, Plus, Trash2,
   ArrowLeft, Check, ShoppingCart, Sliders, Sun, Home, LayoutGrid, Heart, FileText,
-  User, ChevronDown, ChevronRight, Shirt, Coffee,
+  User, ChevronDown, ChevronRight, Shirt, Coffee, Pencil, Type, MessageCircle,
+  Clock, ShieldCheck, Truck, RefreshCw, Tag, HelpCircle, ChevronUp,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { reloadConfig } from '../lib/config';
@@ -275,7 +276,7 @@ const MediaUpload = memo(({ id, label, value, onChange, handleFileUpload, upload
     {value && (
       <div className="rounded-xl overflow-hidden border border-white/10 aspect-video bg-[#0F110D]">
         {/\.(mp4|webm)$/i.test(value) ? (
-          <video src={value} className="w-full h-full object-cover" autoPlay muted loop playsInline />
+          <video src={value} className="w-full h-full object-cover" autoPlay muted loop playsInline preload="auto" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLVideoElement).style.display = 'none'; }} />
         ) : (
           <img src={value} className="w-full h-full object-cover" alt="" />
         )}
@@ -311,154 +312,479 @@ const PreviewBox = memo(({ title, children }: { title: string; children: React.R
 PreviewBox.displayName = 'PreviewBox';
 
 /* ═══════════════════════════════════════════════════════
-   TAB: INICIO
+   EDITABLE TEXT — WYSIWYG inline editing
    ═══════════════════════════════════════════════════════ */
-const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploading, uploadTarget }: any) => (
-  <div className="p-5 sm:p-8 space-y-6 max-w-[1200px] mx-auto">
+const EditableText = memo(({ cfgKey, value, setCfg, className, isTextarea, rows, fallback, monospace }: {
+  cfgKey: string; value: string; setCfg: (k: string, v: string) => void;
+  className?: string; isTextarea?: boolean; rows?: number; fallback?: string; monospace?: boolean;
+}) => {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value || '');
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
+  const display = value || fallback || '';
 
-    {/* Hero Text */}
-    <Section title="Hero Banner" icon={<Home className="w-3.5 h-3.5 text-[#D2E8A3]" />} badge="Sección principal">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Fields */}
-        <div className="space-y-3">
-          <Field label="Badge"><TextInput value={cfgEdit.hero_badge || ''} onChange={v => setCfg('hero_badge', v)} placeholder="Exclusivo — COLECCIÓN BAJO DEMANDA" /></Field>
-          <Field label="Título Línea 1"><TextInput value={cfgEdit.hero_title_1 || ''} onChange={v => setCfg('hero_title_1', v)} placeholder="MODA URBANA &" /></Field>
-          <Field label="Título Línea 2"><TextInput value={cfgEdit.hero_title_2 || ''} onChange={v => setCfg('hero_title_2', v)} placeholder="VASOS SUBLIMADOS" /></Field>
-          <Field label="Subtítulo 1"><TextInput value={cfgEdit.hero_subtitle_1 || ''} onChange={v => setCfg('hero_subtitle_1', v)} placeholder="Polos Sublimados con" /></Field>
-          <Field label="Subtítulo 2 (bold)"><TextInput value={cfgEdit.hero_subtitle_2 || ''} onChange={v => setCfg('hero_subtitle_2', v)} placeholder="Estampado Urbano HD High-Density" /></Field>
-          <Field label="Descripción"><TextArea value={cfgEdit.hero_description || ''} onChange={v => setCfg('hero_description', v)} placeholder="Sin sobre-stock. Fabricado para ti..." rows={2} /></Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Badge Izq"><TextInput value={cfgEdit.hero_badge_1 || ''} onChange={v => setCfg('hero_badge_1', v)} placeholder="Producción Express: 24 a 48 hrs" /></Field>
-            <Field label="Badge Der"><TextInput value={cfgEdit.hero_badge_2 || ''} onChange={v => setCfg('hero_badge_2', v)} placeholder="Garantía de Fijación Térmica" /></Field>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="CTA Catálogo"><TextInput value={cfgEdit.hero_cta_catalogo || ''} onChange={v => setCfg('hero_cta_catalogo', v)} placeholder="EXPLORAR CATÁLOGO" /></Field>
-            <Field label="CTA Idea"><TextInput value={cfgEdit.hero_cta_idea || ''} onChange={v => setCfg('hero_cta_idea', v)} placeholder="Personalizar Mi Idea" /></Field>
-          </div>
-        </div>
-        {/* Live Preview */}
-        <PreviewBox title="Vista Previa — Hero Banner">
-          <div className="rounded-2xl overflow-hidden bg-gradient-to-br from-[#161814] via-[#0F110D] to-[#0A0A0A] p-5 space-y-3 relative">
-            <div className="absolute top-0 right-0 -mt-6 -mr-6 w-32 h-32 rounded-full blur-3xl bg-[#D2E8A3]/10 pointer-events-none"></div>
-            <div className="relative z-10 grid grid-cols-12 gap-3 items-center">
-              <div className="col-span-7 space-y-2.5">
-                <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-[#D2E8A3]/10 border border-[#D2E8A3]/30">
-                  <span className="text-[7px] font-bold text-[#D2E8A3] uppercase">{cfgEdit.hero_badge || 'Badge'}</span>
-                </div>
-                <h3 className="font-display font-extrabold leading-tight uppercase">
-                  <span className="text-white text-xs block">{cfgEdit.hero_title_1 || 'Título 1'}</span>
-                  <span className="text-[#D2E8A3] text-xs block">{cfgEdit.hero_title_2 || 'Título 2'}</span>
-                </h3>
-                <p className="text-[8px] text-gray-400 leading-relaxed">
-                  {cfgEdit.hero_subtitle_1 || ''} <span className="text-white font-bold">{cfgEdit.hero_subtitle_2 || ''}</span>
-                  <br />{cfgEdit.hero_description || ''}
-                </p>
-                <div className="flex flex-wrap gap-1">
-                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-black/60 border border-white/10 text-[6px] font-bold text-gray-200">
-                    <span className="text-[#D2E8A3]">⚡</span> {cfgEdit.hero_badge_1 || 'Badge 1'}
-                  </span>
-                  <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-black/60 border border-white/10 text-[6px] font-bold text-gray-200">
-                    <span className="text-[#D2E8A3]">🛡️</span> {cfgEdit.hero_badge_2 || 'Badge 2'}
-                  </span>
-                </div>
-                <div className="flex gap-1.5 pt-0.5">
-                  <span className="px-2 py-1 rounded-lg bg-[#D2E8A3] text-[#0A0A0A] text-[7px] font-extrabold">{cfgEdit.hero_cta_catalogo || 'CTA 1'}</span>
-                  <span className="px-2 py-1 rounded-lg border border-white/10 bg-white/5 text-white text-[7px] font-bold">{cfgEdit.hero_cta_idea || 'CTA 2'}</span>
-                </div>
-              </div>
-              <div className="col-span-5 grid grid-cols-2 gap-1.5 relative">
-                <div className="relative overflow-hidden rounded-xl border border-white/10 aspect-[4/5]">
-                  {cfgEdit.hero_media_1_url ? (/\.(mp4|webm)$/i.test(cfgEdit.hero_media_1_url) ? <video src={cfgEdit.hero_media_1_url} className="w-full h-full object-cover" autoPlay muted loop playsInline /> : <img src={cfgEdit.hero_media_1_url} className="w-full h-full object-cover" alt="" />) : <div className="w-full h-full flex items-center justify-center text-gray-600 text-[6px] bg-[#161814]">Media 1</div>}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-1.5 flex flex-col justify-end">
-                    <span className="text-[6px] font-mono text-[#D2E8A3] uppercase">{cfgEdit.hero_street_title || 'STREETWEAR'}</span>
-                    <span className="text-[7px] font-bold text-white">{cfgEdit.hero_street_sub || 'Acid Tokyo 1988'}</span>
-                  </div>
-                </div>
-                <div className="relative overflow-hidden rounded-xl border border-white/10 aspect-[4/5] mt-3">
-                  {cfgEdit.hero_media_2_url ? (/\.(mp4|webm)$/i.test(cfgEdit.hero_media_2_url) ? <video src={cfgEdit.hero_media_2_url} className="w-full h-full object-cover" autoPlay muted loop playsInline /> : <img src={cfgEdit.hero_media_2_url} className="w-full h-full object-cover" alt="" />) : <div className="w-full h-full flex items-center justify-center text-gray-600 text-[6px] bg-[#161814]">Media 2</div>}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-1.5 flex flex-col justify-end">
-                    <span className="text-[6px] font-mono text-[#D2E8A3] uppercase">{cfgEdit.hero_subli_title || 'SUBLIMACIÓN'}</span>
-                    <span className="text-[7px] font-bold text-white">{cfgEdit.hero_subli_sub || 'Frosted Glass 16oz'}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </PreviewBox>
-      </div>
-    </Section>
+  useEffect(() => { if (editing && inputRef.current) { inputRef.current.focus(); inputRef.current.select(); } }, [editing]);
 
-    {/* Hero Media */}
-    <Section title="Media del Hero" icon={<Image className="w-3.5 h-3.5 text-[#D2E8A3]" />} badge="Imágenes / Videos">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <MediaUpload id="hero_media_1_url" label="Media 1 — Streetwear" value={cfgEdit.hero_media_1_url || ''} onChange={v => setCfg('hero_media_1_url', v)} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} />
-        <MediaUpload id="hero_media_2_url" label="Media 2 — Sublimación" value={cfgEdit.hero_media_2_url || ''} onChange={v => setCfg('hero_media_2_url', v)} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} />
-      </div>
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-3">
-          <Field label="Street Title"><TextInput value={cfgEdit.hero_street_title || ''} onChange={v => setCfg('hero_street_title', v)} /></Field>
-          <Field label="Street Sub"><TextInput value={cfgEdit.hero_street_sub || ''} onChange={v => setCfg('hero_street_sub', v)} /></Field>
-        </div>
-        <div className="space-y-3">
-          <Field label="Subli Title"><TextInput value={cfgEdit.hero_subli_title || ''} onChange={v => setCfg('hero_subli_title', v)} /></Field>
-          <Field label="Subli Sub"><TextInput value={cfgEdit.hero_subli_sub || ''} onChange={v => setCfg('hero_subli_sub', v)} /></Field>
-        </div>
-      </div>
-    </Section>
+  const save = () => { setEditing(false); if (draft !== (value || '')) setCfg(cfgKey, draft); };
+  const cancel = () => { setDraft(value || ''); setEditing(false); };
 
-    {/* Process Bar */}
-    <Section title="Barra de Proceso" icon={<Package className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-3">
-          <Field label="Título"><TextInput value={cfgEdit.badge_model_title || ''} onChange={v => setCfg('badge_model_title', v)} placeholder="MODELO SUSTENTABLE BAJO DEMANDA" /></Field>
-          <Field label="Subtítulo"><TextInput value={cfgEdit.badge_model_subtitle || ''} onChange={v => setCfg('badge_model_subtitle', v)} placeholder="¿CÓMO FUNCIONA LUMIN SHOP?" /></Field>
-          {[1, 2, 3].map(i => (
-            <div key={i} className="grid grid-cols-2 gap-3">
-              <Field label={`Paso ${i} — Título`}><TextInput value={cfgEdit[`badge_step${i}_title`] || ''} onChange={v => setCfg(`badge_step${i}_title`, v)} /></Field>
-              <Field label={`Paso ${i} — Desc`}><TextInput value={cfgEdit[`badge_step${i}_desc`] || ''} onChange={v => setCfg(`badge_step${i}_desc`, v)} /></Field>
-            </div>
-          ))}
-        </div>
-        <PreviewBox title="Vista Previa — Proceso">
-          <div className="space-y-3">
-            <p className="text-white font-extrabold text-xs uppercase">{cfgEdit.badge_model_title || 'MODELO SUSTENTABLE'}</p>
-            <p className="text-gray-400 text-[9px]">{cfgEdit.badge_model_subtitle || '¿Cómo funciona?'}</p>
-            <div className="grid grid-cols-3 gap-2">
-              {[1, 2, 3].map(i => (
-                <div key={i} className="p-2.5 rounded-xl bg-white/5 border border-white/5 text-center space-y-1">
-                  <div className="w-7 h-7 mx-auto rounded-full bg-[#D2E8A3]/15 flex items-center justify-center text-[#D2E8A3] text-[10px] font-bold">{i}</div>
-                  <p className="text-white text-[8px] font-bold">{cfgEdit[`badge_step${i}_title`] || `Paso ${i}`}</p>
-                  <p className="text-gray-500 text-[7px]">{cfgEdit[`badge_step${i}_desc`] || '...'}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </PreviewBox>
+  if (editing) {
+    const base = 'w-full px-2 py-1 rounded-lg border border-[#D2E8A3] bg-black text-white text-inherit focus:outline-none focus:ring-1 focus:ring-[#D2E8A3]/50 z-50 relative';
+    return isTextarea ? (
+      <div className="relative group">
+        <textarea ref={inputRef as any} value={draft} onChange={e => setDraft(e.target.value)} onBlur={save}
+          onKeyDown={e => { if (e.key === 'Escape') cancel(); if (e.key === 'Enter' && e.metaKey) save(); }}
+          rows={rows || 3} className={`${base} resize-none ${className || ''}`} />
+        <span className="absolute -top-6 left-0 text-[9px] font-mono text-[#D2E8A3] bg-black px-1.5 py-0.5 rounded-md border border-[#D2E8A3]/30 z-50 whitespace-nowrap">{cfgKey}</span>
       </div>
-    </Section>
+    ) : (
+      <div className="relative group">
+        <input ref={inputRef as any} value={draft} onChange={e => setDraft(e.target.value)} onBlur={save}
+          onKeyDown={e => { if (e.key === 'Escape') cancel(); if (e.key === 'Enter') save(); }}
+          className={`${base} ${className || ''}`} />
+        <span className="absolute -top-6 left-0 text-[9px] font-mono text-[#D2E8A3] bg-black px-1.5 py-0.5 rounded-md border border-[#D2E8A3]/30 z-50 whitespace-nowrap">{cfgKey}</span>
+      </div>
+    );
+  }
 
-    {/* About & Social */}
-    <Section title="Secciones & Social" icon={<FileText className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="space-y-3">
-          <Field label="Título Sobre Nosotros"><TextInput value={cfgEdit.section_about_title || ''} onChange={v => setCfg('section_about_title', v)} /></Field>
-          <Field label="Subtítulo"><TextInput value={cfgEdit.section_about_subtitle || ''} onChange={v => setCfg('section_about_subtitle', v)} /></Field>
-          <Field label="Descripción"><TextArea value={cfgEdit.section_about_text || ''} onChange={v => setCfg('section_about_text', v)} rows={4} /></Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Título Destacados"><TextInput value={cfgEdit.section_featured_title || ''} onChange={v => setCfg('section_featured_title', v)} /></Field>
-            <Field label="Subtítulo Destacados"><TextInput value={cfgEdit.section_featured_sub || ''} onChange={v => setCfg('section_featured_sub', v)} /></Field>
-          </div>
-        </div>
-        <div className="space-y-3">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Social Quick Bar</p>
-          <Field label="Título"><TextInput value={cfgEdit.social_title || ''} onChange={v => setCfg('social_title', v)} /></Field>
-          <Field label="Texto"><TextInput value={cfgEdit.social_text || ''} onChange={v => setCfg('social_text', v)} /></Field>
-          <Field label="Subtítulo"><TextInput value={cfgEdit.social_subtitle || ''} onChange={v => setCfg('social_subtitle', v)} /></Field>
-        </div>
+  return (
+    <span
+      onDoubleClick={() => { setDraft(value || ''); setEditing(true); }}
+      className={`cursor-pointer rounded-lg px-1.5 -mx-1.5 transition-all group relative inline-flex items-center gap-1.5 min-h-[1.5em] border border-transparent hover:border-[#D2E8A3]/40 hover:bg-[#D2E8A3]/[0.07] hover:shadow-[0_0_0_1px_rgba(210,232,163,0.1)] ${monospace ? 'font-mono' : ''} ${className || ''}`}
+      title={`Doble clic para editar: ${cfgKey}`}
+    >
+      {display}
+      <Pencil className="w-3 h-3 text-[#D2E8A3] opacity-0 group-hover:opacity-70 transition-opacity flex-shrink-0" />
+    </span>
+  );
+});
+EditableText.displayName = 'EditableText';
+
+/* ═══════════════════════════════════════════════════════
+   EDITABLE IMAGE — WYSIWYG media upload
+   ═══════════════════════════════════════════════════════ */
+const EditableImage = memo(({ cfgKey, value, setCfg, handleFileUpload, uploading, uploadTarget, className, fallback }: {
+  cfgKey: string; value: string; setCfg: (k: string, v: string) => void;
+  handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, key: string) => void;
+  uploading: boolean; uploadTarget: string; className?: string; fallback?: string;
+}) => {
+  const isVideo = /\.(mp4|webm)$/i.test(value || '');
+  const hasMedia = !!value;
+  return (
+    <div className={`relative group ${className || ''}`}>
+      {hasMedia ? (
+        isVideo ? <video src={value} className="w-full h-full object-cover" autoPlay muted loop playsInline preload="auto" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLVideoElement).style.display = 'none'; }} /> : <img src={value} alt="" className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs bg-[#161814]">{fallback || 'Sin media'}</div>
+      )}
+      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+        <label className={`px-3 py-1.5 rounded-xl text-[10px] font-bold cursor-pointer border border-[#D2E8A3]/30 text-[#D2E8A3] bg-black/80 hover:bg-[#D2E8A3]/10 transition-all flex items-center gap-1 ${uploading && uploadTarget === cfgKey ? 'animate-pulse' : ''}`}>
+          <Upload className="w-3 h-3" />{uploading && uploadTarget === cfgKey ? 'Subiendo...' : 'Subir'}
+          <input type="file" accept="image/*,video/mp4,video/webm" className="hidden" onChange={e => handleFileUpload(e, cfgKey)} disabled={uploading} />
+        </label>
       </div>
-    </Section>
+    </div>
+  );
+});
+EditableImage.displayName = 'EditableImage';
+
+/* ═══════════════════════════════════════════════════════
+   SITE MIRROR SECTION WRAPPER
+   ═══════════════════════════════════════════════════════ */
+const MirrorSection = memo(({ title, icon, children, badge, editCount }: {
+  title: string; icon?: React.ReactNode; children: React.ReactNode; badge?: string; editCount?: number;
+}) => (
+  <div className="rounded-3xl border border-white/10 bg-[#161814] overflow-hidden relative">
+    <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+      {icon && <span className="w-6 h-6 rounded-lg bg-[#D2E8A3]/10 flex items-center justify-center backdrop-blur-sm">{icon}</span>}
+      <span className="text-[10px] font-extrabold text-white/60 uppercase tracking-widest backdrop-blur-sm bg-black/40 px-2 py-1 rounded-lg">{title}</span>
+    </div>
+    {badge && <span className="absolute top-3 right-3 z-10 text-[9px] font-bold text-[#D2E8A3] bg-[#D2E8A3]/10 px-2 py-1 rounded-lg backdrop-blur-sm">{badge}</span>}
+    {editCount !== undefined && editCount > 0 && <span className="absolute top-3 right-3 z-10 text-[9px] font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-lg backdrop-blur-sm">✓ {editCount}</span>}
+    {children}
   </div>
 ));
+MirrorSection.displayName = 'MirrorSection';
+
+/* ═══════════════════════════════════════════════════════
+   TAB: INICIO — WYSIWYG SITE MIRROR
+   ═══════════════════════════════════════════════════════ */
+const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploading, uploadTarget }: any) => {
+  const heroEdits = [cfgEdit.hero_badge, cfgEdit.hero_title_1, cfgEdit.hero_title_2, cfgEdit.hero_subtitle_1, cfgEdit.hero_subtitle_2, cfgEdit.hero_description, cfgEdit.hero_badge_1, cfgEdit.hero_badge_2, cfgEdit.hero_cta_catalogo, cfgEdit.hero_cta_idea].filter(Boolean).length;
+  const socialEdits = [cfgEdit.social_bar_title, cfgEdit.social_bar_text, cfgEdit.social_bar_sub].filter(Boolean).length;
+  const aboutEdits = [cfgEdit.section_about_subtitle, cfgEdit.section_about_text, cfgEdit.section_about_cta_cat, cfgEdit.section_about_cta_idea].filter(Boolean).length;
+  const badgeEdits = [cfgEdit.badge_model_title, cfgEdit.badge_model_subtitle, cfgEdit.badge_step1_title, cfgEdit.badge_step2_title, cfgEdit.badge_step3_title].filter(Boolean).length;
+  const faqEdits = [cfgEdit.faq_badge, cfgEdit.faq_heading].filter(Boolean).length;
+  const footerEdits = [cfgEdit.footer_description, cfgEdit.footer_collections, cfgEdit.footer_copyright].filter(Boolean).length;
+
+  return (
+    <div className="p-3 sm:p-6 space-y-4 max-w-[1200px] mx-auto">
+
+      {/* ─── HOW-TO BANNER ─── */}
+      <div className="rounded-2xl border border-[#D2E8A3]/20 bg-[#D2E8A3]/5 p-4 flex items-start gap-3">
+        <div className="w-8 h-8 rounded-xl bg-[#D2E8A3]/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <Pencil className="w-4 h-4 text-[#D2E8A3]" />
+        </div>
+        <div className="space-y-1">
+          <p className="text-xs font-extrabold text-[#D2E8A3] uppercase tracking-wider">Modo Edición Visual — Doble clic para editar</p>
+          <p className="text-[11px] text-gray-400 leading-relaxed">
+            Haz <strong className="text-white">doble clic</strong> en cualquier texto verde o blanco para editarlo directamente.
+            Los cambios se guardan localmente — presiona <strong className="text-[#D2E8A3]">"Guardar"</strong> arriba para subirlos a Supabase.
+            Las imágenes se cambian pasando el cursor encima.
+          </p>
+        </div>
+      </div>
+
+      {/* ─── HERO BANNER ─── */}
+      <MirrorSection title="Hero Banner" icon={<Home className="w-3.5 h-3.5 text-[#D2E8A3]" />} badge="Sección principal" editCount={heroEdits}>
+        <div className="p-4 sm:p-8 bg-gradient-to-br from-[#161814] via-[#0F110D] to-[#0A0A0A] relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full blur-3xl bg-[#D2E8A3]/10 pointer-events-none"></div>
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+
+            {/* Left: Text */}
+            <div className="lg:col-span-7 space-y-4 sm:space-y-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D2E8A3]/10 border border-[#D2E8A3]/30 text-[#D2E8A3] text-xs font-bold uppercase tracking-wider">
+                <span className="text-lime-600">🔥</span>
+                <EditableText cfgKey="hero_badge" value={cfgEdit.hero_badge || ''} setCfg={setCfg} fallback="Exclusivo — COLECCIÓN BAJO DEMANDA" />
+              </div>
+
+              <h2 className="font-display text-3xl sm:text-5xl font-extrabold leading-tight uppercase tracking-tight text-white">
+                <EditableText cfgKey="hero_title_1" value={cfgEdit.hero_title_1 || ''} setCfg={setCfg} fallback="MODA URBANA &" /><br />
+                <EditableText cfgKey="hero_title_2" value={cfgEdit.hero_title_2 || ''} setCfg={setCfg} fallback="VASOS SUBLIMADOS" className="text-[#D2E8A3]" />
+              </h2>
+
+              <p className="text-sm sm:text-base max-w-xl leading-relaxed text-gray-400">
+                <EditableText cfgKey="hero_subtitle_1" value={cfgEdit.hero_subtitle_1 || ''} setCfg={setCfg} fallback="Polos Sublimados con" />{' '}
+                <EditableText cfgKey="hero_subtitle_2" value={cfgEdit.hero_subtitle_2 || ''} setCfg={setCfg} fallback="Estampado Urbano HD High-Density" className="text-white font-bold" />
+                {' '}y vasos/tazas con sublimación continua a 200°C.<br className="hidden sm:inline" />
+                <EditableText cfgKey="hero_description" value={cfgEdit.hero_description || ''} setCfg={setCfg} fallback="Sin sobre-stock. Fabricado especialmente para ti al confirmar tu orden." />
+              </p>
+
+              <div className="flex flex-wrap gap-2 pt-1">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-black/60 border border-white/15 text-gray-200">
+                  <span className="text-[#D2E8A3]">⚡</span>
+                  <EditableText cfgKey="hero_badge_1" value={cfgEdit.hero_badge_1 || ''} setCfg={setCfg} fallback="Producción Express: 24 a 48 hrs" />
+                </span>
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-black/60 border border-white/15 text-gray-200">
+                  <span className="text-[#D2E8A3]">🛡️</span>
+                  <EditableText cfgKey="hero_badge_2" value={cfgEdit.hero_badge_2 || ''} setCfg={setCfg} fallback="Garantía de Fijación Térmica & Color" />
+                </span>
+              </div>
+
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-3">
+                <span className="px-6 py-3.5 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg">
+                  <EditableText cfgKey="hero_cta_catalogo" value={cfgEdit.hero_cta_catalogo || ''} setCfg={setCfg} fallback="EXPLORAR CATÁLOGO" />
+                </span>
+                <span className="px-6 py-3.5 rounded-xl border bg-white/5 border-white/10 text-white font-bold text-sm flex items-center justify-center gap-2">
+                  <span className="text-[#D2E8A3]">✨</span>
+                  <EditableText cfgKey="hero_cta_idea" value={cfgEdit.hero_cta_idea || ''} setCfg={setCfg} fallback="Personalizar Mi Idea" />
+                </span>
+              </div>
+            </div>
+
+            {/* Right: Media */}
+            <div className="lg:col-span-5 relative">
+              <div className="grid grid-cols-2 gap-3 relative">
+                <div className="relative group overflow-hidden rounded-2xl border border-white/10 aspect-[4/5] bg-[#161814]">
+                  <EditableImage cfgKey="hero_media_1_url" value={cfgEdit.hero_media_1_url || ''} setCfg={setCfg} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} className="w-full h-full" fallback="Media 1" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-3 flex flex-col justify-end pointer-events-none">
+                    <EditableText cfgKey="hero_street_title" value={cfgEdit.hero_street_title || ''} setCfg={setCfg} fallback="STREETWEAR" className="text-[10px] font-mono text-[#D2E8A3] uppercase" /><br />
+                    <EditableText cfgKey="hero_street_sub" value={cfgEdit.hero_street_sub || ''} setCfg={setCfg} fallback="Acid Tokyo 1988" className="text-xs font-bold text-white" />
+                  </div>
+                </div>
+                <div className="relative group overflow-hidden rounded-2xl border border-white/10 aspect-[4/5] mt-6 bg-[#161814]">
+                  <EditableImage cfgKey="hero_media_2_url" value={cfgEdit.hero_media_2_url || ''} setCfg={setCfg} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} className="w-full h-full" fallback="Media 2" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-3 flex flex-col justify-end pointer-events-none">
+                    <EditableText cfgKey="hero_subli_title" value={cfgEdit.hero_subli_title || ''} setCfg={setCfg} fallback="SUBLIMACIÓN" className="text-[10px] font-mono text-[#D2E8A3] uppercase" /><br />
+                    <EditableText cfgKey="hero_subli_sub" value={cfgEdit.hero_subli_sub || ''} setCfg={setCfg} fallback="Frosted Glass 16oz" className="text-xs font-bold text-white" />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </MirrorSection>
+
+      {/* ─── SOCIAL QUICK BAR ─── */}
+      <MirrorSection title="Social Bar" icon={<MessageCircle className="w-3.5 h-3.5 text-green-500" />} editCount={socialEdits}>
+        <div className="p-4 sm:p-6">
+          <div className="p-4 sm:p-5 rounded-3xl border border-white/10 bg-[#0A0A0A]">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-500 flex-shrink-0">
+                  <MessageCircle className="w-5 h-5 fill-green-500 text-green-500" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <EditableText cfgKey="social_bar_title" value={cfgEdit.social_bar_title || ''} setCfg={setCfg} fallback="WhatsApp & Redes Oficiales" className="font-extrabold text-sm sm:text-base uppercase tracking-tight text-white" />
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                  </div>
+                  <p className="text-xs text-gray-400">
+                    <EditableText cfgKey="social_bar_text" value={cfgEdit.social_bar_text || ''} setCfg={setCfg} fallback="Contacto directo" />{' '}
+                    <strong className="text-white"><EditableText cfgKey="brand_phone" value={cfgEdit.brand_phone || ''} setCfg={setCfg} fallback="993 365 099" /></strong>{' '}
+                    • <EditableText cfgKey="social_bar_sub" value={cfgEdit.social_bar_sub || ''} setCfg={setCfg} fallback="Respuesta inmediata" />
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <span className="p-3 rounded-2xl bg-green-500 text-black font-bold flex items-center gap-2 px-4">
+                  <MessageCircle className="w-5 h-5 fill-black" />
+                  <span className="text-xs uppercase font-extrabold">WhatsApp</span>
+                </span>
+                <span className="p-3 rounded-2xl bg-[#0A0A0A] border border-white/10 text-gray-300 flex items-center justify-center">
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                </span>
+                <span className="p-3 rounded-2xl bg-[#0A0A0A] border border-white/10 text-gray-300 flex items-center justify-center">
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-5.2-1.74 2.89 2.89 0 0 1 2.31-1.39V9.06a6.34 6.34 0 0 0-3.5 1.05 6.33 6.33 0 0 0-2.8 4.28 6.34 6.34 0 0 0 1.25 5.25A6.33 6.33 0 0 0 9.17 22a6.34 6.34 0 0 0 6.33-6.33V9a8.16 8.16 0 0 0 4.09 1.14V6.69z"/></svg>
+                </span>
+                <span className="p-3 rounded-2xl bg-[#0A0A0A] border border-white/10 text-gray-300 flex items-center justify-center">
+                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                </span>
+              </div>
+            </div>
+          </div>
+          {/* Social URL Edit Fields */}
+          <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div className="space-y-1">
+              <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1"><svg className="w-3 h-3 fill-current text-pink-400" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg> Instagram</label>
+              <EditableText cfgKey="brand_instagram" value={cfgEdit.brand_instagram || ''} setCfg={setCfg} fallback="https://instagram.com/lumin.shop" className="text-xs text-gray-300 w-full block" monospace />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1"><svg className="w-3 h-3 fill-current text-gray-300" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-5.2-1.74 2.89 2.89 0 0 1 2.31-1.39V9.06a6.34 6.34 0 0 0-3.5 1.05 6.33 6.33 0 0 0-2.8 4.28 6.34 6.34 0 0 0 1.25 5.25A6.33 6.33 0 0 0 9.17 22a6.34 6.34 0 0 0 6.33-6.33V9a8.16 8.16 0 0 0 4.09 1.14V6.69z"/></svg> TikTok</label>
+              <EditableText cfgKey="brand_tiktok" value={cfgEdit.brand_tiktok || ''} setCfg={setCfg} fallback="https://tiktok.com/@.lumin.shop" className="text-xs text-gray-300 w-full block" monospace />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1"><svg className="w-3 h-3 fill-current text-blue-400" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Facebook</label>
+              <EditableText cfgKey="brand_facebook" value={cfgEdit.brand_facebook || ''} setCfg={setCfg} fallback="https://facebook.com/lumin.shop" className="text-xs text-gray-300 w-full block" monospace />
+            </div>
+          </div>
+          <p className="text-[9px] text-gray-600 mt-1.5">Pega URLs completas (https://...) o solo el usuario (ej: lumin.shop)</p>
+        </div>
+      </MirrorSection>
+
+      {/* ─── ABOUT SECTION ─── */}
+      <MirrorSection title="Sobre LUMIN SHOP" icon={<FileText className="w-3.5 h-3.5 text-[#D2E8A3]" />} badge="Descripción de marca" editCount={aboutEdits}>
+        <div className="p-4 sm:p-8 border border-white/10 rounded-3xl bg-[#0A0A0A] space-y-4 relative overflow-hidden m-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-[#D2E8A3]/20 text-[#D2E8A3]">
+                <EditableText cfgKey="section_about_label" value={cfgEdit.section_about_label || ''} setCfg={setCfg} fallback="Sobre" />{' '}
+                <EditableText cfgKey="brand_name" value={cfgEdit.brand_name || ''} setCfg={setCfg} fallback="LUMIN SHOP" />
+              </span>
+              <EditableText cfgKey="brand_instagram" value={cfgEdit.brand_instagram || ''} setCfg={setCfg} fallback="@.lumin.shop" className="text-xs font-mono text-gray-400" />
+            </div>
+            <EditableText cfgKey="brand_location" value={cfgEdit.brand_location || ''} setCfg={setCfg} fallback="📍 Ayacucho, Perú • Envíos a Nivel Nacional" className="text-xs font-mono text-gray-400" />
+          </div>
+
+          <EditableText cfgKey="section_about_subtitle" value={cfgEdit.section_about_subtitle || ''} setCfg={setCfg} fallback="Ropa Urbana Streetwear & Sublimación de Alta Temperatura" className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white block" />
+
+          <div className="text-sm sm:text-base leading-relaxed text-gray-300">
+            <EditableText cfgKey="section_about_text" value={cfgEdit.section_about_text || ''} setCfg={setCfg} isTextarea rows={4}
+              fallback="LUMIN SHOP es una marca independiente peruana dedicada al diseño y confección de streetwear exclusivo y artículos gráficos." className="w-full block" />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <span className="px-5 py-2.5 rounded-full bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-lg">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+              <EditableText cfgKey="section_about_cta_cat" value={cfgEdit.section_about_cta_cat || ''} setCfg={setCfg} fallback="Explorar Catálogo de Productos" />
+            </span>
+            <span className="px-5 py-2.5 rounded-full border bg-white/5 border-white/10 text-white font-extrabold text-xs sm:text-sm flex items-center gap-2">
+              <span className="text-[#D2E8A3]">✨</span>
+              <EditableText cfgKey="section_about_cta_idea" value={cfgEdit.section_about_cta_idea || ''} setCfg={setCfg} fallback="Cotizar Idea Personalizada" />
+            </span>
+          </div>
+        </div>
+      </MirrorSection>
+
+      {/* ─── HOW IT WORKS / PRODUCTION BADGES ─── */}
+      <MirrorSection title="Cómo Funciona" icon={<RefreshCw className="w-3.5 h-3.5 text-[#D2E8A3]" />} badge="Proceso" editCount={badgeEdits}>
+        <div className="p-4 sm:p-8 space-y-6">
+          {/* Top Banner */}
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-[#D2E8A3]/10 border border-[#D2E8A3]/20 text-[#D2E8A3]">
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              <EditableText cfgKey="badge_model_title" value={cfgEdit.badge_model_title || ''} setCfg={setCfg} fallback="MODELO SUSTENTABLE BAJO DEMANDA" />
+            </div>
+            <EditableText cfgKey="badge_model_subtitle" value={cfgEdit.badge_model_subtitle || ''} setCfg={setCfg} fallback="¿CÓMO FUNCIONA LUMIN SHOP?" className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white block" />
+            <EditableText cfgKey="badge_model_desc" value={cfgEdit.badge_model_desc || ''} setCfg={setCfg} fallback="Cero sobre-stock, mayor frescura en estampados y acabados totalmente personalizados para ti." className="text-xs sm:text-sm text-gray-300 block" />
+          </div>
+
+          {/* 3 Steps */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="p-6 rounded-2xl border border-white/10 bg-[#0A0A0A] relative overflow-hidden hover:border-[#D2E8A3]/40 transition-all">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="font-mono text-2xl font-black text-[#D2E8A3]/80">{String(i).padStart(2, '0')}</span>
+                  <div className="p-3 rounded-xl border bg-[#0A0A0A] border-white/10 text-[#D2E8A3]">
+                    {i === 1 ? <Tag className="w-5 h-5" /> : i === 2 ? <Clock className="w-5 h-5" /> : <Truck className="w-5 h-5" />}
+                  </div>
+                </div>
+                <EditableText cfgKey={`badge_step${i}_title`} value={cfgEdit[`badge_step${i}_title`] || ''} setCfg={setCfg} fallback={['Eliges y Configuras', 'Producción 24-48h', 'Despacho & Entrega'][i - 1]} className="font-bold text-base text-white block mb-1" />
+                <EditableText cfgKey={`badge_step${i}_desc`} value={cfgEdit[`badge_step${i}_desc`] || ''} setCfg={setCfg} fallback={['Seleccionas tu prenda o vaso, talla, corte, color o texto personal.', 'Estampamos con serigrafía/fijación térmica o sublimamos a 200°C con máxima fijación.', 'Empacamos con cuidado y enviamos a la puerta de tu domicilio.'][i - 1]} className="text-xs text-gray-300 block" />
+              </div>
+            ))}
+          </div>
+
+          {/* Trust Bar */}
+          <div className="p-4 rounded-2xl border border-white/5 bg-[#0A0A0A] flex flex-wrap items-center justify-around gap-4 text-xs text-gray-300">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-[#D2E8A3]" />
+              <span>Fijación Térmica HD de Alta Durabilidad</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-[#D2E8A3]" />
+              <span>Tiempo de fabricación: 24-48 hrs</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Check className="w-4 h-4 text-[#D2E8A3]" />
+              <span>Atención Directa por WhatsApp</span>
+            </div>
+          </div>
+        </div>
+      </MirrorSection>
+
+      {/* ─── FEATURED PRODUCTS ─── */}
+      <MirrorSection title="Productos Destacados" icon={<Tag className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+        <div className="p-4 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <EditableText cfgKey="section_featured_title" value={cfgEdit.section_featured_title || ''} setCfg={setCfg} fallback="🔥 SELECCIÓN DESTACADA DROP 04" className="text-xs font-mono uppercase tracking-widest text-[#D2E8A3] block" />
+              <EditableText cfgKey="section_featured_sub" value={cfgEdit.section_featured_sub || ''} setCfg={setCfg} fallback="Nuestros Más Pedidos" className="font-display text-xl sm:text-2xl font-extrabold uppercase text-white block" />
+            </div>
+            <span className="text-xs font-bold text-[#D2E8A3] flex items-center gap-1">
+              <EditableText cfgKey="section_featured_view_all" value={cfgEdit.section_featured_view_all || ''} setCfg={setCfg} fallback="Ver Catálogo Completo" /> →
+            </span>
+          </div>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="rounded-2xl overflow-hidden border border-white/5 bg-[#0A0A0A]">
+                <div className="aspect-video bg-[#161814] flex items-center justify-center text-gray-600 text-xs">Producto {i}</div>
+                <div className="p-3 space-y-1.5">
+                  <p className="text-white text-xs font-extrabold">Producto destacado {i}</p>
+                  <p className="text-[#D2E8A3] text-sm font-black">S/ 0.00</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-[9px] text-gray-500 text-center">Los productos destacados se muestran automáticamente desde el catálogo</p>
+        </div>
+      </MirrorSection>
+
+      {/* ─── FAQ ─── */}
+      <MirrorSection title="Preguntas Frecuentes" icon={<HelpCircle className="w-3.5 h-3.5 text-[#D2E8A3]" />} editCount={faqEdits}>
+        <div className="p-4 sm:p-8 max-w-3xl mx-auto space-y-4">
+          <div className="text-center space-y-2 mb-6">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/20 bg-[#161814] text-gray-200 text-xs font-mono font-bold">
+              <HelpCircle className="w-3.5 h-3.5 text-[#D2E8A3]" />
+              <EditableText cfgKey="faq_badge" value={cfgEdit.faq_badge || ''} setCfg={setCfg} fallback="RESOLVEMOS TUS DUDAS" />
+            </div>
+            <EditableText cfgKey="faq_heading" value={cfgEdit.faq_heading || ''} setCfg={setCfg} fallback="PREGUNTAS FRECUENTES" className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white block" />
+          </div>
+          {['¿Cómo funciona el proceso "Bajo Pedido"?', '¿Qué garantía tienen los estampados textiles y tazas?', '¿Puedo enviar mi propio diseño?', '¿Cómo cuidar mis vasos y tazas sublimadas?'].map((q, i) => (
+            <div key={i} className="rounded-2xl border border-white/10 overflow-hidden">
+              <div className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-white">
+                <span>{q}</span>
+                <ChevronDown className="w-5 h-5 text-[#D2E8A3] flex-shrink-0" />
+              </div>
+            </div>
+          ))}
+          <p className="text-[9px] text-gray-500 text-center">Las preguntas FAQ se editan desde la sección de datos en Supabase</p>
+        </div>
+      </MirrorSection>
+
+      {/* ─── FOOTER ─── */}
+      <MirrorSection title="Footer" icon={<FileText className="w-3.5 h-3.5 text-[#D2E8A3]" />} editCount={footerEdits}>
+        <div className="p-4 sm:p-8 bg-[#070806] space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {/* Col 1: Brand */}
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#D2E8A3]"></span>
+                <EditableText cfgKey="brand_name" value={cfgEdit.brand_name || ''} setCfg={setCfg} fallback="LUMIN SHOP" className="font-display text-xl font-black text-white uppercase tracking-tight" monospace />
+              </div>
+              <EditableText cfgKey="footer_description" value={cfgEdit.footer_description || ''} setCfg={setCfg} isTextarea rows={3}
+                fallback="Marca independiente de ropa urbana streetwear (polos gráficos de alta definición) y vasos/tazas sublimadas de alta temperatura."
+                className="text-gray-400 text-xs leading-relaxed block w-full" />
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#161814] border border-[#D2E8A3]/20 text-[#D2E8A3] text-[11px] font-mono">
+                <Tag className="w-3 h-3" />
+                <EditableText cfgKey="footer_production" value={cfgEdit.footer_production || ''} setCfg={setCfg} fallback="Producción Express 24-48 hrs" />
+              </span>
+            </div>
+
+            {/* Col 2: Collections */}
+            <div className="space-y-3">
+              <EditableText cfgKey="footer_collections" value={cfgEdit.footer_collections || ''} setCfg={setCfg} fallback="Colecciones" className="font-bold text-white text-xs uppercase font-mono tracking-wider block" />
+              <ul className="space-y-2">
+                {[
+                  { key: 'footer_col_1', fallback: 'Polos Oversized & Boxy Fit', icon: '👕' },
+                  { key: 'footer_col_2', fallback: 'Vasos Frosted Glass 16oz', icon: '☕' },
+                  { key: 'footer_col_3', fallback: 'Tazas Térmicas 11oz', icon: '🔥' },
+                  { key: 'footer_col_4', fallback: 'Edición Especial Drop 04', icon: '✨' },
+                ].map(item => (
+                  <li key={item.key} className="flex items-center gap-2">
+                    <span className="text-[#D2E8A3] text-sm">{item.icon}</span>
+                    <EditableText cfgKey={item.key} value={cfgEdit[item.key] || ''} setCfg={setCfg} fallback={item.fallback} className="text-gray-400 text-xs hover:text-[#D2E8A3] transition-colors" />
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Col 3: Guarantees */}
+            <div className="space-y-3">
+              <EditableText cfgKey="footer_guarantee_title" value={cfgEdit.footer_guarantee_title || ''} setCfg={setCfg} fallback="Garantía & Envíos" className="font-bold text-white text-xs uppercase font-mono tracking-wider block" />
+              <ul className="space-y-2">
+                {[
+                  { key: 'footer_guarantee_1', fallback: 'Estampados HD de alta resistencia', icon: '🛡️' },
+                  { key: 'footer_guarantee_2', fallback: 'Envíos directos a todo el país', icon: '📍' },
+                  { key: 'footer_guarantee_3', fallback: 'Pagos seguros: Yape, Plin, Transferencia o Tarjeta', icon: '💳' },
+                ].map(item => (
+                  <li key={item.key} className="flex items-center gap-2">
+                    <span className="text-sm">{item.icon}</span>
+                    <EditableText cfgKey={item.key} value={cfgEdit[item.key] || ''} setCfg={setCfg} fallback={item.fallback} className="text-gray-400 text-xs" />
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Col 4: Social */}
+            <div className="space-y-3">
+              <EditableText cfgKey="footer_social_title" value={cfgEdit.footer_social_title || ''} setCfg={setCfg} fallback="Síguenos en Redes" className="font-bold text-white text-xs uppercase font-mono tracking-wider block" />
+              <p className="text-gray-400 text-xs">
+                <EditableText cfgKey="footer_social_text" value={cfgEdit.footer_social_text || ''} setCfg={setCfg} fallback="Encuéntranos en TikTok, Facebook e Instagram como" />{' '}
+                <strong className="text-[#D2E8A3]"><EditableText cfgKey="brand_instagram" value={cfgEdit.brand_instagram || ''} setCfg={setCfg} fallback="@.lumin.shop" /></strong>
+              </p>
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white">
+                  <MessageCircle className="w-4 h-4 text-[#D2E8A3]" />
+                  <span className="font-bold text-[11px]">WhatsApp</span>
+                </span>
+                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white">
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-5.2-1.74 2.89 2.89 0 0 1 2.31-1.39V9.06a6.34 6.34 0 0 0-3.5 1.05 6.33 6.33 0 0 0-2.8 4.28 6.34 6.34 0 0 0 1.25 5.25A6.33 6.33 0 0 0 9.17 22a6.34 6.34 0 0 0 6.33-6.33V9a8.16 8.16 0 0 0 4.09 1.14V6.69z"/></svg>
+                  <span className="font-bold text-[11px]">TikTok</span>
+                </span>
+                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white">
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  <span className="font-bold text-[11px]">Facebook</span>
+                </span>
+                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white">
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                  <span className="font-bold text-[11px]">Instagram</span>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="pt-8 mt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-4">
+            <EditableText cfgKey="footer_copyright" value={cfgEdit.footer_copyright || ''} setCfg={setCfg} fallback="© 2026 LUMIN SHOP. Todos los derechos reservados. Moda Urbana & Sublimación Bajo Pedido." />
+            <p className="font-mono">Acento: #D2E8A3 | Carbón: #0A0A0A</p>
+          </div>
+        </div>
+      </MirrorSection>
+
+    </div>
+  );
+});
 TabInicio.displayName = 'TabInicio';
 
 /* ═══════════════════════════════════════════════════════

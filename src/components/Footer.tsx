@@ -1,8 +1,13 @@
 import React from 'react';
-import { Tag, MessageCircle, Instagram, ShieldCheck, MapPin, Shirt, Coffee, Flame } from 'lucide-react';
+import { Tag, MessageCircle, Instagram, ShieldCheck, MapPin, Shirt, Coffee, Flame, FileText } from 'lucide-react';
 import { cfg } from '../lib/config';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onOpenPrivacy?: () => void;
+  onOpenTerms?: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = React.memo(({ onOpenPrivacy, onOpenTerms }) => {
   return (
     <footer className="bg-[#070806] border-t border-white/10 pt-12 pb-28 px-4 lg:px-8 mt-16 text-gray-400 text-xs">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -95,7 +100,7 @@ export const Footer: React.FC = () => {
               <span className="font-bold text-[11px]">WhatsApp</span>
             </a>
             <a
-              href={`https://tiktok.com/${cfg('brand_tiktok', '@.lumin.shop')}`}
+              href={cfg('brand_tiktok', 'https://tiktok.com/@.lumin.shop').startsWith('http') ? cfg('brand_tiktok', 'https://tiktok.com/@.lumin.shop') : `https://tiktok.com/${cfg('brand_tiktok', '@.lumin.shop')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2.5 rounded-full bg-[#161814] hover:bg-[#D2E8A3] text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
@@ -107,11 +112,11 @@ export const Footer: React.FC = () => {
               <span className="font-bold text-[11px]">TikTok</span>
             </a>
             <a
-              href={`https://facebook.com/${cfg('brand_facebook', 'lumin.shop')}`}
+              href={cfg('brand_facebook', 'https://facebook.com/lumin.shop').startsWith('http') ? cfg('brand_facebook', 'https://facebook.com/lumin.shop') : `https://facebook.com/${cfg('brand_facebook', 'lumin.shop')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2.5 rounded-full bg-[#161814] hover:bg-[#D2E8A3] text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
-              title={`Facebook ${cfg('brand_facebook', '@.lumin.shop')}`}
+              className="p-2.5 rounded-full bg-[#161814] hover:bg-blue-600 text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
+              title={`Facebook ${cfg('brand_facebook', 'lumin.shop')}`}
             >
               <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
@@ -119,7 +124,7 @@ export const Footer: React.FC = () => {
               <span className="font-bold text-[11px]">Facebook</span>
             </a>
             <a
-              href={`https://instagram.com/${cfg('brand_instagram', 'lumin.shop')}`}
+              href={cfg('brand_instagram', 'https://instagram.com/lumin.shop').startsWith('http') ? cfg('brand_instagram', 'https://instagram.com/lumin.shop') : `https://instagram.com/${cfg('brand_instagram', 'lumin.shop')}`}
               target="_blank"
               rel="noopener noreferrer"
               className="p-2.5 rounded-full bg-[#161814] hover:bg-[#D2E8A3] text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
@@ -135,8 +140,23 @@ export const Footer: React.FC = () => {
 
       <div className="max-w-7xl mx-auto pt-8 mt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-4">
         <p>{cfg('footer_copyright', '© 2026 LUMIN SHOP. Todos los derechos reservados. Moda Urbana & Sublimación Bajo Pedido.')}</p>
-        <p className="font-mono">Acento: #D2E8A3 | Carbón: #0A0A0A</p>
+        <div className="flex items-center gap-4">
+          {onOpenPrivacy && (
+            <button onClick={onOpenPrivacy} className="hover:text-[#D2E8A3] transition-colors flex items-center gap-1">
+              <FileText className="w-3 h-3" />
+              <span>Privacidad</span>
+            </button>
+          )}
+          {onOpenTerms && (
+            <button onClick={onOpenTerms} className="hover:text-[#D2E8A3] transition-colors flex items-center gap-1">
+              <FileText className="w-3 h-3" />
+              <span>Términos</span>
+            </button>
+          )}
+          <span className="font-mono">Acento: #D2E8A3 | Carbón: #0A0A0A</span>
+        </div>
       </div>
     </footer>
   );
-};
+});
+Footer.displayName = 'Footer';

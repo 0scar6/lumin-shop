@@ -20,7 +20,7 @@ interface HeaderProps {
   onAdminActivate?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({
+export const Header: React.FC<HeaderProps> = React.memo(({
   cartCount,
   favoritesCount,
   onOpenCart,
@@ -211,6 +211,7 @@ export const Header: React.FC<HeaderProps> = ({
       )}
     </header>
   );
-};
+});
+Header.displayName = 'Header';
 
 

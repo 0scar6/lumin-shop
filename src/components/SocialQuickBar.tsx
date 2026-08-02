@@ -53,7 +53,7 @@ export const SocialQuickBar: React.FC<SocialQuickBarProps> = ({ themeMode = 'dar
 
           {/* Instagram Icon Button */}
           <a
-            href="https://instagram.com/lumin.shop"
+            href={cfg('brand_instagram', 'https://instagram.com/lumin.shop').startsWith('http') ? cfg('brand_instagram', 'https://instagram.com/lumin.shop') : `https://instagram.com/${cfg('brand_instagram', 'lumin.shop')}`}
             target="_blank"
             rel="noopener noreferrer"
             className={`p-3 rounded-2xl border transition-all active:scale-95 flex items-center justify-center ${
@@ -61,14 +61,14 @@ export const SocialQuickBar: React.FC<SocialQuickBarProps> = ({ themeMode = 'dar
                 ? 'bg-slate-100 hover:bg-pink-500 hover:text-white border-slate-300 text-slate-800'
                 : 'bg-[#0A0A0A] hover:bg-pink-600 text-gray-300 hover:text-white border-white/10'
             }`}
-            title="Instagram @.lumin.shop"
+            title={`Instagram ${cfg('brand_instagram', '@.lumin.shop')}`}
           >
             <Instagram className="w-5 h-5" />
           </a>
 
           {/* TikTok Icon Button */}
           <a
-            href="https://tiktok.com/@.lumin.shop"
+            href={cfg('brand_tiktok', 'https://tiktok.com/@.lumin.shop').startsWith('http') ? cfg('brand_tiktok', 'https://tiktok.com/@.lumin.shop') : `https://tiktok.com/${cfg('brand_tiktok', '@.lumin.shop')}`}
             target="_blank"
             rel="noopener noreferrer"
             className={`p-3 rounded-2xl border transition-all active:scale-95 flex items-center justify-center ${
@@ -76,7 +76,7 @@ export const SocialQuickBar: React.FC<SocialQuickBarProps> = ({ themeMode = 'dar
                 ? 'bg-slate-100 hover:bg-black hover:text-white border-slate-300 text-slate-800'
                 : 'bg-[#0A0A0A] hover:bg-white hover:text-black text-gray-300 border-white/10'
             }`}
-            title="TikTok @.lumin.shop"
+            title={`TikTok ${cfg('brand_tiktok', '@.lumin.shop')}`}
           >
             <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
               <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-5.2-1.74 2.89 2.89 0 0 1 2.31-1.39V9.06a6.34 6.34 0 0 0-3.5 1.05 6.33 6.33 0 0 0-2.8 4.28 6.34 6.34 0 0 0 1.25 5.25A6.33 6.33 0 0 0 9.17 22a6.34 6.34 0 0 0 6.33-6.33V9a8.16 8.16 0 0 0 4.09 1.14V6.69z"/>
@@ -85,7 +85,7 @@ export const SocialQuickBar: React.FC<SocialQuickBarProps> = ({ themeMode = 'dar
 
           {/* Facebook Icon Button */}
           <a
-            href="https://facebook.com/lumin.shop"
+            href={cfg('brand_facebook', 'https://facebook.com/lumin.shop').startsWith('http') ? cfg('brand_facebook', 'https://facebook.com/lumin.shop') : `https://facebook.com/${cfg('brand_facebook', 'lumin.shop')}`}
             target="_blank"
             rel="noopener noreferrer"
             className={`p-3 rounded-2xl border transition-all active:scale-95 flex items-center justify-center ${
@@ -93,7 +93,7 @@ export const SocialQuickBar: React.FC<SocialQuickBarProps> = ({ themeMode = 'dar
                 ? 'bg-slate-100 hover:bg-blue-600 hover:text-white border-slate-300 text-slate-800'
                 : 'bg-[#0A0A0A] hover:bg-blue-600 text-gray-300 hover:text-white border-white/10'
             }`}
-            title="Facebook @.lumin.shop"
+            title={`Facebook ${cfg('brand_facebook', 'lumin.shop')}`}
           >
             <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24">
               <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>

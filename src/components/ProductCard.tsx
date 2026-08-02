@@ -12,7 +12,7 @@ interface ProductCardProps {
   themeMode?: 'dark' | 'light' | 'amoled';
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({
+export const ProductCard: React.FC<ProductCardProps> = React.memo(({
   product,
   index = 0,
   isFavorite,
@@ -161,4 +161,5 @@ export const ProductCard: React.FC<ProductCardProps> = ({
 
     </div>
   );
-};
+});
+ProductCard.displayName = 'ProductCard';

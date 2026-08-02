@@ -1,6 +1,8 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useCallback } from 'react';
 import { Tag, ArrowRight, Clock, ShieldCheck, Flame } from 'lucide-react';
 import { cfg } from '../lib/config';
+
+const DEFAULT_FALLBACK = 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80';
 
 interface HeroMediaProps {
   url: string;
@@ -11,13 +13,18 @@ interface HeroMediaProps {
 }
 
 const HeroMedia: React.FC<HeroMediaProps> = memo(({ url, alt, className, scale = 100, opacity = 100 }) => {
-  const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+  const [videoFailed, setVideoFailed] = useState(false);
+  const isVideo = /\.(mp4|webm|ogg)$/i.test(url) && !videoFailed;
   const isTikTok = /tiktok\.com/i.test(url);
   const scaleVal = Math.max(50, Math.min(200, scale)) / 100;
   const opacityVal = Math.max(0, Math.min(100, opacity)) / 100;
 
   const wrapperStyle: React.CSSProperties = { opacity: opacityVal };
   const mediaStyle: React.CSSProperties = { transform: `scale(${scaleVal})`, transformOrigin: 'center' };
+
+  const handleVideoError = useCallback(() => {
+    setVideoFailed(true);
+  }, []);
 
   if (isTikTok) {
     const videoId = url.match(/\/video\/(\d+)/)?.[1];
@@ -30,7 +37,20 @@ const HeroMedia: React.FC<HeroMediaProps> = memo(({ url, alt, className, scale =
   }
 
   if (isVideo) {
-    return <video src={url} autoPlay muted loop playsInline className={className} style={{ ...wrapperStyle, ...mediaStyle }} />;
+    return (
+      <video
+        src={url}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        crossOrigin="anonymous"
+        onError={handleVideoError}
+        className={className}
+        style={{ ...wrapperStyle, ...mediaStyle, backgroundColor: '#000' }}
+      />
+    );
   }
 
   return <img src={url} alt={alt} className={className} loading="eager" style={{ ...wrapperStyle, ...mediaStyle }} />;
@@ -45,7 +65,7 @@ interface HeroBannerProps {
   heroMedia2Url?: string;
 }
 
-export const HeroBanner: React.FC<HeroBannerProps> = ({
+export const HeroBanner: React.FC<HeroBannerProps> = React.memo(({
   onExploreClick,
   onCustomOrderClick,
   themeMode = 'dark',
@@ -172,4 +192,5 @@ export const HeroBanner: React.FC<HeroBannerProps> = ({
       </div>
     </div>
   );
-};
+});
+HeroBanner.displayName = 'HeroBanner';

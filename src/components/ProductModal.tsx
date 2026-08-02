@@ -1,7 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { X, Check, ShieldCheck, Clock, Tag, Plus, Minus, ShoppingBag, Shirt, Coffee } from 'lucide-react';
 import { Product, CartItem, ThemeMode } from '../types';
 import { cfg } from '../lib/config';
+
+const isVideoUrl = (url: string) => /\.(mp4|webm|ogg)$/i.test(url);
+
+const MediaDisplay: React.FC<{ src: string; alt: string; className: string }> = ({ src, alt, className }) => {
+  const [videoFailed, setVideoFailed] = useState(false);
+  if (isVideoUrl(src) && !videoFailed) {
+    return (
+      <video
+        src={src}
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        crossOrigin="anonymous"
+        onError={() => setVideoFailed(true)}
+        className={className}
+        style={{ backgroundColor: '#000' }}
+      />
+    );
+  }
+  return <img src={src} alt={alt} className={className} />;
+};
 
 interface ProductModalProps {
   product: Product | null;
@@ -126,7 +149,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               <div className={`relative aspect-[4/3] md:aspect-square w-full rounded-xl sm:rounded-2xl overflow-hidden border ${
                 isLight ? 'bg-slate-200 border-slate-300' : 'bg-[#161814] border-white/10'
               }`}>
-                <img
+                <MediaDisplay
                   src={activeImage}
                   alt={product.name}
                   className="w-full h-full object-cover"
@@ -149,7 +172,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                           : isLight ? 'border-slate-300 opacity-70 hover:opacity-100' : 'border-white/10 opacity-60 hover:opacity-100'
                       }`}
                     >
-                      <img src={imgUrl} alt={`${cfg('pm_view_prefix', 'Vista')} ${idx + 1}`} className="w-full h-full object-cover" />
+                      <MediaDisplay src={imgUrl} alt={`${cfg('pm_view_prefix', 'Vista')} ${idx + 1}`} className="w-full h-full object-cover" />
                     </button>
                   ))}
                 </div>

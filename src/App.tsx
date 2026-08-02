@@ -12,6 +12,7 @@ import { FaqSection } from './components/FaqSection';
 import { Footer } from './components/Footer';
 import { SocialQuickBar, FloatingWhatsAppWidget } from './components/SocialQuickBar';
 import { AdminPanel } from './components/AdminPanel';
+import { TermsAndPrivacy } from './components/TermsAndPrivacy';
 
 import { PRODUCTS as PRODUCTS_STATIC, CATEGORIES as CATEGORIES_STATIC, loadProductsFromSupabase } from './data/products';
 import {
@@ -26,6 +27,7 @@ import {
 import { loadConfig, reloadConfig, cfg } from './lib/config';
 import { supabase } from './lib/supabase';
 import { generateOrderImage } from './lib/generateOrderImage';
+import { sanitize } from './lib/sanitize';
 import { Product, CartItem, NavigationTab, Category, ThemeMode, UserProfileData, GoogleUser } from './types';
 import {
   Filter,
@@ -89,11 +91,13 @@ export default function App() {
   // Interactive Modals
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
-  const [configKey, setConfigKey] = useState(0);
   const [isFavoritesOpen, setIsFavoritesOpen] = useState<boolean>(false);
   const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
   const [isCustomIdeaOpen, setIsCustomIdeaOpen] = useState<boolean>(false);
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
+  const [isTermsOpen, setIsTermsOpen] = useState<boolean>(false);
+  const [termsTab, setTermsTab] = useState<'privacy' | 'terms'>('privacy');
+  const [acceptedTerms, setAcceptedTerms] = useState<boolean>(false);
 
   // Cart & Favorites State (persisted in localStorage)
   const [cart, setCart] = useState<CartItem[]>(() => {
@@ -192,7 +196,7 @@ export default function App() {
     return () => clearInterval(interval);
   }, [googleUser?.id]);
 
-  const handleGoogleLogin = (user: GoogleUser) => {
+  const handleGoogleLogin = useCallback((user: GoogleUser) => {
     setGoogleUser(user);
     setUserProfile((prev) => ({
       ...prev,
@@ -205,11 +209,11 @@ export default function App() {
       email: user.email,
     }));
     syncGoogleUserToSupabase(user);
-  };
+  }, []);
 
-  const handleGoogleLogout = () => {
+  const handleGoogleLogout = useCallback(() => {
     setGoogleUser(null);
-  };
+  }, []);
 
   // Local state for full profile screen
   const [profileForm, setProfileForm] = useState<UserProfileData>(userProfile);
@@ -244,24 +248,24 @@ export default function App() {
   }, [themeMode]);
 
   // Save theme to localStorage
-  const handleSelectTheme = (mode: ThemeMode) => {
+  const handleSelectTheme = useCallback((mode: ThemeMode) => {
     setThemeMode(mode);
     localStorage.setItem('lumin_theme_mode', mode);
-  };
+  }, []);
 
   // Save user profile to localStorage
-  const handleSaveProfile = (profile: UserProfileData) => {
+  const handleSaveProfile = useCallback((profile: UserProfileData) => {
     setUserProfile(profile);
     localStorage.setItem('lumin_user_profile', JSON.stringify(profile));
     syncProfileToSupabase(profile, themeMode, googleUser?.id);
-  };
+  }, [themeMode, googleUser?.id]);
 
-  const handleProfileScreenSubmit = (e: React.FormEvent) => {
+  const handleProfileScreenSubmit = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     handleSaveProfile(profileForm);
     setProfileSaveSuccess(true);
     setTimeout(() => setProfileSaveSuccess(false), 2500);
-  };
+  }, [handleSaveProfile, profileForm]);
 
   // Custom idea form state
   const [customIdeaText, setCustomIdeaText] = useState('');
@@ -297,11 +301,11 @@ export default function App() {
   }, [selectedCategory, searchQuery, selectedTechnique, sortBy, products]);
 
   // Cart operations
-  const handleAddToCart = (item: CartItem) => {
+  const handleAddToCart = useCallback((item: CartItem) => {
     setCart((prev) => [...prev, item]);
-  };
+  }, []);
 
-  const handleUpdateQuantity = (cartItemId: string, delta: number) => {
+  const handleUpdateQuantity = useCallback((cartItemId: string, delta: number) => {
     setCart((prev) =>
       prev
         .map((item) => {
@@ -313,18 +317,18 @@ export default function App() {
         })
         .filter(Boolean) as CartItem[]
     );
-  };
+  }, []);
 
-  const handleRemoveItem = (cartItemId: string) => {
+  const handleRemoveItem = useCallback((cartItemId: string) => {
     setCart((prev) => prev.filter((item) => item.cartItemId !== cartItemId));
-  };
+  }, []);
 
-  const handleClearCart = () => {
+  const handleClearCart = useCallback(() => {
     setCart([]);
-  };
+  }, []);
 
   // Favorites operations
-  const toggleFavorite = (product: Product) => {
+  const toggleFavorite = useCallback((product: Product) => {
     setFavorites((prev) => {
       const exists = prev.some((p) => p.id === product.id);
       if (exists) {
@@ -333,17 +337,15 @@ export default function App() {
         return [...prev, product];
       }
     });
-  };
+  }, []);
 
-  const isProductFavorite = (productId: string) => {
-    return favorites.some((p) => p.id === productId);
-  };
+  const favoriteIds = useMemo(() => new Set(favorites.map((p) => p.id)), [favorites]);
 
   // Tab navigation
-  const handleTabChange = (tab: NavigationTab) => {
+  const handleTabChange = useCallback((tab: NavigationTab) => {
     setActiveTab(tab);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
   // Helper: calculate unit price including size extra
   const getUnitPrice = (item: CartItem) => {
@@ -360,21 +362,25 @@ export default function App() {
   };
 
   // Total cart calculation
-  const totalCartAmount = cart.reduce((acc, item) => {
-    return acc + getUnitPrice(item) * item.quantity;
-  }, 0);
+  const cartItemCount = useMemo(() => cart.reduce((a, c) => a + c.quantity, 0), [cart]);
+
+  const totalCartAmount = useMemo(() => {
+    return cart.reduce((acc, item) => {
+      return acc + getUnitPrice(item) * item.quantity;
+    }, 0);
+  }, [cart]);
 
   // Shipping cost
-  const shippingCost = deliveryType === 'recojo' ? 0 : (
+  const shippingCost = useMemo(() => deliveryType === 'recojo' ? 0 : (
     shippingZone === 'huamanga' ? 0 :
     shippingZone === 'lima' ? parseFloat(cfg('shipping_price_lima', '15')) :
     shippingZone === 'provincia' ? parseFloat(cfg('shipping_price_provincia', '25')) :
     parseFloat(cfg('shipping_price_internacional', '80'))
-  );
+  ), [deliveryType, shippingZone]);
   const grandTotal = totalCartAmount + shippingCost;
 
   // Generate WhatsApp Message
-  const buildWhatsAppMessage = () => {
+  const buildWhatsAppMessage = useCallback(() => {
     const nameStr = userProfile.name.trim() || '';
     let msg = `${cfg('brand_whatsapp_msg', '¡Hola LUMIN SHOP! ⚡ Quisiera realizar el siguiente pedido:')}\n\n`;
 
@@ -416,9 +422,9 @@ export default function App() {
     msg += cfg('whatsapp_order_closing', 'Por favor confírmenme los datos de pago y el tiempo de entrega. ¡Muchas gracias!');
 
     return msg;
-  };
+  }, [cart, userProfile, deliveryType, shippingZone, shippingCost, grandTotal]);
 
-  const handleSendWhatsAppOrder = async () => {
+  const handleSendWhatsAppOrder = useCallback(async () => {
     syncCartToSupabase(cart, userProfile, deliveryType, googleUser?.id, deliveryType === 'envio' ? shippingZone : undefined, deliveryType === 'envio' ? shippingCost : 0);
 
     // Generate order image
@@ -439,23 +445,23 @@ export default function App() {
     // Open WhatsApp with short message
     const shortMsg = `${cfg('brand_whatsapp_msg', '¡Hola LUMIN! ⚡ Quisiera realizar el siguiente pedido:')} Adjunto imagen del pedido.`;
     window.open(`https://wa.me/${cfg('brand_phone_raw', '51993365099')}?text=${encodeURIComponent(shortMsg)}`, '_blank');
-  };
+  }, [cart, userProfile, deliveryType, googleUser?.id, shippingZone, shippingCost, grandTotal]);
 
-  const handleCopyOrderSummary = () => {
+  const handleCopyOrderSummary = useCallback(() => {
     const message = buildWhatsAppMessage();
     navigator.clipboard.writeText(message);
     setCopiedOrder(true);
     setTimeout(() => setCopiedOrder(false), 2500);
-  };
+  }, [buildWhatsAppMessage]);
 
-  const handleCopyYapePhone = () => {
+  const handleCopyYapePhone = useCallback(() => {
     navigator.clipboard.writeText(cfg('brand_phone_raw', '993365099').replace(/^51/, ''));
     setCopiedPhone(true);
     setTimeout(() => setCopiedPhone(false), 2500);
-  };
+  }, []);
 
   // Custom idea submit to WhatsApp
-  const handleSendCustomIdea = (e: React.FormEvent) => {
+  const handleSendCustomIdea = useCallback((e: React.FormEvent) => {
     e.preventDefault();
     if (!customIdeaText.trim()) return;
 
@@ -476,7 +482,7 @@ export default function App() {
     window.open(`https://wa.me/${cfg('brand_phone_raw', '51993365099')}?text=${encodeURIComponent(text)}`, '_blank');
     setIsCustomIdeaOpen(false);
     setCustomIdeaText('');
-  };
+  }, [customIdeaText, customIdeaType, userProfile, googleUser?.id]);
 
   // Theme Wrapper CSS Classes
   const isLight = themeMode === 'light';
@@ -546,7 +552,7 @@ export default function App() {
               </h2>
 
               <p className={`text-sm sm:text-base leading-relaxed ${isLight ? 'text-slate-700' : 'text-gray-300'}`}
-                dangerouslySetInnerHTML={{ __html: cfg('section_about_text', 'LUMIN SHOP es una marca independiente peruana dedicada al diseño y confección de streetwear exclusivo y artículos gráficos. Nos especializamos en polos <strong>Oversized & Boxy Fit</strong> producidos en algodón reactivo de 240g (Heavyweight) de máxima durabilidad, además de <strong>Vasos Frosted Glass de 16oz</strong> y <strong>Tazas Térmicas de 11oz</strong> sublimadas térmicamente a 200°C. Cada prenda y producto se elabora 100% bajo pedido con acabado profesional.') }}
+                dangerouslySetInnerHTML={{ __html: sanitize(cfg('section_about_text', 'LUMIN SHOP es una marca independiente peruana dedicada al diseño y confección de streetwear exclusivo y artículos gráficos. Nos especializamos en polos <strong>Oversized & Boxy Fit</strong> producidos en algodón reactivo de 240g (Heavyweight) de máxima durabilidad, además de <strong>Vasos Frosted Glass de 16oz</strong> y <strong>Tazas Térmicas de 11oz</strong> sublimadas térmicamente a 200°C. Cada prenda y producto se elabora 100% bajo pedido con acabado profesional.')) }}
               />
 
               <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -597,7 +603,7 @@ export default function App() {
                     key={product.id}
                     index={idx}
                     product={product}
-                    isFavorite={isProductFavorite(product.id)}
+                    isFavorite={favoriteIds.has(product.id)}
                     onToggleFavorite={toggleFavorite}
                     onSelectProduct={(p) => setSelectedProduct(p)}
                     themeMode={themeMode}
@@ -761,7 +767,7 @@ export default function App() {
                     key={product.id}
                     index={idx}
                     product={product}
-                    isFavorite={isProductFavorite(product.id)}
+                    isFavorite={favoriteIds.has(product.id)}
                     onToggleFavorite={toggleFavorite}
                     onSelectProduct={(p) => setSelectedProduct(p)}
                     themeMode={themeMode}
@@ -1200,11 +1206,48 @@ export default function App() {
                     </div>
 
                     <div className="space-y-2">
+                      {/* Terms consent checkbox */}
+                      <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all ${
+                        acceptedTerms
+                          ? isLight ? 'bg-lime-50 border-lime-300' : 'bg-[#D2E8A3]/5 border-[#D2E8A3]/30'
+                          : isLight ? 'bg-slate-50 border-slate-200 hover:border-slate-300' : 'bg-white/5 border-white/10 hover:border-white/20'
+                      }`}>
+                        <input
+                          type="checkbox"
+                          checked={acceptedTerms}
+                          onChange={(e) => setAcceptedTerms(e.target.checked)}
+                          className="mt-0.5 w-4 h-4 rounded border-2 accent-[#D2E8A3]"
+                        />
+                        <span className={`text-[11px] leading-tight ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
+                          {cfg('checkout_consent_text', 'Acepto la Política de Privacidad y los Términos y Condiciones de LUMIN SHOP. Entiendo que mis datos personales serán utilizados únicamente para procesar mi pedido.')}{' '}
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setTermsTab('privacy'); setIsTermsOpen(true); }}
+                            className={`font-bold underline ${isLight ? 'text-lime-700 hover:text-lime-900' : 'text-[#D2E8A3] hover:text-[#c2e088]'}`}
+                          >
+                            {cfg('checkout_consent_privacy_link', 'Política de Privacidad')}
+                          </button>
+                          {' y '}
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); setTermsTab('terms'); setIsTermsOpen(true); }}
+                            className={`font-bold underline ${isLight ? 'text-lime-700 hover:text-lime-900' : 'text-[#D2E8A3] hover:text-[#c2e088]'}`}
+                          >
+                            {cfg('checkout_consent_terms_link', 'Términos y Condiciones')}
+                          </button>
+                        </span>
+                      </label>
+
                       <button
                         onClick={handleSendWhatsAppOrder}
-                        className="w-full py-4 rounded-2xl bg-green-500 hover:bg-green-600 text-black font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-xl shadow-green-500/20 active:scale-98"
+                        disabled={!acceptedTerms}
+                        className={`w-full py-4 rounded-2xl font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-xl active:scale-98 ${
+                          acceptedTerms
+                            ? 'bg-green-500 hover:bg-green-600 text-black shadow-green-500/20'
+                            : isLight ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' : 'bg-white/10 text-gray-600 cursor-not-allowed shadow-none'
+                        }`}
                       >
-                        <MessageCircle className="w-5 h-5 fill-black" />
+                        <MessageCircle className="w-5 h-5" />
                         <span>{cfg('cart_checkout_whatsapp', 'ENVIAR PEDIDO POR WHATSAPP (con imagen)')}</span>
                       </button>
 
@@ -1628,7 +1671,10 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <Footer />
+      <Footer
+        onOpenPrivacy={() => { setTermsTab('privacy'); setIsTermsOpen(true); }}
+        onOpenTerms={() => { setTermsTab('terms'); setIsTermsOpen(true); }}
+      />
 
       {/* Floating Action WhatsApp Button */}
       <FloatingWhatsAppWidget />
@@ -1786,7 +1832,15 @@ export default function App() {
       <AdminPanel
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
-        onConfigChange={() => { reloadConfig().then(() => setConfigKey(k => k + 1)); }}
+        onConfigChange={() => { reloadConfig(); }}
+      />
+
+      {/* Terms & Privacy Modal */}
+      <TermsAndPrivacy
+        isOpen={isTermsOpen}
+        onClose={() => setIsTermsOpen(false)}
+        themeMode={themeMode}
+        initialTab={termsTab}
       />
 
     </div>

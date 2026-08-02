@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { Home, Grid, Heart, ShoppingBag, User } from 'lucide-react';
 import { NavigationTab, ThemeMode } from '../types';
 import { cfg } from '../lib/config';
@@ -11,7 +11,7 @@ interface FloatingDockProps {
   themeMode?: ThemeMode;
 }
 
-export const FloatingDock: React.FC<FloatingDockProps> = ({
+export const FloatingDock: React.FC<FloatingDockProps> = React.memo(({
   activeTab,
   setActiveTab,
   cartCount,
@@ -20,7 +20,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
 }) => {
   const isLight = themeMode === 'light';
 
-  const tabs = [
+  const tabs = useMemo(() => [
     { id: 'home' as NavigationTab, label: cfg('nav_home', 'Inicio'), icon: Home },
     { id: 'catalog' as NavigationTab, label: cfg('nav_catalog', 'Catálogo'), icon: Grid },
     {
@@ -41,7 +41,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
       label: cfg('nav_profile', 'Mi Cuenta'),
       icon: User,
     },
-  ];
+  ], [favoritesCount, cartCount]);
 
   return (
     <nav
@@ -109,6 +109,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = ({
       })}
     </nav>
   );
-};
+});
+FloatingDock.displayName = 'FloatingDock';
 
 
