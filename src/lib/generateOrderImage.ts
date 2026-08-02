@@ -199,7 +199,7 @@ export async function generateOrderImage(
   // Footer
   ctx.fillStyle = '#666';
   ctx.font = '12px Arial';
-  ctx.fillText('Generado desde lumin-shop.vercel.app', padding, y);
+  ctx.fillText('Generado por LUMIN', padding, y);
 
   return new Promise((resolve) => {
     canvas.toBlob((blob) => {
