@@ -436,13 +436,37 @@ export default function App() {
   const handleSendWhatsAppOrder = useCallback(async () => {
     syncCartToSupabase(cart, userProfile, deliveryType, googleUser?.id, deliveryType === 'envio' ? shippingZone : undefined, deliveryType === 'envio' ? shippingCost : 0);
 
-    // Generate order image and upload to Supabase Storage
-    let imageUrl = '';
-    try {
-      const blob = await generateOrderImage(cart, userProfile, deliveryType, grandTotal, getUnitPrice, shippingZone, shippingCost);
+    // Build text message — strip emoji to avoid ? encoding in wa.me URLs
+    const phone = cfg('brand_phone_raw', '51993365099');
+    const rawMsg = cfg('brand_whatsapp_msg', 'Hola LUMIN! Quisiera realizar el siguiente pedido:');
+    const msg = rawMsg.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{FE00}-\u{FE0F}\u{1F900}-\u{1F9FF}\u{200D}\u{20E3}\u{E0020}-\u{E007F}\u{2640}\u{2642}\u{2695}\u{2696}\u{2708}\u{2764}\u{FE0F}]/gu, '').trim();
 
-      // Upload to Supabase Storage for direct sharing
-      if (supabase) {
+    // Generate order image
+    let blob: Blob | null = null;
+    try {
+      blob = await generateOrderImage(cart, userProfile, deliveryType, grandTotal, getUnitPrice, shippingZone, shippingCost);
+    } catch {}
+
+    // Try Web Share API (mobile) — sends image directly to WhatsApp
+    const canShare = blob && navigator.share && navigator.canShare;
+    const fileToSend = blob ? new File([blob], `pedido-lumin-${Date.now()}.jpg`, { type: 'image/jpeg' }) : null;
+
+    if (canShare && fileToSend && navigator.canShare({ files: [fileToSend] })) {
+      try {
+        await navigator.share({
+          text: msg,
+          files: [fileToSend],
+        });
+        return; // Done — user selected WhatsApp from share sheet
+      } catch {
+        // User cancelled share or error — fallback to wa.me link
+      }
+    }
+
+    // Fallback (desktop or share failed): upload to storage + open wa.me
+    let imageUrl = '';
+    if (blob && supabase) {
+      try {
         const fileName = `pedidos/pedido-${Date.now()}.jpg`;
         const { error } = await supabase.storage.from('media').upload(fileName, blob, {
           contentType: 'image/jpeg',
@@ -452,30 +476,12 @@ export default function App() {
           const { data: urlData } = supabase.storage.from('media').getPublicUrl(fileName);
           if (urlData?.publicUrl) imageUrl = urlData.publicUrl;
         }
-      }
-
-      // Also download as backup in case storage fails
-      if (!imageUrl) {
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `pedido-lumin-${Date.now()}.jpg`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-      }
-    } catch {
-      // Fallback to text-only if image fails
+      } catch {}
     }
 
-    // Build WhatsApp message with image link
-    const phone = cfg('brand_phone_raw', '51993365099');
-    let msg = cfg('brand_whatsapp_msg', 'Hola LUMIN! Quisiera realizar el siguiente pedido:');
-    if (imageUrl) {
-      msg += `\n\nAdjunto imagen del pedido:\n${imageUrl}`;
-    }
-    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+    let fallbackMsg = msg;
+    if (imageUrl) fallbackMsg += `\n\nAdjunto imagen del pedido:\n${imageUrl}`;
+    window.open(`https://wa.me/${phone}?text=${encodeURIComponent(fallbackMsg)}`, '_blank');
   }, [cart, userProfile, deliveryType, googleUser?.id, shippingZone, shippingCost, grandTotal]);
 
   const handleCopyOrderSummary = useCallback(() => {
