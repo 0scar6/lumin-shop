@@ -348,7 +348,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
         {/* Content */}
         <div className="flex-1 overflow-y-auto" style={{ scrollBehavior: 'smooth' }}>
           {mainTab === 'inicio' && <TabInicio cfgEdit={cfgEdit} setCfg={setCfg} configRows={configRows} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} />}
-          {mainTab === 'catalogo' && <TabCatalogo cfgEdit={cfgEdit} setCfg={setCfg} products={products} editingProduct={editingProduct} setEditingProduct={setEditingProduct} isNewProduct={isNewProduct} startNewProduct={startNewProduct} handleProdSave={handleProdSave} handleProdDelete={handleProdDelete} handleProdImageUpload={handleProdImageUpload} prodSaving={prodSaving} uploading={uploading} />}
+          {mainTab === 'catalogo' && <TabCatalogo cfgEdit={cfgEdit} setCfg={setCfg} products={products} editingProduct={editingProduct} setEditingProduct={setEditingProduct} isNewProduct={isNewProduct} startNewProduct={startNewProduct} handleProdSave={handleProdSave} handleProdDelete={handleProdDelete} handleProdImageUpload={handleProdImageUpload} prodSaving={prodSaving} uploading={uploading} handleSyncGalleries={handleSyncGalleries} />}
           {mainTab === 'favoritos' && <TabFavoritos cfgEdit={cfgEdit} setCfg={setCfg} />}
           {mainTab === 'pedidos' && <TabPedidos orders={orders} handleOrderStatus={handleOrderStatus} />}
           {mainTab === 'cuenta' && <TabCuenta cfgEdit={cfgEdit} setCfg={setCfg} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} backupStatus={backupStatus} handleBackup={handleBackup} handleRestoreFile={handleRestoreFile} handleRestoreConfirm={handleRestoreConfirm} restorePreview={restorePreview} />}
@@ -919,7 +919,7 @@ TabInicio.displayName = 'TabInicio';
 /* ═══════════════════════════════════════════════════════
    TAB: CATÁLOGO
    ═══════════════════════════════════════════════════════ */
-const TabCatalogo = ({ cfgEdit, setCfg, products, editingProduct, setEditingProduct, isNewProduct, startNewProduct, handleProdSave, handleProdDelete, handleProdImageUpload, prodSaving, uploading }: any) => {
+const TabCatalogo = ({ cfgEdit, setCfg, products, editingProduct, setEditingProduct, isNewProduct, startNewProduct, handleProdSave, handleProdDelete, handleProdImageUpload, prodSaving, uploading, handleSyncGalleries }: any) => {
   const _labelCls = 'block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5';
   const _inputCls = 'w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#1a1d1a] border-white/10 placeholder-gray-500 focus:outline-none focus:border-[#D2E8A3] focus:ring-1 focus:ring-[#D2E8A3]/30 transition-all';
   const streetProducts = useMemo(() => products.filter((p: ProductoRow) => p.categoria_id === 'streetwear'), [products]);
@@ -1227,7 +1227,7 @@ const TabCatalogo = ({ cfgEdit, setCfg, products, editingProduct, setEditingProd
 
   return (
     <div className="p-5 sm:p-8 space-y-6 max-w-[1200px] mx-auto">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-[#D2E8A3]/10 flex items-center justify-center"><Package className="w-4 h-4 text-[#D2E8A3]" /></div>
           <div>
@@ -1235,8 +1235,10 @@ const TabCatalogo = ({ cfgEdit, setCfg, products, editingProduct, setEditingProd
             <p className="text-[9px] text-gray-500">Gestiona tu catálogo</p>
           </div>
         </div>
-        <button onClick={startNewProduct} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs hover:bg-[#c2e088] shadow-lg shadow-[#D2E8A3]/20 transition-all"><Plus className="w-4 h-4" /> Nuevo</button>
-        <button onClick={handleSyncGalleries} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 text-gray-400 text-[10px] hover:text-[#D2E8A3] hover:bg-[#D2E8A3]/10 transition-all border border-white/5" title="Sincronizar galerías de productos existentes">🔄 Sincronizar galerías</button>
+        <div className="flex items-center gap-2">
+          <button onClick={handleSyncGalleries} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 text-gray-400 text-[10px] hover:text-[#D2E8A3] hover:bg-[#D2E8A3]/10 transition-all border border-white/5" title="Sincronizar galerías de productos existentes">🔄 Sincronizar</button>
+          <button onClick={startNewProduct} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs hover:bg-[#c2e088] shadow-lg shadow-[#D2E8A3]/20 transition-all"><Plus className="w-4 h-4" /> Nuevo</button>
+        </div>
       </div>
 
       <Section title="Texto del Catálogo" icon={<Settings className="w-3.5 h-3.5 text-[#D2E8A3]" />}>

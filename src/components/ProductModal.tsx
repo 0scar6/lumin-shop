@@ -132,11 +132,11 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`relative w-full max-w-3xl rounded-2xl sm:rounded-3xl border overflow-hidden shadow-2xl flex flex-col max-h-[92vh] sm:max-h-[88vh] ${
+        className={`relative w-full max-w-3xl rounded-t-2xl sm:rounded-3xl border overflow-hidden shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[88vh] ${
           isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-[#11130F] border-white/10 text-white'
         }`}
       >
@@ -154,14 +154,19 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           <X className="w-5 h-5" />
         </button>
 
+        {/* Mobile drag indicator */}
+        <div className="flex justify-center pt-2 sm:hidden">
+          <div className={`w-10 h-1 rounded-full ${isLight ? 'bg-slate-300' : 'bg-white/20'}`} />
+        </div>
+
         {/* Scrollable Content Container */}
         <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-12 gap-0">
           
           {/* Left Column: Image & Gallery Preview */}
-          <div className={`md:col-span-5 p-4 sm:p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r ${
+          <div className={`md:col-span-5 p-3 sm:p-4 md:p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r ${
             isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#0A0A0A] border-white/10'
           }`}>
-            <div className="space-y-3 sm:space-y-4">
+            <div className="space-y-2 sm:space-y-3">
               <div className={`relative aspect-[4/3] md:aspect-square w-full rounded-xl sm:rounded-2xl overflow-hidden border ${
                 isLight ? 'bg-slate-200 border-slate-300' : 'bg-[#161814] border-white/10'
               }`}>
@@ -170,19 +175,19 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
-                <div className="absolute bottom-2.5 left-2.5 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[10px] font-bold text-[#D2E8A3]">
+                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-[#D2E8A3]">
                   {product.technique}
                 </div>
               </div>
 
               {/* Gallery Thumbnails */}
               {allGalleryImages.length > 1 && (
-                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1">
                   {allGalleryImages.map((imgUrl, idx) => (
                     <button
                       key={`${imgUrl}-${idx}`}
                       onClick={() => setActiveImage(imgUrl)}
-                      className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all ${
+                      className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all ${
                         activeImage === imgUrl
                           ? 'border-[#D2E8A3] scale-105 shadow-sm'
                           : isLight ? 'border-slate-300 opacity-70 hover:opacity-100' : 'border-white/10 opacity-60 hover:opacity-100'
@@ -196,24 +201,24 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             </div>
 
             {/* Production guarantee notes */}
-            <div className={`mt-4 pt-3 border-t space-y-1.5 ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
-              <div className={`flex items-center gap-2 text-[11px] sm:text-xs ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
-                <Clock className={`w-3.5 h-3.5 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
+            <div className={`mt-3 pt-2 border-t space-y-1 ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
+              <div className={`flex items-center gap-1.5 text-[10px] sm:text-xs ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
+                <Clock className={`w-3 h-3 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
                 <span>{cfg('pm_production_time', 'Tiempo de confección: ')}<strong>24 a 48 hrs</strong></span>
               </div>
-              <div className={`flex items-center gap-2 text-[11px] sm:text-xs ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
-                <ShieldCheck className={`w-3.5 h-3.5 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
+              <div className={`flex items-center gap-1.5 text-[10px] sm:text-xs ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
+                <ShieldCheck className={`w-3 h-3 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
                 <span>{cfg('pm_quality_guarantee', 'Calidad Garantizada LUMIN 100%')}</span>
               </div>
             </div>
           </div>
 
           {/* Right Column: Customization Form */}
-          <div className="md:col-span-7 p-4 sm:p-6 flex flex-col justify-between space-y-4 sm:space-y-6">
+          <div className="md:col-span-7 p-3 sm:p-4 md:p-6 flex flex-col justify-between space-y-3 sm:space-y-4">
             
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div>
-                <div className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full border text-[11px] font-mono mb-1.5 font-bold ${
+                <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] sm:text-[11px] font-mono mb-1 font-bold ${
                   isLight
                     ? 'bg-lime-100 border-lime-300 text-lime-900'
                     : 'bg-[#D2E8A3]/10 border-[#D2E8A3]/20 text-[#D2E8A3]'
@@ -221,12 +226,12 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   {isApparel ? <Shirt className="w-3 h-3" /> : <Coffee className="w-3 h-3" />}
                   <span className="uppercase">{isApparel ? cfg('pm_category_polo', 'Polo Sublimado Bajo Pedido') : cfg('pm_category_cup', 'Vaso / Taza Sublimada')}</span>
                 </div>
-                <h2 className={`font-display text-xl sm:text-2xl font-extrabold leading-tight ${
+                <h2 className={`font-display text-lg sm:text-xl md:text-2xl font-extrabold leading-tight ${
                   isLight ? 'text-slate-900' : 'text-white'
                 }`}>
                   {product.name}
                 </h2>
-                <p className={`text-xs mt-1 ${isLight ? 'text-slate-700 font-medium' : 'text-gray-400'}`}>
+                <p className={`text-[11px] sm:text-xs mt-1 ${isLight ? 'text-slate-700 font-medium' : 'text-gray-400'}`}>
                   {product.description}
                 </p>
               </div>
@@ -427,13 +432,13 @@ export const ProductModal: React.FC<ProductModalProps> = ({
         </div>
 
         {/* Sticky Bottom Actions & Total Price */}
-        <div className={`p-3.5 sm:px-6 sm:py-4 border-t z-10 flex flex-col sm:flex-row items-center justify-between gap-3 ${
+        <div className={`p-3 sm:px-6 sm:py-4 border-t z-10 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 ${
           isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#0E100C] border-white/10'
         }`}>
           
           {/* Quantity selector & calculated price */}
-          <div className="flex items-center justify-between w-full sm:w-auto gap-4">
-            <div className={`flex items-center gap-1.5 border rounded-xl p-1 ${
+          <div className="flex items-center justify-between w-full sm:w-auto gap-3 sm:gap-4">
+            <div className={`flex items-center gap-1 border rounded-xl p-0.5 sm:p-1 ${
               isLight ? 'bg-white border-slate-300' : 'bg-[#161814] border-white/10'
             }`}>
               <button
@@ -445,7 +450,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               >
                 <Minus className="w-3.5 h-3.5" />
               </button>
-              <span className={`w-7 text-center text-xs sm:text-sm font-extrabold ${isLight ? 'text-slate-900' : 'text-white'}`}>
+              <span className={`w-6 sm:w-7 text-center text-xs sm:text-sm font-extrabold ${isLight ? 'text-slate-900' : 'text-white'}`}>
                 {quantity}
               </span>
               <button
@@ -460,8 +465,8 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             </div>
 
             <div className="text-right">
-              <span className={`text-[9px] sm:text-[10px] font-mono block ${isLight ? 'text-slate-600 font-bold' : 'text-gray-400'}`}>{cfg('pm_total_label', 'TOTAL ESTIMADO')}</span>
-              <span className={`text-lg sm:text-xl font-black ${isLight ? 'text-slate-900' : 'text-[#D2E8A3]'}`}>
+              <span className={`text-[8px] sm:text-[10px] font-mono block ${isLight ? 'text-slate-600 font-bold' : 'text-gray-400'}`}>{cfg('pm_total_label', 'TOTAL ESTIMADO')}</span>
+              <span className={`text-base sm:text-lg md:text-xl font-black ${isLight ? 'text-slate-900' : 'text-[#D2E8A3]'}`}>
                 S/ {totalPrice.toFixed(2)}
               </span>
             </div>
@@ -470,7 +475,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           {/* Submit Button */}
           <button
             onClick={handleAdd}
-            className="w-full sm:w-auto sm:px-8 py-3 sm:py-3.5 rounded-xl bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A] font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#D2E8A3]/15 active:scale-98"
+            className="w-full sm:w-auto sm:px-8 py-2.5 sm:py-3.5 rounded-xl bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A] font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#D2E8A3]/15 active:scale-98"
           >
             <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
             <span>{cfg('pm_add_to_cart', 'AÑADIR A MI PEDIDO')}</span>
