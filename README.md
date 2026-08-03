@@ -49,9 +49,11 @@ lumin-shop/
 │   ├── App.tsx                     # Componente raiz
 │   ├── index.css                   # Tailwind v4 + custom styles
 │   └── main.tsx                    # Entry point
-├── supabase-rls-secure.sql         # RLS policies (auth)
-├── supabase-restore-access.sql     # Emergency restore
-├── supabase-all-config-keys.sql    # Config keys SQL
+├── SUPABASE-ALL-IN-ONE.sql     # SQL todo-en-1 (run this first)
+├── QUICKSTART.md               # Guia rapida de setup
+├── SUPABASE-SETUP.md           # Guia completa de Supabase
+├── supabase-rls-secure.sql     # RLS con auth (opcional)
+├── supabase-restore-access.sql # Emergencia: restaurar acceso
 ├── package.json
 ├── tsconfig.json
 └── vite.config.ts
@@ -166,6 +168,24 @@ VITE_SUPABASE_ANON_KEY=tu-anon-key
 - **Config cache** en memoria con `cfg()`
 - **FavoriteIds Set** para busqueda O(1)
 - **Eliminacion de dependencias muertas** (motion, express, dotenv)
+
+---
+
+## Setup Rapido
+
+**3 minutos de cero a funcionando:**
+
+```bash
+# 1. Crear proyecto en supabase.com
+# 2. Ejecutar SUPABASE-ALL-IN-ONE.sql en SQL Editor
+# 3. Crear bucket "media" (public) en Storage
+# 4. Crear .env con tu URL y Key de Supabase
+# 5. Correr:
+npm install
+npm run dev
+```
+
+Ver `QUICKSTART.md` para guia paso a paso.
 
 ---
 
