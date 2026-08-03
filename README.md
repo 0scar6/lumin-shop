@@ -1,59 +1,58 @@
-# LUMIN SHOP — E-Commerce Sublimación
+# LUMIN SHOP — E-Commerce Sublimacion
 
-Tienda online de productos sublimados (polos, vasos, tazas, placas de aluminio) con panel de administración WYSIWYG. construida con React + Vite + Supabase.
+Tienda online de productos sublimados (polos, vasos, placas de aluminio) con panel de administracion WYSIWYG. Checkout via WhatsApp + Yape/Plin.
 
 **Live:** https://lumin-shop-nine.vercel.app
 
 ---
 
-## Stack Tecnológico
+## Stack
 
-| Capa | Tecnología |
+| Capa | Tecnologia |
 |------|-----------|
 | Frontend | React 18 + TypeScript |
 | Build | Vite 6 |
 | Estilos | Tailwind CSS 4 |
-| Backend/DB | Supabase (PostgreSQL + Auth + Storage) |
-| Deploy | Vercel |
+| Backend | Supabase (PostgreSQL + Storage) |
+| Deploy | Vercel (auto-deploy on push) |
 | Iconos | Lucide React |
+| Seguridad | DOMPurify (XSS protection) |
 
 ---
 
-## Estructura del Proyecto
+## Estructura
 
 ```
-lúmin-shop/
-├── public/
-│   └── yape_qr_code.jpg          # QR de pago Yape
+lumin-shop/
 ├── src/
 │   ├── components/
-│   │   ├── AdminPanel.tsx         # Panel admin WYSIWYG (5 pestañas)
-│   │   ├── CartDrawer.tsx         # Carrito lateral
-│   │   ├── FavoritesModal.tsx     # Modal de favoritos
-│   │   ├── FloatingDock.tsx       # Navegación inferior fija
-│   │   ├── Footer.tsx             # Pie de página
-│   │   ├── Header.tsx             # Cabecera con búsqueda
-│   │   ├── HeroBanner.tsx         # Banner principal con media
-│   │   ├── ProductCard.tsx        # Tarjeta de producto
-│   │   ├── ProductModal.tsx       # Modal de detalle de producto
-│   │   ├── ProductionBadgeBar.tsx # Barra "Cómo funciona"
-│   │   ├── FaqSection.tsx         # Sección preguntas frecuentes
-│   │   ├── SocialQuickBar.tsx     # Barra WhatsApp + redes sociales
-│   │   └── UserProfileModal.tsx   # Modal de perfil de usuario
+│   │   ├── AdminPanel.tsx          # Panel admin WYSIWYG (5 tabs)
+│   │   ├── FaqSection.tsx          # Preguntas frecuentes
+│   │   ├── FloatingDock.tsx        # Navegacion inferior fija
+│   │   ├── Footer.tsx              # Pie de pagina + links legales
+│   │   ├── Header.tsx              # Cabecera con busqueda
+│   │   ├── HeroBanner.tsx          # Banner principal (img/video)
+│   │   ├── ProductCard.tsx         # Tarjeta de producto
+│   │   ├── ProductModal.tsx        # Detalle + personalizacion
+│   │   ├── ProductionBadgeBar.tsx  # Barra "Como funciona"
+│   │   ├── SocialQuickBar.tsx      # WhatsApp + redes sociales
+│   │   └── TermsAndPrivacy.tsx     # Politica privacidad + Terminos
 │   ├── data/
-│   │   └── products.ts            # Datos estáticos fallback + Supabase mapper
+│   │   └── products.ts             # Fallback estatico + Supabase mapper
 │   ├── lib/
-│   │   ├── config.ts              # Sistema de configuración CMS (cfg())
-│   │   ├── generateOrderImage.ts  # Generador de imagen de pedido (Canvas)
-│   │   ├── supabase.ts            # Cliente Supabase
-│   │   └── supabase-data.ts       # Sync de datos a Supabase
-│   ├── types.ts                   # Definiciones TypeScript
-│   ├── App.tsx                    # Componente raíz (~1800 líneas)
-│   └── main.tsx                   # Entry point
-├── supabase-all-config-keys.sql   # SQL de configuración completa
-├── supabase-configuracion.sql     # Seed de configuración
+│   │   ├── config.ts               # CMS config (cfg() con cache)
+│   │   ├── generateOrderImage.ts   # Generador JPG de pedido (Canvas)
+│   │   ├── sanitize.ts             # DOMPurify wrapper
+│   │   ├── supabase.ts             # Cliente Supabase
+│   │   └── supabase-data.ts        # Sync de datos
+│   ├── types.ts                    # Definiciones TypeScript
+│   ├── App.tsx                     # Componente raiz
+│   ├── index.css                   # Tailwind v4 + custom styles
+│   └── main.tsx                    # Entry point
+├── supabase-rls-secure.sql         # RLS policies (auth)
+├── supabase-restore-access.sql     # Emergency restore
+├── supabase-all-config-keys.sql    # Config keys SQL
 ├── package.json
-├── tailwind.config.js
 ├── tsconfig.json
 └── vite.config.ts
 ```
@@ -62,30 +61,39 @@ lúmin-shop/
 
 ## Funcionalidades
 
-### Tienda (Público)
-- **Hero Banner** con imágenes/videos configurables desde admin
-- **Catálogo** con filtros por categoría, técnica y búsqueda
+### Tienda Publica
+- **Hero Banner** con imagenes/videos configurables desde admin
+- **Catalogo** con filtros por categoria, tecnica y busqueda
 - **Productos** con opciones de talla, corte, color, tipo de vaso, acabado
-- **Precios dinámicos** con extras por talla/tipo
-- **Favoritos** con persistencia localStorage + Supabase
-- **Carrito** con cantidades, envío por zona, cálculo de total
-- **Checkout por WhatsApp** con imagen de pedido generada por Canvas
-- ** Ideas personalizadas** con envío a WhatsApp
+- **Precios dinamicos** con extras por talla/tipo
+- **Galeria de imagenes** por producto (main image + gallery)
+- **Favoritos** con persistencia en Supabase
+- **Carrito** con cantidades, envio por zona, calculo de total
+- **Checkout por WhatsApp** con imagen de pedido generada (Canvas JPG) + upload a Supabase Storage
+- **Ideas personalizadas** con envio a WhatsApp
+- **Politica de Privacidad** + Terminos y Condiciones (Ley N 29733)
+- **Consentimiento obligatorio** antes de enviar pedido
 - **Temas** Oscuro / AMOLED / Claro
-- **Responsive** mobile-first, bottom navigation dock
+- **Responsive** mobile-first, bottom sheet modal en celular
 
-### Panel de Administración (WYSIWYG)
-- **Inicio** — Editor visual del sitio: doble clic en cualquier texto para editarlo inline
-- **Catálogo** — CRUD completo de productos con opciones de talla/color/tipo
-- **Favoritos** — Configuración de la página de favoritos
-- **Pedidos** — Gestión de estados de entrega
-- **Mi Cuenta** — Marca, perfil, envíos, footer, navegación
+### Panel de Administracion (WYSIWYG)
+- **Inicio** — Editor visual: doble clic en cualquier texto para editarlo inline
+- **Catalogo** — CRUD de productos con galeria de imagenes, opciones de talla/color/tipo
+- **Favoritos** — Configuracion de la pagina de favoritos
+- **Pedidos** — Gestion de estados de entrega + zonas de envio
+- **Mi Cuenta** — Marca, perfil, envios, footer, navegacion, backup/restore
 
-### Sistema de Configuración (CMS)
-- ~100+ claves configurables desde admin
-- Todas las textos del sitio son editables (cfg() en Supabase `configuracion`)
-- Imágenes hero editables con upload a Supabase Storage
-- Persistencia en Supabase con cache en memoria
+### Seguridad
+- **DOMPurify** en todos los `dangerouslySetInnerHTML`
+- **RLS SQL scripts** para Row Level Security en Supabase
+- **Backup/Restore** dinamico de todas las tablas desde admin
+- **Sanitizacion** de inputs en checkout
+
+### Sistema de Configuracion (CMS)
+- Claves configurables desde admin (Supabase `configuracion`)
+- Todos los textos del sitio son editables via `cfg()`
+- Imagenes hero editables con upload a Supabase Storage
+- Cache en memoria con recarga dinamica
 
 ---
 
@@ -93,93 +101,98 @@ lúmin-shop/
 
 ### Tablas
 
-| Tabla | Descripción |
+| Tabla | Descripcion |
 |-------|-------------|
-| `configuracion` | Pares clave-valor para todo el contenido del sitio |
-| `productos` | Catálogo de productos con opciones JSON |
-| `categorias` | Categorías de productos |
-| `usuarios` | Usuarios autenticados |
-| `perfiles` | Perfiles de usuario extendidos |
-| `favoritos` | Productos favoritos por usuario |
-| `carrito` | Estado del carrito persistido |
-| `pedidos` | Pedidos con estado y totales |
-| `ideas_personalizadas` | Consultas de ideas personalizadas |
+| `configuracion` | Pares clave-valor para todo el contenido |
+| `productos` | Catalogo con opciones JSON |
+| `categorias` | Categorias de productos |
+| `usuarios` | Usuarios (requiere columna `rol`) |
+| `perfiles` | Perfiles extendidos |
+| `favoritos` | Favoritos por usuario |
+| `carrito` | Carrito persistido |
+| `pedidos` | Pedidos con estado + zona_envio + costo_envio |
+| `ideas_personalizadas` | Consultas personalizadas |
 
 ### Storage
-- Bucket `media` (público) — imágenes de hero y productos
+- Bucket `media` (publico) — imagenes de hero, productos y pedidos
+
+### Columnas necesarias en `pedidos`
+```sql
+ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS zona_envio text DEFAULT 'huamanga';
+ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS costo_envio numeric DEFAULT 0;
+```
+
+### Columna necesaria en `usuarios`
+```sql
+ALTER TABLE usuarios ADD COLUMN IF NOT EXISTS rol TEXT DEFAULT 'user';
+```
 
 ---
 
-## Configuración
-
-### Variables de Entorno
-
-El archivo `.env` debe contener:
+## Variables de Entorno
 
 ```env
 VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
 VITE_SUPABASE_ANON_KEY=tu-anon-key
 ```
 
-### Claves de Configuración Principales
+### Claves de Configuracion Principales
 
-| Sección | Ejemplo de claves |
-|---------|-------------------|
-| Marca | `brand_name`, `brand_phone`, `brand_location`, `brand_instagram` |
-| Hero | `hero_badge`, `hero_title_1`, `hero_title_2`, `hero_cta_catalogo` |
-| Social | `social_bar_title`, `brand_facebook`, `brand_tiktok` |
-| Envío | `shipping_price_lima`, `shipping_price_provincia` |
-| Navegación | `nav_home`, `nav_catalog`, `nav_favorites` |
-| Footer | `footer_description`, `footer_collections`, `footer_copyright` |
+| Seccion | Claves |
+|---------|--------|
+| Marca | `brand_name`, `brand_phone`, `brand_location` |
+| Hero | `hero_badge`, `hero_title_1`, `hero_title_2` |
+| Envio | `shipping_price_huamanga`, `shipping_price_provincia`, `shipping_price_internacional` |
+| Navegacion | `nav_home`, `nav_catalog`, `nav_favorites` |
+| Footer | `footer_description`, `footer_copyright` |
+
+### Zonas de Envio
+
+| Zona | Precio | Editable |
+|------|--------|----------|
+| Ayacucho / Huamanga | Gratis (default) | Si |
+| Provincia | S/ 25 | Si |
+| Internacional | S/ 80 | Si |
+| Recojo en tienda | Gratis | No |
 
 ---
 
-## Optimizaciones de Rendimiento
+## Optimizaciones
 
-- **React.memo** en ProductCard, HeroBanner, Header, Footer, FloatingDock
+- **React.memo** en ProductCard, Header, Footer, FloatingDock
 - **useCallback** en todos los handlers del App.tsx
-- **useMemo** para valores derivados (carrito, favoritos, envío, filtros)
-- **lazy loading** en imágenes de productos
-- **HeroMedia** memoizado para evitar re-renders en cambios de tema
+- **useMemo** para valores derivados (carrito, favoritos, envio, filtros)
+- **Lazy loading** en imagenes de productos
 - **Config cache** en memoria con `cfg()`
-- **Eliminación de dependencias muertas** (motion, express, dotenv)
+- **FavoriteIds Set** para busqueda O(1)
+- **Eliminacion de dependencias muertas** (motion, express, dotenv)
 
 ---
 
 ## Desarrollo
 
 ```bash
-# Instalar dependencias
 npm install
-
-# Servidor de desarrollo
-npm run dev
-
-# Build de producción
-npm run build
-
-# Preview del build
-npm run preview
-
-# Lint (TypeScript)
-npm run lint
+npm run dev       # Dev server
+npm run build     # Production build
+npm run preview   # Preview build
+npm run lint      # TypeScript check
 ```
 
 ---
 
 ## Deploy
 
-El proyecto se despliega automáticamente en Vercel al hacer push a `main`.
+Auto-deploy en Vercel al hacer push a `master`.
 
 ```bash
-# Deploy manual
-npx vercel --prod
+npx vercel --prod  # Deploy manual
 ```
 
 ---
 
 ## Autor
 
-**Oscar Daniel** — [@lumin.shop](https://instagram.com/lumin.shop)
+**Oscar Daniel** — [@0scar6](https://github.com/0scar6)
 
-LUMIN SHOP — Ayacucho, Perú
+LUMIN SHOP — Ayacucho, Huamanga, Peru

@@ -4,9 +4,6 @@ import { FloatingDock } from './components/FloatingDock';
 import { HeroBanner } from './components/HeroBanner';
 import { ProductCard } from './components/ProductCard';
 import { ProductModal } from './components/ProductModal';
-import { CartDrawer } from './components/CartDrawer';
-import { FavoritesModal } from './components/FavoritesModal';
-import { UserProfileModal } from './components/UserProfileModal';
 import { ProductionBadgeBar } from './components/ProductionBadgeBar';
 import { FaqSection } from './components/FaqSection';
 import { Footer } from './components/Footer';
@@ -30,7 +27,6 @@ import { generateOrderImage } from './lib/generateOrderImage';
 import { sanitize } from './lib/sanitize';
 import { Product, CartItem, NavigationTab, Category, ThemeMode, UserProfileData, GoogleUser } from './types';
 import {
-  Filter,
   Tag,
   MessageCircle,
   SlidersHorizontal,
@@ -40,12 +36,10 @@ import {
   Grid,
   Heart,
   ShoppingBag,
-  Eye,
   User,
   Trash2,
   CheckCircle2,
   Copy,
-  QrCode,
   Smartphone,
   Sun,
   Moon,
@@ -65,8 +59,6 @@ import {
   Package,
   Store,
 } from 'lucide-react';
-
-const yapeQrImage = '/yape_qr_code.jpg';
 
 export default function App() {
   // Navigation & View state
@@ -93,9 +85,6 @@ export default function App() {
 
   // Interactive Modals
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
-  const [isFavoritesOpen, setIsFavoritesOpen] = useState<boolean>(false);
-  const [isProfileOpen, setIsProfileOpen] = useState<boolean>(false);
   const [isCustomIdeaOpen, setIsCustomIdeaOpen] = useState<boolean>(false);
   const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
   const [isTermsOpen, setIsTermsOpen] = useState<boolean>(false);
@@ -942,19 +931,6 @@ export default function App() {
                       const itemUnitPrice = getUnitPrice(item);
                       const itemTotal = itemUnitPrice * item.quantity;
 
-  if (!configLoaded) {
-    return (
-      <div className="min-h-screen w-full bg-[#0A0A0A] flex items-center justify-center">
-        <div className="text-center space-y-3">
-          <div className="w-10 h-10 mx-auto rounded-xl bg-[#D2E8A3]/20 flex items-center justify-center animate-pulse">
-            <Zap className="w-5 h-5 text-[#D2E8A3]" />
-          </div>
-          <p className="text-[#D2E8A3] text-xs font-bold uppercase tracking-widest">LUMIN SHOP</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
                         <div
                           key={item.cartItemId}
@@ -1716,16 +1692,6 @@ export default function App() {
         themeMode={themeMode}
       />
 
-      {/* User Profile Overlay Modal */}
-      <UserProfileModal
-        isOpen={isProfileOpen}
-        onClose={() => setIsProfileOpen(false)}
-        themeMode={themeMode}
-        onSelectTheme={handleSelectTheme}
-        userProfile={userProfile}
-        onSaveProfile={handleSaveProfile}
-      />
-
       {/* Product Detail & Customizer Modal */}
       {selectedProduct && (
         <ProductModal
@@ -1735,27 +1701,6 @@ export default function App() {
           themeMode={themeMode}
         />
       )}
-
-      {/* Cart Overlay Drawer */}
-      <CartDrawer
-        isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
-        cartItems={cart}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveItem}
-        onClearCart={handleClearCart}
-        userProfile={userProfile}
-        themeMode={themeMode}
-      />
-
-      {/* Favorites Overlay Modal */}
-      <FavoritesModal
-        isOpen={isFavoritesOpen}
-        onClose={() => setIsFavoritesOpen(false)}
-        favorites={favorites}
-        onRemoveFavorite={toggleFavorite}
-        onSelectProduct={(p) => setSelectedProduct(p)}
-      />
 
       {/* Custom Idea Modal */}
       {isCustomIdeaOpen && (
