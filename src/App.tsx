@@ -27,6 +27,7 @@ import { generateOrderImage } from './lib/generateOrderImage';
 import { sanitize } from './lib/sanitize';
 import { Product, CartItem, NavigationTab, Category, ThemeMode, UserProfileData, GoogleUser } from './types';
 import {
+  Filter,
   Tag,
   MessageCircle,
   SlidersHorizontal,
@@ -36,6 +37,7 @@ import {
   Grid,
   Heart,
   ShoppingBag,
+  Eye,
   User,
   Trash2,
   CheckCircle2,
