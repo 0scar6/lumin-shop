@@ -351,7 +351,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
           {mainTab === 'catalogo' && <TabCatalogo cfgEdit={cfgEdit} setCfg={setCfg} products={products} editingProduct={editingProduct} setEditingProduct={setEditingProduct} isNewProduct={isNewProduct} startNewProduct={startNewProduct} handleProdSave={handleProdSave} handleProdDelete={handleProdDelete} handleProdImageUpload={handleProdImageUpload} prodSaving={prodSaving} uploading={uploading} handleSyncGalleries={handleSyncGalleries} />}
           {mainTab === 'favoritos' && <TabFavoritos cfgEdit={cfgEdit} setCfg={setCfg} />}
           {mainTab === 'pedidos' && <TabPedidos orders={orders} handleOrderStatus={handleOrderStatus} />}
-          {mainTab === 'cuenta' && <TabCuenta cfgEdit={cfgEdit} setCfg={setCfg} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} backupStatus={backupStatus} handleBackup={handleBackup} handleRestoreFile={handleRestoreFile} handleRestoreConfirm={handleRestoreConfirm} restorePreview={restorePreview} />}
+          {mainTab === 'cuenta' && <TabCuenta cfgEdit={cfgEdit} setCfg={setCfg} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} backupStatus={backupStatus} handleBackup={handleBackup} handleRestoreFile={handleRestoreFile} handleRestoreConfirm={handleRestoreConfirm} restorePreview={restorePreview} setRestorePreview={setRestorePreview} />}
         </div>
       </div>
     </div>
@@ -1366,7 +1366,7 @@ TabPedidos.displayName = 'TabPedidos';
 /* ═══════════════════════════════════════════════════════
    TAB: MI CUENTA
    ═══════════════════════════════════════════════════════ */
-const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTarget, backupStatus, handleBackup, handleRestoreFile, handleRestoreConfirm, restorePreview }: any) => (
+const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTarget, backupStatus, handleBackup, handleRestoreFile, handleRestoreConfirm, restorePreview, setRestorePreview }: any) => (
   <div className="p-5 sm:p-8 space-y-6 max-w-[1200px] mx-auto">
 
     {/* Brand */}
