@@ -25,17 +25,17 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
   return (
     <div
       style={{ animationDelay: `${Math.min(index * 0.05, 0.3)}s` }}
-      className={`group relative rounded-2xl overflow-hidden transition-all duration-300 flex flex-col justify-between animate-fade-in-up border ${
+      className={`group relative rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 flex flex-col animate-fade-in-up border ${
         isLight
-          ? 'bg-white border-slate-300 text-slate-900 shadow-sm hover:border-lime-600'
+          ? 'bg-white border-slate-200 text-slate-900 shadow-sm hover:border-lime-500'
           : 'glass-card border-white/10 hover:border-[#D2E8A3]/40'
       }`}
     >
       
-      {/* Top Image Container */}
+      {/* Image Container — shorter on mobile */}
       <div
         onClick={() => onSelectProduct(product)}
-        className="relative aspect-square w-full overflow-hidden bg-[#10120E] cursor-pointer"
+        className="relative aspect-[4/3] sm:aspect-square w-full overflow-hidden bg-[#10120E] cursor-pointer"
       >
         <img
           src={product.image}
@@ -44,104 +44,104 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
           loading="lazy"
         />
 
-        {/* Favorite Heart Button */}
+        {/* Favorite Heart */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             onToggleFavorite(product);
           }}
-          className={`absolute top-3 right-3 p-2 rounded-full backdrop-blur-md transition-all z-20 ${
+          className={`absolute top-2 right-2 sm:top-3 sm:right-3 p-1.5 sm:p-2 rounded-full backdrop-blur-md transition-all z-20 ${
             isFavorite
               ? 'bg-[#D2E8A3] text-[#0A0A0A]'
-              : 'bg-black/60 text-white hover:bg-black/80'
+              : 'bg-black/50 text-white/80 hover:bg-black/70'
           }`}
           aria-label={cfg('pc_save_fav', 'Guardar en favoritos')}
         >
-          <Heart className={`w-4 h-4 ${isFavorite ? 'fill-[#0A0A0A]' : ''}`} />
+          <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${isFavorite ? 'fill-[#0A0A0A]' : ''}`} />
         </button>
 
-        {/* Top Badges (Tag & Discount) */}
-        <div className="absolute top-3 left-3 right-12 flex flex-wrap items-center gap-1.5 z-10 pointer-events-none">
+        {/* Badges */}
+        <div className="absolute top-2 left-2 sm:top-3 sm:left-3 right-10 flex flex-wrap items-center gap-1 z-10 pointer-events-none">
           {product.tag && (
-            <div className="px-2.5 py-1 rounded-md bg-black/80 backdrop-blur-md border border-white/10 text-[10px] font-bold text-[#D2E8A3] uppercase tracking-wider">
+            <div className="px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded bg-black/70 backdrop-blur-md text-[8px] sm:text-[10px] font-bold text-[#D2E8A3] uppercase tracking-wider">
               {product.tag}
             </div>
           )}
-
-          {/* Discount Percentage Red Badge */}
           {product.originalPrice && product.originalPrice > product.price && (
-            <div className="px-2 py-0.5 rounded-md bg-red-600 text-white text-[10px] font-black uppercase tracking-wider shadow-lg flex items-center gap-0.5 animate-pulse">
+            <div className="px-1.5 py-0.5 rounded bg-red-600 text-white text-[8px] sm:text-[10px] font-black uppercase tracking-wider shadow-lg">
               -{Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)}%
             </div>
           )}
         </div>
 
-        {/* Technique Badge overlay at bottom of image */}
-        <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between pointer-events-none">
-          <span className="px-2 py-0.5 rounded bg-black/80 backdrop-blur-md text-[10px] font-medium text-gray-200 border border-white/10">
+        {/* Technique badge */}
+        <div className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2">
+          <span className="px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded bg-black/70 backdrop-blur-md text-[8px] sm:text-[10px] font-medium text-gray-200 border border-white/10">
             {product.technique}
           </span>
         </div>
       </div>
 
-      {/* Product Information Body */}
-      <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between gap-2.5">
+      {/* Info Body — tighter on mobile */}
+      <div className="p-2.5 sm:p-3 flex-1 flex flex-col justify-between gap-1.5 sm:gap-2">
         <div>
-          {/* Category Micro label */}
-          <div className={`flex items-center gap-1.5 text-[10px] sm:text-[11px] font-mono mb-1 ${
+          {/* Category */}
+          <div className={`flex items-center gap-1 text-[9px] sm:text-[10px] font-mono mb-0.5 ${
             isLight ? 'text-lime-700 font-bold' : 'text-[#D2E8A3]'
           }`}>
-            <Flame className="w-3 h-3" />
+            <Flame className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
             <span className="uppercase tracking-wider">
-              {product.category === 'streetwear' ? cfg('pc_category_polo', 'Polo Sublimado') : product.category === 'cups' ? cfg('pc_category_cup', 'Vaso/Taza') : cfg('pc_category_plaque', 'Placa de Aluminio')}
+              {product.category === 'streetwear' ? cfg('pc_category_polo', 'Polo') : product.category === 'cups' ? cfg('pc_category_cup', 'Vaso/Taza') : cfg('pc_category_plaque', 'Placa')}
             </span>
           </div>
 
+          {/* Name */}
           <h3
             onClick={() => onSelectProduct(product)}
-            className={`font-extrabold text-xs sm:text-base cursor-pointer line-clamp-1 transition-colors ${
+            className={`font-extrabold text-[11px] sm:text-sm leading-tight cursor-pointer line-clamp-1 transition-colors ${
               isLight ? 'text-slate-900 hover:text-lime-700' : 'text-white hover:text-[#D2E8A3]'
             }`}
           >
             {product.name}
           </h3>
 
-          <p className={`text-[11px] sm:text-xs line-clamp-2 mt-0.5 leading-snug ${
-            isLight ? 'text-slate-700 font-medium' : 'text-gray-300'
+          {/* Description — hidden on very small screens */}
+          <p className={`text-[10px] sm:text-[11px] line-clamp-1 mt-0.5 hidden sm:block ${
+            isLight ? 'text-slate-600' : 'text-gray-400'
           }`}>
             {product.description}
           </p>
         </div>
 
-        {/* Production Time Badge */}
-        <div className={`flex items-center gap-1 text-[10px] sm:text-[11px] font-semibold ${
-          isLight ? 'text-slate-700 font-medium' : 'text-gray-300'
+        {/* Production time */}
+        <div className={`flex items-center gap-1 text-[8px] sm:text-[10px] ${
+          isLight ? 'text-slate-600' : 'text-gray-500'
         }`}>
-          <Clock className={`w-3 h-3 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
+          <Clock className={`w-2.5 h-2.5 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
           <span>{product.productionTime}</span>
         </div>
 
-        {/* Price & Action Button */}
-        <div className={`pt-2 border-t flex items-center justify-between gap-1.5 mt-auto ${
+        {/* Price + Button */}
+        <div className={`pt-1.5 sm:pt-2 border-t flex items-center justify-between ${
           isLight ? 'border-slate-200' : 'border-white/10'
         }`}>
           <div className="flex flex-col">
-            <span className={`text-[9px] sm:text-[10px] uppercase font-mono font-bold ${
-              isLight ? 'text-slate-600' : 'text-gray-400'
+            <span className={`text-[8px] sm:text-[9px] font-mono font-bold ${
+              isLight ? 'text-slate-500' : 'text-gray-500'
             }`}>
-              {cfg('pc_currency', 'S/ Soles')}
+              S/
             </span>
             <div className="flex items-baseline gap-1">
-              <span className={`text-sm sm:text-lg font-black whitespace-nowrap ${
+              <span className={`text-sm sm:text-base font-black whitespace-nowrap ${
                 isLight ? 'text-slate-900' : 'text-white'
               }`}>
-                S/ {product.price.toFixed(2)}
+                {product.price.toFixed(2)}
               </span>
               {product.originalPrice && (
-                <span className={`text-[10px] sm:text-xs line-through hidden sm:inline ${
-                  isLight ? 'text-slate-500 font-semibold' : 'text-gray-400'
+                <span className={`text-[9px] sm:text-[10px] line-through hidden sm:inline ${
+                  isLight ? 'text-slate-400' : 'text-gray-500'
                 }`}>
-                  S/ {product.originalPrice.toFixed(2)}
+                  {product.originalPrice.toFixed(2)}
                 </span>
               )}
             </div>
@@ -149,10 +149,10 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
 
           <button
             onClick={() => onSelectProduct(product)}
-            className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A] font-extrabold text-[11px] sm:text-xs transition-all shadow-md active:scale-95 whitespace-nowrap"
+            className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A] font-extrabold text-[10px] sm:text-[11px] transition-all shadow-md active:scale-95"
             aria-label={cfg('pc_order_label', 'Configurar Pedido')}
           >
-            <Plus className="w-3.5 h-3.5 stroke-[3]" />
+            <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
             <span>{cfg('pc_order_btn', 'Pedir')}</span>
           </button>
         </div>

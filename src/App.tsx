@@ -768,7 +768,7 @@ export default function App() {
             ) : (
               <div
                 key={`${selectedCategory}-${selectedTechnique}-${searchQuery}-${sortBy}`}
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 animate-fade-in"
+                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5 animate-fade-in"
               >
                 {filteredProducts.map((product, idx) => (
                   <ProductCard
@@ -840,7 +840,7 @@ export default function App() {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
                 {favorites.map((product, idx) => (
                   <ProductCard
                     key={product.id}
