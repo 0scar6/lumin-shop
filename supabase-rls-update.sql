@@ -40,3 +40,14 @@ DROP POLICY IF EXISTS "Usuarios actualizan su registro" ON usuarios;
 
 CREATE POLICY "Usuarios public read/write" ON usuarios
   FOR ALL USING (true) WITH CHECK (true);
+
+-- CONFIGURACION: permitir lectura a todos (necesario para cargar config pública)
+DROP POLICY IF EXISTS "Configuracion public read" ON configuracion;
+
+CREATE POLICY "Configuracion public read" ON configuracion
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Configuracion admin write" ON configuracion;
+
+CREATE POLICY "Configuracion admin write" ON configuracion
+  FOR ALL USING (true) WITH CHECK (true);

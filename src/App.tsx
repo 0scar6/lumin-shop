@@ -76,6 +76,7 @@ export default function App() {
 
   // Config state
   const [configLoaded, setConfigLoaded] = useState(false);
+  const [configVersion, setConfigVersion] = useState(0);
 
   useEffect(() => {
     loadProductsFromSupabase().then(setProducts);
@@ -1807,7 +1808,7 @@ export default function App() {
       <AdminPanel
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
-        onConfigChange={() => { reloadConfig(); }}
+        onConfigChange={() => { reloadConfig().then(() => setConfigVersion(v => v + 1)); }}
       />
 
       {/* Terms & Privacy Modal */}

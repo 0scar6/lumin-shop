@@ -92,7 +92,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const handleSendWhatsApp = () => {
     const message = buildWhatsAppMessage();
     const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/51993365099?text=${encoded}`, '_blank');
+    window.open(`https://wa.me/${cfg('brand_phone_raw', '51993365099')}?text=${encoded}`, '_blank');
   };
 
   const handleCopyOrder = () => {
@@ -103,7 +103,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   };
 
   const handleCopyYapePhone = () => {
-    navigator.clipboard.writeText('993365099');
+    navigator.clipboard.writeText(cfg('brand_phone_raw', '51993365099').replace(/^51/, ''));
     setCopiedPhone(true);
     setTimeout(() => setCopiedPhone(false), 2500);
   };
