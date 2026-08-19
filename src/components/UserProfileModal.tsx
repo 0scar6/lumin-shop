@@ -338,7 +338,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   </strong>
                 </div>
                 <p className="text-[11px] leading-relaxed">
-                  {cfg('up_concept2_desc', 'Pago seguro al ')}<strong className={`font-mono ${isLight ? 'text-lime-800 font-bold' : 'text-[#D2E8A3]'}`}>993 365 099</strong>{cfg('up_concept2_desc_suffix', ' a nombre de LUMIN SHOP. Aceptamos BCP, BBVA e Interbank.')}
+                  {cfg('up_concept2_desc', 'Pago seguro al ')}<strong className={`font-mono ${isLight ? 'text-lime-800 font-bold' : 'text-[#D2E8A3]'}`}>{cfg('brand_phone', '993 365 099')}</strong>{cfg('up_concept2_desc_suffix', ' a nombre de LUMIN SHOP. Aceptamos BCP, BBVA e Interbank.')}
                 </p>
               </div>
 

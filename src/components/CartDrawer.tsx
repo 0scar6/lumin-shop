@@ -344,7 +344,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 <div className="flex items-center justify-between bg-black/50 px-3 py-2 rounded-xl border border-white/5">
                   <div className="flex items-center gap-1.5 text-xs text-white font-mono font-bold">
                     <Smartphone className="w-3.5 h-3.5 text-[#00D2B5]" />
-                    <span>993 365 099</span>
+                    <span>{cfg('brand_phone', '993 365 099')}</span>
                   </div>
 
                   <button
@@ -393,7 +393,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
               <div>
                 <h3 className="text-base font-black text-white">{cfg('cd_qr_title', 'QR Estático Yape / Plin')}</h3>
-                <p className="text-xs text-gray-400">LUMIN SHOP • 993 365 099</p>
+                <p className="text-xs text-gray-400">LUMIN SHOP • {cfg('brand_phone', '993 365 099')}</p>
               </div>
 
               <div className="p-2 rounded-2xl bg-white border-4 border-[#742284] shadow-2xl overflow-hidden max-w-[210px]">

@@ -90,7 +90,7 @@ export const TermsAndPrivacy: React.FC<TermsAndPrivacyProps> = ({
                   1. Responsable del Tratamiento
                 </h3>
                 <p className={isLight ? 'text-slate-700' : 'text-gray-300'}>
-                  <strong>LUMIN SHOP</strong>, representada por Oscar Daniel, con número de celular 993 365 099,
+                  <strong>LUMIN SHOP</strong>, representada por Oscar Daniel, con número de celular {cfg('brand_phone', '993 365 099')},
                   con domicilio en Ayacucho, Huamanga, Perú, es responsable del tratamiento de los datos personales
                   recopilados a través de este sitio web.
                 </p>
@@ -153,7 +153,7 @@ export const TermsAndPrivacy: React.FC<TermsAndPrivacyProps> = ({
                   <li><strong>Oposición:</strong> Oponerte al tratamiento de tus datos para finalidades no esenciales.</li>
                 </ul>
                 <p className={isLight ? 'text-slate-700' : 'text-gray-300'}>
-                  Para ejercer estos derechos, contáctanos al <strong>993 365 099</strong> por WhatsApp o correo electrónico.
+                  Para ejercer estos derechos, contáctanos al <strong>{cfg('brand_phone', '993 365 099')}</strong> por WhatsApp o correo electrónico.
                 </p>
               </section>
 
@@ -183,7 +183,7 @@ export const TermsAndPrivacy: React.FC<TermsAndPrivacyProps> = ({
                   8. Contacto
                 </h3>
                 <p className={isLight ? 'text-slate-700' : 'text-gray-300'}>
-                  Si tienes dudas sobre esta política o sobre el tratamiento de tus datos, escríbenos al <strong>993 365 099</strong> por
+                  Si tienes dudas sobre esta política o sobre el tratamiento de tus datos, escríbenos al <strong>{cfg('brand_phone', '993 365 099')}</strong> por
                   WhatsApp o al correo registrado en nuestra página de Instagram: <strong>@.lumin.shop</strong>
                 </p>
               </section>
@@ -302,7 +302,7 @@ export const TermsAndPrivacy: React.FC<TermsAndPrivacyProps> = ({
                   10. Contacto
                 </h3>
                 <p className={isLight ? 'text-slate-700' : 'text-gray-300'}>
-                  Para consultas sobre estos Términos y Condiciones, contáctanos al <strong>993 365 099</strong> por WhatsApp.
+                  Para consultas sobre estos Términos y Condiciones, contáctanos al <strong>{cfg('brand_phone', '993 365 099')}</strong> por WhatsApp.
                 </p>
               </section>
             </>

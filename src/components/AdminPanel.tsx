@@ -62,6 +62,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
 
   const handleCfgSave = async () => {
     if (!supabase) return;
+    // Auto-generate brand_phone_raw from brand_phone
+    if (cfgEdit.brand_phone) {
+      const raw = cfgEdit.brand_phone.replace(/\s+/g, '').replace(/^0+/, '');
+      cfgEdit.brand_phone_raw = raw.startsWith('51') ? raw : '51' + raw;
+    }
     // Save existing rows that changed
     for (const row of configRows) {
       const v = cfgEdit[row.id] ?? row.valor;
