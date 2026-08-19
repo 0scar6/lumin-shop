@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import {
-  Package, Settings, Plus, Trash2, ArrowLeft, Check, Shirt, Coffee,
+  Package, Settings, Plus, Trash2, ArrowLeft, Check, Shirt, Coffee, Save,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Field, TextInput, TextArea, MediaUpload, Section, PreviewBox } from './AdminShared';
@@ -10,6 +10,8 @@ export interface ProductoRow { id: string; nombre: string; categoria_id: string;
 interface AdminProductsProps {
   cfgEdit: Record<string, string>;
   setCfg: (key: string, value: string) => void;
+  handleCfgSave: () => void;
+  cfgSaved: boolean;
   products: ProductoRow[];
   editingProduct: ProductoRow | null;
   setEditingProduct: (p: ProductoRow | null) => void;
@@ -24,7 +26,7 @@ interface AdminProductsProps {
 }
 
 export const AdminProducts = ({
-  cfgEdit, setCfg, products, editingProduct, setEditingProduct, isNewProduct,
+  cfgEdit, setCfg, handleCfgSave, cfgSaved, products, editingProduct, setEditingProduct, isNewProduct,
   startNewProduct, handleProdSave, handleProdDelete, handleProdImageUpload,
   prodSaving, uploading, handleSyncGalleries,
 }: AdminProductsProps) => {
@@ -356,6 +358,11 @@ export const AdminProducts = ({
           <Field label="Subtítulo"><TextInput value={cfgEdit.catalog_subtitle || ''} onChange={(v: string) => setCfg('catalog_subtitle', v)} /></Field>
         </div>
         <Field label="Texto vacío"><TextInput value={cfgEdit.catalog_empty || ''} onChange={(v: string) => setCfg('catalog_empty', v)} /></Field>
+        <div className="flex justify-end pt-2">
+          <button onClick={handleCfgSave} className="flex items-center gap-2 px-4 py-2 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs hover:bg-[#c2e088] shadow-lg shadow-[#D2E8A3]/20 transition-all">
+            {cfgSaved ? <><Check className="w-4 h-4" /> Guardado</> : <><Save className="w-4 h-4" /> Guardar Texto</>}
+          </button>
+        </div>
       </Section>
 
       {[

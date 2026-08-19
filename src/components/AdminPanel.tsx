@@ -322,7 +322,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
         <div className="flex-1 overflow-y-auto" style={{ scrollBehavior: 'smooth' }}>
           {mainTab === 'inicio' && <TabInicio {...sharedProps} configRows={configRows} />}
           {mainTab === 'config' && <AdminConfig cfgEdit={cfgEdit} setCfg={setCfg} />}
-          {mainTab === 'catalogo' && <AdminProducts cfgEdit={cfgEdit} setCfg={setCfg} products={products} editingProduct={editingProduct} setEditingProduct={setEditingProduct} isNewProduct={isNewProduct} startNewProduct={startNewProduct} handleProdSave={handleProdSave} handleProdDelete={handleProdDelete} handleProdImageUpload={handleProdImageUpload} prodSaving={prodSaving} uploading={uploading} handleSyncGalleries={handleSyncGalleries} />}
+          {mainTab === 'catalogo' && <AdminProducts cfgEdit={cfgEdit} setCfg={setCfg} handleCfgSave={handleCfgSave} cfgSaved={cfgSaved} products={products} editingProduct={editingProduct} setEditingProduct={setEditingProduct} isNewProduct={isNewProduct} startNewProduct={startNewProduct} handleProdSave={handleProdSave} handleProdDelete={handleProdDelete} handleProdImageUpload={handleProdImageUpload} prodSaving={prodSaving} uploading={uploading} handleSyncGalleries={handleSyncGalleries} />}
           {mainTab === 'favoritos' && <TabFavoritos cfgEdit={cfgEdit} setCfg={setCfg} />}
           {mainTab === 'pedidos' && <AdminOrders orders={orders} handleOrderStatus={handleOrderStatus} />}
           {mainTab === 'cuenta' && <TabCuenta {...sharedProps} backupStatus={backupStatus} handleBackup={handleBackup} handleRestoreFile={handleRestoreFile} handleRestoreConfirm={handleRestoreConfirm} restorePreview={restorePreview} setRestorePreview={setRestorePreview} />}
