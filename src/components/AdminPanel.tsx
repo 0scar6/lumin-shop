@@ -7,14 +7,27 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { reloadConfig } from '../lib/config';
+import { AdminSharedProps, Field, TextInput, TextArea, MediaUpload, Section, PreviewBox, EditableText, EditableImage, MirrorSection } from './admin/AdminShared';
+import { AdminConfig } from './admin/AdminConfig';
+import { AdminProducts, ProductoRow } from './admin/AdminProducts';
+import { AdminOrders, PedidoRow } from './admin/AdminOrders';
 
-const DEFAULT_ADMIN_PASS = 'Ratitaxd12';
-type AdminTab = 'inicio' | 'catalogo' | 'favoritos' | 'pedidos' | 'cuenta';
+type AdminTab = 'inicio' | 'config' | 'catalogo' | 'favoritos' | 'pedidos' | 'cuenta';
 
 interface AdminPanelProps { isOpen: boolean; onClose: () => void; onConfigChange?: () => void; }
 interface ConfigRow { id: string; seccion: string; clave: string; valor: string; }
-interface ProductoRow { id: string; nombre: string; categoria_id: string; precio: number; precio_original: number | null; tecnica: string; tiempo_produccion: string; imagen: string; galeria: any; descripcion: string; etiqueta: string; opciones_ropa: any; opciones_vaso: any; personalizable: boolean; activo: boolean; destacado: boolean; }
-interface PedidoRow { id: string; usuario_id: string; cliente_nombre: string; cliente_telefono: string; cliente_direccion: string; productos: any; total: number; estado: string; created_at: string; }
+
+const TABLES_TO_BACKUP = [
+  'configuracion', 'productos', 'categorias', 'pedidos',
+  'usuarios', 'perfiles', 'favoritos', 'carrito', 'ideas_personalizadas',
+];
+
+const hashPassword = async (pw: string): Promise<string> => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(pw);
+  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+  return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+};
 
 export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfigChange }) => {
   const [authenticated, setAuthenticated] = useState(false);
@@ -22,7 +35,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
   const [pwError, setPwError] = useState(false);
   const [showPw, setShowPw] = useState(false);
   const [mainTab, setMainTab] = useState<AdminTab>('inicio');
-  const [adminPass, setAdminPass] = useState(DEFAULT_ADMIN_PASS);
+  const [storedHash, setStoredHash] = useState<string | null>(null);
+  const [hashLoaded, setHashLoaded] = useState(false);
 
   const [configRows, setConfigRows] = useState<ConfigRow[]>([]);
   const [cfgEdit, setCfgEdit] = useState<Record<string, string>>({});
@@ -39,8 +53,25 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
   const [orders, setOrders] = useState<PedidoRow[]>([]);
 
   useEffect(() => { if (!isOpen) { setAuthenticated(false); setPw(''); setEditingProduct(null); } }, [isOpen]);
-  useEffect(() => { if (isOpen && supabase) { supabase.from('configuracion').select('valor').eq('id', 'admin_password').single().then(({ data }) => { if (data?.valor) setAdminPass(data.valor); }); } }, [isOpen]);
-  const handleLogin = () => { if (pw === adminPass) { setAuthenticated(true); setPwError(false); } else { setPwError(true); setTimeout(() => setPwError(false), 2000); } };
+
+  useEffect(() => {
+    if (!isOpen || !supabase) return;
+    supabase.from('configuracion').select('valor').eq('id', 'admin_password_hash').single().then(({ data }) => {
+      if (data?.valor) setStoredHash(data.valor);
+      setHashLoaded(true);
+    }).catch(() => setHashLoaded(true));
+  }, [isOpen]);
+
+  const handleLogin = async () => {
+    if (storedHash) {
+      const inputHash = await hashPassword(pw);
+      if (inputHash === storedHash) { setAuthenticated(true); setPwError(false); }
+      else { setPwError(true); setTimeout(() => setPwError(false), 2000); }
+    } else {
+      setPwError(true);
+      setTimeout(() => setPwError(false), 2000);
+    }
+  };
 
   useEffect(() => { if (!authenticated || !supabase) return; loadConfig(); loadProducts(); loadOrders(); }, [authenticated]);
 
@@ -62,19 +93,16 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
 
   const handleCfgSave = async () => {
     if (!supabase) return;
-    // Auto-generate brand_phone_raw from brand_phone
     if (cfgEdit.brand_phone) {
       const raw = cfgEdit.brand_phone.replace(/\s+/g, '').replace(/^0+/, '');
       cfgEdit.brand_phone_raw = raw.startsWith('51') ? raw : '51' + raw;
     }
-    // Save existing rows that changed
     for (const row of configRows) {
       const v = cfgEdit[row.id] ?? row.valor;
       if (v !== cfgOriginal[row.id]) {
         await supabase.from('configuracion').upsert({ id: row.id, seccion: row.seccion, clave: row.clave, valor: v }, { onConflict: 'id' });
       }
     }
-    // Also save any NEW keys not yet in the DB
     const existingIds = new Set(configRows.map((r: ConfigRow) => r.id));
     for (const [key, value] of Object.entries(cfgEdit)) {
       if (!existingIds.has(key) && value && value !== cfgOriginal[key]) {
@@ -93,15 +121,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     setCfgEdit(prev => ({ ...prev, [key]: value }));
   }, []);
 
-  // ===== BACKUP / RESTORE =====
   const [backupStatus, setBackupStatus] = useState<'idle' | 'backing_up' | 'done' | 'restoring' | 'restored' | 'error'>('idle');
   const [restorePreview, setRestorePreview] = useState<any>(null);
-
-  // Known Supabase tables — add new table names here when you create them
-  const TABLES_TO_BACKUP = [
-    'configuracion', 'productos', 'categorias', 'pedidos',
-    'usuarios', 'perfiles', 'favoritos', 'carrito', 'ideas_personalizadas',
-  ];
 
   const handleBackup = async () => {
     if (!supabase) return;
@@ -109,56 +130,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     try {
       const results: Record<string, any[]> = {};
       const countPromises = TABLES_TO_BACKUP.map(async (table) => {
-        try {
-          const { data, error } = await supabase.from(table).select('*');
-          if (!error && data) results[table] = data;
-        } catch {}
+        try { const { data, error } = await supabase.from(table).select('*'); if (!error && data) results[table] = data; } catch {}
       });
       await Promise.all(countPromises);
-
-      const backup = {
-        version: '2.0',
-        created_at: new Date().toISOString(),
-        shop: 'LUMIN SHOP',
-        tables: Object.keys(results),
-        data: results,
-      };
-
+      const backup = { version: '2.0', created_at: new Date().toISOString(), shop: 'LUMIN SHOP', tables: Object.keys(results), data: results };
       const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `lumin-backup-${new Date().toISOString().slice(0, 10)}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-      setBackupStatus('done');
-      setTimeout(() => setBackupStatus('idle'), 3000);
-    } catch {
-      setBackupStatus('error');
-      setTimeout(() => setBackupStatus('idle'), 3000);
-    }
+      const a = document.createElement('a'); a.href = url; a.download = `lumin-backup-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+      setBackupStatus('done'); setTimeout(() => setBackupStatus('idle'), 3000);
+    } catch { setBackupStatus('error'); setTimeout(() => setBackupStatus('idle'), 3000); }
   };
 
   const handleRestoreFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const file = e.target.files?.[0]; if (!file) return;
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
         const parsed = JSON.parse(ev.target?.result as string);
-        if (parsed.data && (parsed.shop === 'LUMIN SHOP' || parsed.version)) {
-          setRestorePreview(parsed);
-        } else {
-          alert('Archivo de backup no válido de LUMIN SHOP');
-        }
-      } catch {
-        alert('Error al leer el archivo JSON');
-      }
+        if (parsed.data && (parsed.shop === 'LUMIN SHOP' || parsed.version)) setRestorePreview(parsed);
+        else alert('Archivo de backup no válido de LUMIN SHOP');
+      } catch { alert('Error al leer el archivo JSON'); }
     };
-    reader.readAsText(file);
-    e.target.value = '';
+    reader.readAsText(file); e.target.value = '';
   };
 
   const handleRestoreConfirm = async () => {
@@ -166,44 +160,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     setBackupStatus('restoring');
     try {
       const tablesToRestore = restorePreview.tables || Object.keys(restorePreview.data);
-
       for (const table of tablesToRestore) {
-        const rows = restorePreview.data[table];
-        if (!rows?.length) continue;
-
-        // Detect primary key from first row
-        const firstRow = rows[0];
-        const pk = firstRow.id ? 'id' : firstRow.usuario_id ? 'usuario_id' : null;
-
-        for (const row of rows) {
-          if (pk) {
-            await supabase.from(table).upsert(row, { onConflict: pk });
-          } else {
-            await supabase.from(table).insert(row);
-          }
-        }
+        const rows = restorePreview.data[table]; if (!rows?.length) continue;
+        const firstRow = rows[0]; const pk = firstRow.id ? 'id' : firstRow.usuario_id ? 'usuario_id' : null;
+        for (const row of rows) { if (pk) await supabase.from(table).upsert(row, { onConflict: pk }); else await supabase.from(table).insert(row); }
       }
-
-      setRestorePreview(null);
-      setBackupStatus('restored');
-      await reloadConfig();
-      onConfigChange?.();
-      loadConfig();
-      loadProducts();
-      loadOrders();
+      setRestorePreview(null); setBackupStatus('restored');
+      await reloadConfig(); onConfigChange?.(); loadConfig(); loadProducts(); loadOrders();
       setTimeout(() => setBackupStatus('idle'), 3000);
-    } catch {
-      setBackupStatus('error');
-      setTimeout(() => setBackupStatus('idle'), 3000);
-    }
+    } catch { setBackupStatus('error'); setTimeout(() => setBackupStatus('idle'), 3000); }
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
     const file = e.target.files?.[0]; if (!file || !supabase) return;
     setUploading(true); setUploadTarget(key);
     try {
-      const ext = file.name.split('.').pop() || 'jpg';
-      const path = `uploads/${key}_${Date.now()}.${ext}`;
+      const ext = file.name.split('.').pop() || 'jpg'; const path = `uploads/${key}_${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from('media').upload(path, file, { cacheControl: '3600', upsert: false });
       if (error) throw error;
       const { data: urlData } = supabase.storage.from('media').getPublicUrl(path);
@@ -216,16 +188,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     setEditingProduct({ id: `prod-${Date.now()}`, nombre: '', categoria_id: 'streetwear', precio: 0, precio_original: null, tecnica: '', tiempo_produccion: '24-48 hrs', imagen: '', galeria: null, descripcion: '', etiqueta: '', opciones_ropa: { sizes: ['S', 'M', 'L', 'XL'], fits: ['Oversized Streetwear'], colors: [{ name: 'Negro', hex: '#0A0A0A' }] }, opciones_vaso: null, personalizable: false, activo: true, destacado: false });
     setIsNewProduct(true);
   };
+
   const handleProdSave = async () => {
     if (!editingProduct || !supabase) return;
     if (!editingProduct.nombre.trim()) { alert('El nombre es obligatorio'); return; }
     setProdSaving(true);
     try {
-      // Auto-populate gallery with main image if empty
       let galeria = editingProduct.galeria;
-      if ((!galeria || galeria.length === 0) && editingProduct.imagen) {
-        galeria = [editingProduct.imagen];
-      }
+      if ((!galeria || galeria.length === 0) && editingProduct.imagen) galeria = [editingProduct.imagen];
       const { error } = await supabase.from('productos').upsert({
         id: editingProduct.id, nombre: editingProduct.nombre, categoria_id: editingProduct.categoria_id,
         precio: editingProduct.precio, precio_original: editingProduct.precio_original,
@@ -239,32 +209,27 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     } catch (err: any) { alert('Error: ' + (err.message || JSON.stringify(err))); }
     setProdSaving(false);
   };
+
   const handleProdDelete = async (id: string) => { if (!supabase || !confirm('Eliminar producto?')) return; await supabase.from('productos').delete().eq('id', id); await loadProducts(); setEditingProduct(null); };
+
   const handleProdImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file || !supabase || !editingProduct) return;
     setUploading(true);
     try { const ext = file.name.split('.').pop() || 'jpg'; const path = `products/${editingProduct.id}_${Date.now()}.${ext}`; const { error } = await supabase.storage.from('media').upload(path, file, { cacheControl: '3600', upsert: false }); if (error) throw error; const { data: urlData } = supabase.storage.from('media').getPublicUrl(path); if (urlData?.publicUrl) setEditingProduct(p => p ? { ...p, imagen: urlData.publicUrl } : p); } catch (err: any) { alert('Error: ' + err.message); }
     setUploading(false);
   };
+
   const handleOrderStatus = async (orderId: string, status: string) => { if (!supabase) return; await supabase.from('pedidos').update({ estado: status }).eq('id', orderId); setOrders(prev => prev.map(o => o.id === orderId ? { ...o, estado: status } : o)); };
 
-  // Sync all products: ensure gallery has main image
   const handleSyncGalleries = async () => {
     if (!supabase || !confirm('Esto sincronizará la galería de TODOS los productos. ¿Continuar?')) return;
     const { data } = await supabase.from('productos').select('id, imagen, galeria');
-    if (!data) return;
-    let count = 0;
+    if (!data) return; let count = 0;
     for (const row of data) {
-      const mainImage = row.imagen || '';
-      let gallery = row.galeria;
-      if ((!gallery || gallery.length === 0) && mainImage) {
-        gallery = [mainImage];
-        await supabase.from('productos').update({ galeria: gallery }).eq('id', row.id);
-        count++;
-      }
+      const mainImage = row.imagen || ''; let gallery = row.galeria;
+      if ((!gallery || gallery.length === 0) && mainImage) { gallery = [mainImage]; await supabase.from('productos').update({ galeria: gallery }).eq('id', row.id); count++; }
     }
-    alert(`Sincronizados ${count} productos. Galería actualizada.`);
-    await loadProducts();
+    alert(`Sincronizados ${count} productos. Galería actualizada.`); await loadProducts();
   };
 
   const inputCls = 'w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#1a1d1a] border-white/10 placeholder-gray-500 focus:outline-none focus:border-[#D2E8A3] focus:ring-1 focus:ring-[#D2E8A3]/30 transition-all';
@@ -298,11 +263,14 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
 
   const tabs: { key: AdminTab; label: string; icon: any; desc: string }[] = [
     { key: 'inicio', label: 'Inicio', icon: Home, desc: 'Hero, badges, secciones' },
+    { key: 'config', label: 'Config', icon: MessageCircle, desc: 'Teléfono, redes sociales' },
     { key: 'catalogo', label: 'Catálogo', icon: LayoutGrid, desc: 'Productos y categorías' },
     { key: 'favoritos', label: 'Favoritos', icon: Heart, desc: 'Página de favoritos' },
     { key: 'pedidos', label: 'Pedidos', icon: ShoppingCart, desc: 'Gestión de pedidos' },
     { key: 'cuenta', label: 'Mi Cuenta', icon: User, desc: 'Marca, perfil, envíos' },
   ];
+
+  const sharedProps: AdminSharedProps = { cfgEdit, setCfg, handleFileUpload, uploading, uploadTarget };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-0 sm:p-3" onClick={onClose}>
@@ -352,11 +320,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto" style={{ scrollBehavior: 'smooth' }}>
-          {mainTab === 'inicio' && <TabInicio cfgEdit={cfgEdit} setCfg={setCfg} configRows={configRows} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} />}
-          {mainTab === 'catalogo' && <TabCatalogo cfgEdit={cfgEdit} setCfg={setCfg} products={products} editingProduct={editingProduct} setEditingProduct={setEditingProduct} isNewProduct={isNewProduct} startNewProduct={startNewProduct} handleProdSave={handleProdSave} handleProdDelete={handleProdDelete} handleProdImageUpload={handleProdImageUpload} prodSaving={prodSaving} uploading={uploading} handleSyncGalleries={handleSyncGalleries} />}
+          {mainTab === 'inicio' && <TabInicio {...sharedProps} configRows={configRows} />}
+          {mainTab === 'config' && <AdminConfig cfgEdit={cfgEdit} setCfg={setCfg} />}
+          {mainTab === 'catalogo' && <AdminProducts cfgEdit={cfgEdit} setCfg={setCfg} products={products} editingProduct={editingProduct} setEditingProduct={setEditingProduct} isNewProduct={isNewProduct} startNewProduct={startNewProduct} handleProdSave={handleProdSave} handleProdDelete={handleProdDelete} handleProdImageUpload={handleProdImageUpload} prodSaving={prodSaving} uploading={uploading} handleSyncGalleries={handleSyncGalleries} />}
           {mainTab === 'favoritos' && <TabFavoritos cfgEdit={cfgEdit} setCfg={setCfg} />}
-          {mainTab === 'pedidos' && <TabPedidos orders={orders} handleOrderStatus={handleOrderStatus} />}
-          {mainTab === 'cuenta' && <TabCuenta cfgEdit={cfgEdit} setCfg={setCfg} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} backupStatus={backupStatus} handleBackup={handleBackup} handleRestoreFile={handleRestoreFile} handleRestoreConfirm={handleRestoreConfirm} restorePreview={restorePreview} setRestorePreview={setRestorePreview} />}
+          {mainTab === 'pedidos' && <AdminOrders orders={orders} handleOrderStatus={handleOrderStatus} />}
+          {mainTab === 'cuenta' && <TabCuenta {...sharedProps} backupStatus={backupStatus} handleBackup={handleBackup} handleRestoreFile={handleRestoreFile} handleRestoreConfirm={handleRestoreConfirm} restorePreview={restorePreview} setRestorePreview={setRestorePreview} />}
         </div>
       </div>
     </div>
@@ -364,188 +333,10 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
 };
 
 /* ═══════════════════════════════════════════════════════
-   SHARED COMPONENTS
-   ═══════════════════════════════════════════════════════ */
-
-const Field = memo(({ label, children }: { label: string; children: React.ReactNode }) => (
-  <div className="space-y-1.5">
-    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">{label}</label>
-    {children}
-  </div>
-));
-Field.displayName = 'Field';
-
-const TextInput = memo(({ value, onChange, placeholder, type = 'text' }: { value: string; onChange: (v: string) => void; placeholder?: string; type?: string }) => (
-  <input type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-    className="w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#161814] border-white/10 placeholder-gray-600 focus:outline-none focus:border-[#D2E8A3]/50 focus:ring-1 focus:ring-[#D2E8A3]/20 transition-all" />
-));
-TextInput.displayName = 'TextInput';
-
-const TextArea = memo(({ value, onChange, placeholder, rows = 3 }: { value: string; onChange: (v: string) => void; placeholder?: string; rows?: number }) => (
-  <textarea rows={rows} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
-    className="w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#161814] border-white/10 placeholder-gray-600 focus:outline-none focus:border-[#D2E8A3]/50 focus:ring-1 focus:ring-[#D2E8A3]/20 transition-all resize-none" />
-));
-TextArea.displayName = 'TextArea';
-
-const MediaUpload = memo(({ id, label, value, onChange, handleFileUpload, uploading, uploadTarget }: {
-  id: string; label: string; value: string; onChange: (v: string) => void;
-  handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, key: string) => void;
-  uploading: boolean; uploadTarget: string;
-}) => (
-  <div className="space-y-2">
-    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">{label}</label>
-    <div className="flex items-center gap-2">
-      <label className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[11px] font-bold cursor-pointer transition-all border ${
-        uploading && uploadTarget === id
-          ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'
-          : 'bg-[#D2E8A3]/10 text-[#D2E8A3] border-[#D2E8A3]/20 hover:bg-[#D2E8A3]/20'
-      }`}>
-        <Upload className="w-3 h-3" />{uploading && uploadTarget === id ? 'Subiendo...' : 'Subir'}
-        <input type="file" accept="image/*,video/mp4,video/webm" className="hidden" onChange={e => handleFileUpload(e, id)} disabled={uploading} />
-      </label>
-      <span className="text-[10px] text-gray-600">o pega URL</span>
-    </div>
-    <input type="text" value={value} onChange={e => onChange(e.target.value)} placeholder="https://..."
-      className="w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#161814] border-white/10 placeholder-gray-600 focus:outline-none focus:border-[#D2E8A3]/50 focus:ring-1 focus:ring-[#D2E8A3]/20 transition-all font-mono text-[11px]" />
-    {value && (
-      <div className="rounded-xl overflow-hidden border border-white/10 aspect-video bg-[#0F110D]">
-        {/\.(mp4|webm)$/i.test(value) ? (
-          <video src={value} className="w-full h-full object-cover" autoPlay muted loop playsInline preload="auto" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLVideoElement).style.display = 'none'; }} />
-        ) : (
-          <img src={value} className="w-full h-full object-cover" alt="" />
-        )}
-      </div>
-    )}
-  </div>
-));
-MediaUpload.displayName = 'MediaUpload';
-
-const Section = memo(({ title, icon, children, badge }: { title: string; icon?: React.ReactNode; children: React.ReactNode; badge?: string }) => (
-  <div className="rounded-2xl border border-white/5 bg-[#111311]">
-    <div className="px-5 py-3.5 border-b border-white/5 flex items-center justify-between">
-      <div className="flex items-center gap-2.5">
-        <div className="w-6 h-6 rounded-lg bg-[#D2E8A3]/10 flex items-center justify-center">{icon}</div>
-        <h3 className="text-[11px] font-extrabold text-white uppercase tracking-wider">{title}</h3>
-      </div>
-      {badge && <span className="text-[9px] font-bold text-[#D2E8A3] bg-[#D2E8A3]/10 px-2 py-0.5 rounded-md">{badge}</span>}
-    </div>
-    <div className="p-5 space-y-4">{children}</div>
-  </div>
-));
-Section.displayName = 'Section';
-
-const PreviewBox = memo(({ title, children }: { title: string; children: React.ReactNode }) => (
-  <div className="rounded-2xl border border-white/5 bg-[#0A0B0A] overflow-hidden">
-    <div className="px-4 py-2.5 border-b border-white/5 flex items-center gap-2">
-      <Eye className="w-3 h-3 text-[#D2E8A3]" />
-      <span className="text-[9px] font-bold text-gray-500 uppercase tracking-widest">{title}</span>
-    </div>
-    <div className="p-4">{children}</div>
-  </div>
-));
-PreviewBox.displayName = 'PreviewBox';
-
-/* ═══════════════════════════════════════════════════════
-   EDITABLE TEXT — WYSIWYG inline editing
-   ═══════════════════════════════════════════════════════ */
-const EditableText = memo(({ cfgKey, value, setCfg, className, isTextarea, rows, fallback, monospace }: {
-  cfgKey: string; value: string; setCfg: (k: string, v: string) => void;
-  className?: string; isTextarea?: boolean; rows?: number; fallback?: string; monospace?: boolean;
-}) => {
-  const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState(value || '');
-  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
-  const display = value || fallback || '';
-
-  useEffect(() => { if (editing && inputRef.current) { inputRef.current.focus(); inputRef.current.select(); } }, [editing]);
-
-  const save = () => { setEditing(false); if (draft !== (value || '')) setCfg(cfgKey, draft); };
-  const cancel = () => { setDraft(value || ''); setEditing(false); };
-
-  if (editing) {
-    const base = 'w-full px-2 py-1 rounded-lg border border-[#D2E8A3] bg-black text-white text-inherit focus:outline-none focus:ring-1 focus:ring-[#D2E8A3]/50 z-50 relative';
-    return isTextarea ? (
-      <div className="relative group">
-        <textarea ref={inputRef as any} value={draft} onChange={e => setDraft(e.target.value)} onBlur={save}
-          onKeyDown={e => { if (e.key === 'Escape') cancel(); if (e.key === 'Enter' && e.metaKey) save(); }}
-          rows={rows || 3} className={`${base} resize-none ${className || ''}`} />
-        <span className="absolute -top-6 left-0 text-[9px] font-mono text-[#D2E8A3] bg-black px-1.5 py-0.5 rounded-md border border-[#D2E8A3]/30 z-50 whitespace-nowrap">{cfgKey}</span>
-      </div>
-    ) : (
-      <div className="relative group">
-        <input ref={inputRef as any} value={draft} onChange={e => setDraft(e.target.value)} onBlur={save}
-          onKeyDown={e => { if (e.key === 'Escape') cancel(); if (e.key === 'Enter') save(); }}
-          className={`${base} ${className || ''}`} />
-        <span className="absolute -top-6 left-0 text-[9px] font-mono text-[#D2E8A3] bg-black px-1.5 py-0.5 rounded-md border border-[#D2E8A3]/30 z-50 whitespace-nowrap">{cfgKey}</span>
-      </div>
-    );
-  }
-
-  return (
-    <span
-      onDoubleClick={() => { setDraft(value || ''); setEditing(true); }}
-      className={`cursor-pointer rounded-lg px-1.5 -mx-1.5 transition-all group relative inline-flex items-center gap-1.5 min-h-[1.5em] border border-transparent hover:border-[#D2E8A3]/40 hover:bg-[#D2E8A3]/[0.07] hover:shadow-[0_0_0_1px_rgba(210,232,163,0.1)] ${monospace ? 'font-mono' : ''} ${className || ''}`}
-      title={`Doble clic para editar: ${cfgKey}`}
-    >
-      {display}
-      <Pencil className="w-3 h-3 text-[#D2E8A3] opacity-0 group-hover:opacity-70 transition-opacity flex-shrink-0" />
-    </span>
-  );
-});
-EditableText.displayName = 'EditableText';
-
-/* ═══════════════════════════════════════════════════════
-   EDITABLE IMAGE — WYSIWYG media upload
-   ═══════════════════════════════════════════════════════ */
-const EditableImage = memo(({ cfgKey, value, setCfg, handleFileUpload, uploading, uploadTarget, className, fallback }: {
-  cfgKey: string; value: string; setCfg: (k: string, v: string) => void;
-  handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, key: string) => void;
-  uploading: boolean; uploadTarget: string; className?: string; fallback?: string;
-}) => {
-  const isVideo = /\.(mp4|webm)$/i.test(value || '');
-  const hasMedia = !!value;
-  return (
-    <div className={`relative group ${className || ''}`}>
-      {hasMedia ? (
-        isVideo ? <video src={value} className="w-full h-full object-cover" autoPlay muted loop playsInline preload="auto" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLVideoElement).style.display = 'none'; }} /> : <img src={value} alt="" className="w-full h-full object-cover" />
-      ) : (
-        <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs bg-[#161814]">{fallback || 'Sin media'}</div>
-      )}
-      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-        <label className={`px-3 py-1.5 rounded-xl text-[10px] font-bold cursor-pointer border border-[#D2E8A3]/30 text-[#D2E8A3] bg-black/80 hover:bg-[#D2E8A3]/10 transition-all flex items-center gap-1 ${uploading && uploadTarget === cfgKey ? 'animate-pulse' : ''}`}>
-          <Upload className="w-3 h-3" />{uploading && uploadTarget === cfgKey ? 'Subiendo...' : 'Subir'}
-          <input type="file" accept="image/*,video/mp4,video/webm" className="hidden" onChange={e => handleFileUpload(e, cfgKey)} disabled={uploading} />
-        </label>
-      </div>
-    </div>
-  );
-});
-EditableImage.displayName = 'EditableImage';
-
-/* ═══════════════════════════════════════════════════════
-   SITE MIRROR SECTION WRAPPER
-   ═══════════════════════════════════════════════════════ */
-const MirrorSection = memo(({ title, icon, children, badge, editCount }: {
-  title: string; icon?: React.ReactNode; children: React.ReactNode; badge?: string; editCount?: number;
-}) => (
-  <div className="rounded-3xl border border-white/10 bg-[#161814] overflow-hidden relative">
-    <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
-      {icon && <span className="w-6 h-6 rounded-lg bg-[#D2E8A3]/10 flex items-center justify-center backdrop-blur-sm">{icon}</span>}
-      <span className="text-[10px] font-extrabold text-white/60 uppercase tracking-widest backdrop-blur-sm bg-black/40 px-2 py-1 rounded-lg">{title}</span>
-    </div>
-    {badge && <span className="absolute top-3 right-3 z-10 text-[9px] font-bold text-[#D2E8A3] bg-[#D2E8A3]/10 px-2 py-1 rounded-lg backdrop-blur-sm">{badge}</span>}
-    {editCount !== undefined && editCount > 0 && <span className="absolute top-3 right-3 z-10 text-[9px] font-bold text-green-400 bg-green-400/10 px-2 py-1 rounded-lg backdrop-blur-sm">✓ {editCount}</span>}
-    {children}
-  </div>
-));
-MirrorSection.displayName = 'MirrorSection';
-
-/* ═══════════════════════════════════════════════════════
    TAB: INICIO — WYSIWYG SITE MIRROR
    ═══════════════════════════════════════════════════════ */
 const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploading, uploadTarget }: any) => {
   const heroEdits = [cfgEdit.hero_badge, cfgEdit.hero_title_1, cfgEdit.hero_title_2, cfgEdit.hero_subtitle_1, cfgEdit.hero_subtitle_2, cfgEdit.hero_description, cfgEdit.hero_badge_1, cfgEdit.hero_badge_2, cfgEdit.hero_cta_catalogo, cfgEdit.hero_cta_idea].filter(Boolean).length;
-  const socialEdits = [cfgEdit.social_bar_title, cfgEdit.social_bar_text, cfgEdit.social_bar_sub].filter(Boolean).length;
   const aboutEdits = [cfgEdit.section_about_subtitle, cfgEdit.section_about_text, cfgEdit.section_about_cta_cat, cfgEdit.section_about_cta_idea].filter(Boolean).length;
   const badgeEdits = [cfgEdit.badge_model_title, cfgEdit.badge_model_subtitle, cfgEdit.badge_step1_title, cfgEdit.badge_step2_title, cfgEdit.badge_step3_title].filter(Boolean).length;
   const faqEdits = [cfgEdit.faq_badge, cfgEdit.faq_heading].filter(Boolean).length;
@@ -574,26 +365,21 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
         <div className="p-4 sm:p-8 bg-gradient-to-br from-[#161814] via-[#0F110D] to-[#0A0A0A] relative overflow-hidden">
           <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full blur-3xl bg-[#D2E8A3]/10 pointer-events-none"></div>
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-
-            {/* Left: Text */}
             <div className="lg:col-span-7 space-y-4 sm:space-y-5">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D2E8A3]/10 border border-[#D2E8A3]/30 text-[#D2E8A3] text-xs font-bold uppercase tracking-wider">
                 <span className="text-lime-600">🔥</span>
                 <EditableText cfgKey="hero_badge" value={cfgEdit.hero_badge || ''} setCfg={setCfg} fallback="Exclusivo — COLECCIÓN BAJO DEMANDA" />
               </div>
-
               <h2 className="font-display text-3xl sm:text-5xl font-extrabold leading-tight uppercase tracking-tight text-white">
                 <EditableText cfgKey="hero_title_1" value={cfgEdit.hero_title_1 || ''} setCfg={setCfg} fallback="MODA URBANA &" /><br />
                 <EditableText cfgKey="hero_title_2" value={cfgEdit.hero_title_2 || ''} setCfg={setCfg} fallback="VASOS SUBLIMADOS" className="text-[#D2E8A3]" />
               </h2>
-
               <p className="text-sm sm:text-base max-w-xl leading-relaxed text-gray-400">
                 <EditableText cfgKey="hero_subtitle_1" value={cfgEdit.hero_subtitle_1 || ''} setCfg={setCfg} fallback="Polos Sublimados con" />{' '}
                 <EditableText cfgKey="hero_subtitle_2" value={cfgEdit.hero_subtitle_2 || ''} setCfg={setCfg} fallback="Estampado Urbano HD High-Density" className="text-white font-bold" />
                 {' '}y vasos/tazas con sublimación continua a 200°C.<br className="hidden sm:inline" />
                 <EditableText cfgKey="hero_description" value={cfgEdit.hero_description || ''} setCfg={setCfg} fallback="Sin sobre-stock. Fabricado especialmente para ti al confirmar tu orden." />
               </p>
-
               <div className="flex flex-wrap gap-2 pt-1">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-black/60 border border-white/15 text-gray-200">
                   <span className="text-[#D2E8A3]">⚡</span>
@@ -604,7 +390,6 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
                   <EditableText cfgKey="hero_badge_2" value={cfgEdit.hero_badge_2 || ''} setCfg={setCfg} fallback="Garantía de Fijación Térmica & Color" />
                 </span>
               </div>
-
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-3">
                 <span className="px-6 py-3.5 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg">
                   <EditableText cfgKey="hero_cta_catalogo" value={cfgEdit.hero_cta_catalogo || ''} setCfg={setCfg} fallback="EXPLORAR CATÁLOGO" />
@@ -615,8 +400,6 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
                 </span>
               </div>
             </div>
-
-            {/* Right: Media */}
             <div className="lg:col-span-5 relative">
               <div className="grid grid-cols-2 gap-3 relative">
                 <div className="relative group overflow-hidden rounded-2xl border border-white/10 aspect-[4/5] bg-[#161814]">
@@ -635,65 +418,7 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
                 </div>
               </div>
             </div>
-
           </div>
-        </div>
-      </MirrorSection>
-
-      {/* ─── SOCIAL QUICK BAR ─── */}
-      <MirrorSection title="Social Bar" icon={<MessageCircle className="w-3.5 h-3.5 text-green-500" />} editCount={socialEdits}>
-        <div className="p-4 sm:p-6">
-          <div className="p-4 sm:p-5 rounded-3xl border border-white/10 bg-[#0A0A0A]">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-green-500/10 border border-green-500/30 flex items-center justify-center text-green-500 flex-shrink-0">
-                  <MessageCircle className="w-5 h-5 fill-green-500 text-green-500" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <EditableText cfgKey="social_bar_title" value={cfgEdit.social_bar_title || ''} setCfg={setCfg} fallback="WhatsApp & Redes Oficiales" className="font-extrabold text-sm sm:text-base uppercase tracking-tight text-white" />
-                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                  </div>
-                  <p className="text-xs text-gray-400">
-                    <EditableText cfgKey="social_bar_text" value={cfgEdit.social_bar_text || ''} setCfg={setCfg} fallback="Contacto directo" />{' '}
-                    <strong className="text-white"><EditableText cfgKey="brand_phone" value={cfgEdit.brand_phone || ''} setCfg={setCfg} fallback="993 365 099" /></strong>{' '}
-                    • <EditableText cfgKey="social_bar_sub" value={cfgEdit.social_bar_sub || ''} setCfg={setCfg} fallback="Respuesta inmediata" />
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2.5 sm:gap-3">
-                <span className="p-3 rounded-2xl bg-green-500 text-black font-bold flex items-center gap-2 px-4">
-                  <MessageCircle className="w-5 h-5 fill-black" />
-                  <span className="text-xs uppercase font-extrabold">WhatsApp</span>
-                </span>
-                <span className="p-3 rounded-2xl bg-[#0A0A0A] border border-white/10 text-gray-300 flex items-center justify-center">
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-                </span>
-                <span className="p-3 rounded-2xl bg-[#0A0A0A] border border-white/10 text-gray-300 flex items-center justify-center">
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-5.2-1.74 2.89 2.89 0 0 1 2.31-1.39V9.06a6.34 6.34 0 0 0-3.5 1.05 6.33 6.33 0 0 0-2.8 4.28 6.34 6.34 0 0 0 1.25 5.25A6.33 6.33 0 0 0 9.17 22a6.34 6.34 0 0 0 6.33-6.33V9a8.16 8.16 0 0 0 4.09 1.14V6.69z"/></svg>
-                </span>
-                <span className="p-3 rounded-2xl bg-[#0A0A0A] border border-white/10 text-gray-300 flex items-center justify-center">
-                  <svg className="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                </span>
-              </div>
-            </div>
-          </div>
-          {/* Social URL Edit Fields */}
-          <div className="mt-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div className="space-y-1">
-              <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1"><svg className="w-3 h-3 fill-current text-pink-400" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg> Instagram</label>
-              <EditableText cfgKey="brand_instagram" value={cfgEdit.brand_instagram || ''} setCfg={setCfg} fallback="https://instagram.com/lumin.shop" className="text-xs text-gray-300 w-full block" monospace />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1"><svg className="w-3 h-3 fill-current text-gray-300" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-5.2-1.74 2.89 2.89 0 0 1 2.31-1.39V9.06a6.34 6.34 0 0 0-3.5 1.05 6.33 6.33 0 0 0-2.8 4.28 6.34 6.34 0 0 0 1.25 5.25A6.33 6.33 0 0 0 9.17 22a6.34 6.34 0 0 0 6.33-6.33V9a8.16 8.16 0 0 0 4.09 1.14V6.69z"/></svg> TikTok</label>
-              <EditableText cfgKey="brand_tiktok" value={cfgEdit.brand_tiktok || ''} setCfg={setCfg} fallback="https://tiktok.com/@.lumin.shop" className="text-xs text-gray-300 w-full block" monospace />
-            </div>
-            <div className="space-y-1">
-              <label className="text-[9px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1"><svg className="w-3 h-3 fill-current text-blue-400" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg> Facebook</label>
-              <EditableText cfgKey="brand_facebook" value={cfgEdit.brand_facebook || ''} setCfg={setCfg} fallback="https://facebook.com/lumin.shop" className="text-xs text-gray-300 w-full block" monospace />
-            </div>
-          </div>
-          <p className="text-[9px] text-gray-600 mt-1.5">Pega URLs completas (https://...) o solo el usuario (ej: lumin.shop)</p>
         </div>
       </MirrorSection>
 
@@ -710,14 +435,11 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
             </div>
             <EditableText cfgKey="brand_location" value={cfgEdit.brand_location || ''} setCfg={setCfg} fallback="📍 Ayacucho, Perú • Envíos a Nivel Nacional" className="text-xs font-mono text-gray-400" />
           </div>
-
           <EditableText cfgKey="section_about_subtitle" value={cfgEdit.section_about_subtitle || ''} setCfg={setCfg} fallback="Ropa Urbana Streetwear & Sublimación de Alta Temperatura" className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white block" />
-
           <div className="text-sm sm:text-base leading-relaxed text-gray-300">
             <EditableText cfgKey="section_about_text" value={cfgEdit.section_about_text || ''} setCfg={setCfg} isTextarea rows={4}
               fallback="LUMIN SHOP es una marca independiente peruana dedicada al diseño y confección de streetwear exclusivo y artículos gráficos." className="w-full block" />
           </div>
-
           <div className="flex flex-wrap items-center gap-3 pt-2">
             <span className="px-5 py-2.5 rounded-full bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-lg">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
@@ -734,7 +456,6 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
       {/* ─── HOW IT WORKS / PRODUCTION BADGES ─── */}
       <MirrorSection title="Cómo Funciona" icon={<RefreshCw className="w-3.5 h-3.5 text-[#D2E8A3]" />} badge="Proceso" editCount={badgeEdits}>
         <div className="p-4 sm:p-8 space-y-6">
-          {/* Top Banner */}
           <div className="text-center max-w-2xl mx-auto space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-[#D2E8A3]/10 border border-[#D2E8A3]/20 text-[#D2E8A3]">
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -743,8 +464,6 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
             <EditableText cfgKey="badge_model_subtitle" value={cfgEdit.badge_model_subtitle || ''} setCfg={setCfg} fallback="¿CÓMO FUNCIONA LUMIN SHOP?" className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white block" />
             <EditableText cfgKey="badge_model_desc" value={cfgEdit.badge_model_desc || ''} setCfg={setCfg} fallback="Cero sobre-stock, mayor frescura en estampados y acabados totalmente personalizados para ti." className="text-xs sm:text-sm text-gray-300 block" />
           </div>
-
-          {/* 3 Steps */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2, 3].map(i => (
               <div key={i} className="p-6 rounded-2xl border border-white/10 bg-[#0A0A0A] relative overflow-hidden hover:border-[#D2E8A3]/40 transition-all">
@@ -759,21 +478,10 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
               </div>
             ))}
           </div>
-
-          {/* Trust Bar */}
           <div className="p-4 rounded-2xl border border-white/5 bg-[#0A0A0A] flex flex-wrap items-center justify-around gap-4 text-xs text-gray-300">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#D2E8A3]" />
-              <span>Fijación Térmica HD de Alta Durabilidad</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-[#D2E8A3]" />
-              <span>Tiempo de fabricación: 24-48 hrs</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Check className="w-4 h-4 text-[#D2E8A3]" />
-              <span>Atención Directa por WhatsApp</span>
-            </div>
+            <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-[#D2E8A3]" /><span>Fijación Térmica HD de Alta Durabilidad</span></div>
+            <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-[#D2E8A3]" /><span>Tiempo de fabricación: 24-48 hrs</span></div>
+            <div className="flex items-center gap-2"><Check className="w-4 h-4 text-[#D2E8A3]" /><span>Atención Directa por WhatsApp</span></div>
           </div>
         </div>
       </MirrorSection>
@@ -831,7 +539,6 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
       <MirrorSection title="Footer" icon={<FileText className="w-3.5 h-3.5 text-[#D2E8A3]" />} editCount={footerEdits}>
         <div className="p-4 sm:p-8 bg-[#070806] space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Col 1: Brand */}
             <div className="space-y-3">
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#D2E8A3]"></span>
@@ -845,17 +552,10 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
                 <EditableText cfgKey="footer_production" value={cfgEdit.footer_production || ''} setCfg={setCfg} fallback="Producción Express 24-48 hrs" />
               </span>
             </div>
-
-            {/* Col 2: Collections */}
             <div className="space-y-3">
               <EditableText cfgKey="footer_collections" value={cfgEdit.footer_collections || ''} setCfg={setCfg} fallback="Colecciones" className="font-bold text-white text-xs uppercase font-mono tracking-wider block" />
               <ul className="space-y-2">
-                {[
-                  { key: 'footer_col_1', fallback: 'Polos Oversized & Boxy Fit', icon: '👕' },
-                  { key: 'footer_col_2', fallback: 'Vasos Frosted Glass 16oz', icon: '☕' },
-                  { key: 'footer_col_3', fallback: 'Tazas Térmicas 11oz', icon: '🔥' },
-                  { key: 'footer_col_4', fallback: 'Edición Especial Drop 04', icon: '✨' },
-                ].map(item => (
+                {[{ key: 'footer_col_1', fallback: 'Polos Oversized & Boxy Fit', icon: '👕' }, { key: 'footer_col_2', fallback: 'Vasos Frosted Glass 16oz', icon: '☕' }, { key: 'footer_col_3', fallback: 'Tazas Térmicas 11oz', icon: '🔥' }, { key: 'footer_col_4', fallback: 'Edición Especial Drop 04', icon: '✨' }].map(item => (
                   <li key={item.key} className="flex items-center gap-2">
                     <span className="text-[#D2E8A3] text-sm">{item.icon}</span>
                     <EditableText cfgKey={item.key} value={cfgEdit[item.key] || ''} setCfg={setCfg} fallback={item.fallback} className="text-gray-400 text-xs hover:text-[#D2E8A3] transition-colors" />
@@ -863,16 +563,10 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
                 ))}
               </ul>
             </div>
-
-            {/* Col 3: Guarantees */}
             <div className="space-y-3">
               <EditableText cfgKey="footer_guarantee_title" value={cfgEdit.footer_guarantee_title || ''} setCfg={setCfg} fallback="Garantía & Envíos" className="font-bold text-white text-xs uppercase font-mono tracking-wider block" />
               <ul className="space-y-2">
-                {[
-                  { key: 'footer_guarantee_1', fallback: 'Estampados HD de alta resistencia', icon: '🛡️' },
-                  { key: 'footer_guarantee_2', fallback: 'Envíos directos a todo el país', icon: '📍' },
-                  { key: 'footer_guarantee_3', fallback: 'Pagos seguros: Yape, Plin, Transferencia o Tarjeta', icon: '💳' },
-                ].map(item => (
+                {[{ key: 'footer_guarantee_1', fallback: 'Estampados HD de alta resistencia', icon: '🛡️' }, { key: 'footer_guarantee_2', fallback: 'Envíos directos a todo el país', icon: '📍' }, { key: 'footer_guarantee_3', fallback: 'Pagos seguros: Yape, Plin, Transferencia o Tarjeta', icon: '💳' }].map(item => (
                   <li key={item.key} className="flex items-center gap-2">
                     <span className="text-sm">{item.icon}</span>
                     <EditableText cfgKey={item.key} value={cfgEdit[item.key] || ''} setCfg={setCfg} fallback={item.fallback} className="text-gray-400 text-xs" />
@@ -880,8 +574,6 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
                 ))}
               </ul>
             </div>
-
-            {/* Col 4: Social */}
             <div className="space-y-3">
               <EditableText cfgKey="footer_social_title" value={cfgEdit.footer_social_title || ''} setCfg={setCfg} fallback="Síguenos en Redes" className="font-bold text-white text-xs uppercase font-mono tracking-wider block" />
               <p className="text-gray-400 text-xs">
@@ -889,26 +581,13 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
                 <strong className="text-[#D2E8A3]"><EditableText cfgKey="brand_instagram" value={cfgEdit.brand_instagram || ''} setCfg={setCfg} fallback="@.lumin.shop" /></strong>
               </p>
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white">
-                  <MessageCircle className="w-4 h-4 text-[#D2E8A3]" />
-                  <span className="font-bold text-[11px]">WhatsApp</span>
-                </span>
-                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white">
-                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-5.2-1.74 2.89 2.89 0 0 1 2.31-1.39V9.06a6.34 6.34 0 0 0-3.5 1.05 6.33 6.33 0 0 0-2.8 4.28 6.34 6.34 0 0 0 1.25 5.25A6.33 6.33 0 0 0 9.17 22a6.34 6.34 0 0 0 6.33-6.33V9a8.16 8.16 0 0 0 4.09 1.14V6.69z"/></svg>
-                  <span className="font-bold text-[11px]">TikTok</span>
-                </span>
-                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white">
-                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                  <span className="font-bold text-[11px]">Facebook</span>
-                </span>
-                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white">
-                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
-                  <span className="font-bold text-[11px]">Instagram</span>
-                </span>
+                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white"><MessageCircle className="w-4 h-4 text-[#D2E8A3]" /><span className="font-bold text-[11px]">WhatsApp</span></span>
+                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white"><svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-5.2-1.74 2.89 2.89 0 0 1 2.31-1.39V9.06a6.34 6.34 0 0 0-3.5 1.05 6.33 6.33 0 0 0-2.8 4.28 6.34 6.34 0 0 0 1.25 5.25A6.33 6.33 0 0 0 9.17 22a6.34 6.34 0 0 0 6.33-6.33V9a8.16 8.16 0 0 0 4.09 1.14V6.69z"/></svg><span className="font-bold text-[11px]">TikTok</span></span>
+                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white"><svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg><span className="font-bold text-[11px]">Facebook</span></span>
+                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white"><svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg><span className="font-bold text-[11px]">Instagram</span></span>
               </div>
             </div>
           </div>
-
           <div className="pt-8 mt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-4">
             <EditableText cfgKey="footer_copyright" value={cfgEdit.footer_copyright || ''} setCfg={setCfg} fallback="© 2026 LUMIN SHOP. Todos los derechos reservados. Moda Urbana & Sublimación Bajo Pedido." />
             <p className="font-mono">Acento: #D2E8A3 | Carbón: #0A0A0A</p>
@@ -920,356 +599,6 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
   );
 });
 TabInicio.displayName = 'TabInicio';
-
-/* ═══════════════════════════════════════════════════════
-   TAB: CATÁLOGO
-   ═══════════════════════════════════════════════════════ */
-const TabCatalogo = ({ cfgEdit, setCfg, products, editingProduct, setEditingProduct, isNewProduct, startNewProduct, handleProdSave, handleProdDelete, handleProdImageUpload, prodSaving, uploading, handleSyncGalleries }: any) => {
-  const _labelCls = 'block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5';
-  const _inputCls = 'w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#1a1d1a] border-white/10 placeholder-gray-500 focus:outline-none focus:border-[#D2E8A3] focus:ring-1 focus:ring-[#D2E8A3]/30 transition-all';
-  const streetProducts = useMemo(() => products.filter((p: ProductoRow) => p.categoria_id === 'streetwear'), [products]);
-  const cupsProducts = useMemo(() => products.filter((p: ProductoRow) => p.categoria_id === 'cups'), [products]);
-  const dropsProducts = useMemo(() => products.filter((p: ProductoRow) => p.categoria_id === 'drops'), [products]);
-  if (editingProduct) {
-    return (
-      <div className="p-5 sm:p-8 max-w-[1200px] mx-auto space-y-4">
-        <button onClick={() => setEditingProduct(null)} className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Volver al catálogo
-        </button>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <Section title={isNewProduct ? 'Nuevo Producto' : 'Editar Producto'} icon={<Package className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
-            <Field label="ID"><TextInput value={editingProduct.id} onChange={v => setEditingProduct((p: any) => p ? { ...p, id: v } : p)} /></Field>
-            <Field label="Nombre *"><TextInput value={editingProduct.nombre} onChange={v => setEditingProduct((p: any) => p ? { ...p, nombre: v } : p)} /></Field>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Categoría">
-                <select value={editingProduct.categoria_id} onChange={e => {
-                  const cat = e.target.value;
-                  setEditingProduct((p: any) => {
-                    if (!p) return p;
-                    const updated: any = { ...p, categoria_id: cat };
-                    if (cat === 'streetwear' && !p.opciones_ropa) {
-                      updated.opciones_ropa = { sizes: ['S', 'M', 'L', 'XL'], fits: ['Oversized Streetwear'], colors: [{ name: 'Negro', hex: '#0A0A0A' }] };
-                    } else if ((cat === 'cups' || cat === 'drops') && !p.opciones_vaso) {
-                      updated.opciones_vaso = { types: [{ name: '', extraPrice: 0 }], finishes: [''] };
-                    }
-                    return updated;
-                  });
-                }}
-                  className="w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#161814] border-white/10 focus:outline-none focus:border-[#D2E8A3]/50 transition-all">
-                  <option value="streetwear">Polos Sublimados</option>
-                  <option value="cups">Vasos/Tazas</option>
-                  <option value="drops">Placas de Aluminio</option>
-                </select>
-              </Field>
-              <Field label="Etiqueta"><TextInput value={editingProduct.etiqueta || ''} onChange={v => setEditingProduct((p: any) => p ? { ...p, etiqueta: v } : p)} placeholder="BESTSELLER" /></Field>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label="Precio (S/)"><TextInput type="number" value={String(editingProduct.precio)} onChange={v => setEditingProduct((p: any) => p ? { ...p, precio: parseFloat(v) || 0 } : p)} /></Field>
-              <Field label="Precio original (S/)"><TextInput type="number" value={String(editingProduct.precio_original ?? '')} onChange={v => setEditingProduct((p: any) => p ? { ...p, precio_original: v ? parseFloat(v) : null } : p)} placeholder="Opcional" /></Field>
-            </div>
-            <Field label="Técnica"><TextInput value={editingProduct.tecnica || ''} onChange={v => setEditingProduct((p: any) => p ? { ...p, tecnica: v } : p)} placeholder="Sublimación Premium 200°C" /></Field>
-            <Field label="Tiempo producción"><TextInput value={editingProduct.tiempo_produccion || ''} onChange={v => setEditingProduct((p: any) => p ? { ...p, tiempo_produccion: v } : p)} placeholder="24-48 hrs" /></Field>
-            <Field label="Descripción"><TextArea value={editingProduct.descripcion || ''} onChange={v => setEditingProduct((p: any) => p ? { ...p, descripcion: v } : p)} rows={3} /></Field>
-            <MediaUpload id="product_image" label="Imagen del producto" value={editingProduct.imagen || ''} onChange={v => setEditingProduct((p: any) => p ? { ...p, imagen: v } : p)} handleFileUpload={handleProdImageUpload} uploading={uploading} uploadTarget="product_image" />
-
-            {/* Gallery Images Editor */}
-            <div className="space-y-2">
-              <label className={_labelCls}>Galería de Imágenes</label>
-              <p className="text-[10px] text-gray-500">Imágenes adicionales que se muestran al cliente al abrir el producto.</p>
-              <div className="flex flex-wrap gap-2">
-                {(editingProduct.galeria || []).map((img: string, i: number) => (
-                  <div key={i} className="relative group w-16 h-16 rounded-lg overflow-hidden border border-white/10">
-                    <img src={img} alt="" className="w-full h-full object-cover" />
-                    <button
-                      onClick={() => {
-                        const gal = (editingProduct.galeria || []).filter((_: string, j: number) => j !== i);
-                        setEditingProduct((p: any) => p ? { ...p, galeria: gal.length > 0 ? gal : null } : p);
-                      }}
-                      className="absolute top-0.5 right-0.5 p-0.5 rounded bg-black/70 text-red-400 opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </button>
-                  </div>
-                ))}
-                <label className="w-16 h-16 rounded-lg border-2 border-dashed border-white/10 flex flex-col items-center justify-center text-gray-500 hover:border-[#D2E8A3]/50 hover:text-[#D2E8A3] transition-all cursor-pointer">
-                  <Plus className="w-4 h-4" />
-                  <span className="text-[8px] font-bold mt-0.5">Agregar</span>
-                  <input
-                    type="file"
-                    accept="image/*,video/mp4,video/webm"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file || !supabase || !editingProduct) return;
-                      try {
-                        const ext = file.name.split('.').pop() || 'jpg';
-                        const path = `products/${editingProduct.id}_gallery_${Date.now()}.${ext}`;
-                        const { error } = await supabase.storage.from('media').upload(path, file, { cacheControl: '3600', upsert: false });
-                        if (error) throw error;
-                        const { data: urlData } = supabase.storage.from('media').getPublicUrl(path);
-                        if (urlData?.publicUrl) {
-                          const gal = [...(editingProduct.galeria || []), urlData.publicUrl];
-                          setEditingProduct((p: any) => p ? { ...p, galeria: gal } : p);
-                        }
-                      } catch (err: any) { alert('Error: ' + err.message); }
-                      e.target.value = '';
-                    }}
-                  />
-                </label>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-6 pt-2">
-              {[{ key: 'activo', label: 'Activo' }, { key: 'destacado', label: 'Destacado' }, { key: 'personalizable', label: 'Personalizable' }].map((cb: any) => (
-                <label key={cb.key} className="flex items-center gap-2 cursor-pointer group">
-                  <div className="relative">
-                    <input type="checkbox" checked={(editingProduct as any)[cb.key]} onChange={e => setEditingProduct((p: any) => p ? { ...p, [cb.key]: e.target.checked } : p)} className="sr-only peer" />
-                    <div className="w-5 h-5 rounded-lg border-2 border-gray-600 peer-checked:border-[#D2E8A3] peer-checked:bg-[#D2E8A3] transition-all flex items-center justify-center">
-                      {(editingProduct as any)[cb.key] && <Check className="w-3 h-3 text-[#0A0A0A] stroke-[3]" />}
-                    </div>
-                  </div>
-                  <span className="text-xs font-bold text-gray-400 group-hover:text-white transition-colors">{cb.label}</span>
-                </label>
-              ))}
-            </div>
-            {/* ── OPCIONES DE PRODUCTO (dentro del Section) ── */}
-            <div className="border-t border-white/10 pt-4 space-y-4">
-              <p className="text-[11px] font-extrabold text-[#D2E8A3] uppercase tracking-wider flex items-center gap-2"><Shirt className="w-3.5 h-3.5" /> Opciones de Polos (Tallas con precio extra / Cortes / Colores)</p>
-              <div>
-                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Tallas (nombre + precio extra)</label>
-                <div className="space-y-1.5">
-                  {(editingProduct.opciones_ropa?.sizes || []).map((s: any, i: number) => {
-                    const name = typeof s === 'string' ? s : s.name;
-                    const extra = typeof s === 'string' ? 0 : (s.extraPrice || 0);
-                    return (
-                      <div key={i} className="flex items-center gap-2">
-                        <TextInput value={name} onChange={v => {
-                          const sizes = [...(editingProduct.opciones_ropa?.sizes || [])];
-                          sizes[i] = extra > 0 ? { name: v, extraPrice: extra } : v;
-                          setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), sizes } } : p);
-                        }} placeholder="Ej: S" />
-                        <div className="flex items-center gap-1 shrink-0">
-                          <span className="text-[10px] text-gray-500">+S/</span>
-                          <TextInput type="number" value={String(extra)} onChange={v => {
-                            const sizes = [...(editingProduct.opciones_ropa?.sizes || [])];
-                            const val = parseInt(v) || 0;
-                            sizes[i] = val > 0 ? { name, extraPrice: val } : name;
-                            setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), sizes } } : p);
-                          }} />
-                        </div>
-                        <button onClick={() => {
-                          const sizes = (editingProduct.opciones_ropa?.sizes || []).filter((_: any, j: number) => j !== i);
-                          setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), sizes } } : p);
-                        }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
-                      </div>
-                    );
-                  })}
-                  <button onClick={() => {
-                    const sizes = [...(editingProduct.opciones_ropa?.sizes || []), 'M'];
-                    setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), sizes } } : p);
-                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar talla</button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Cortes / Fits</label>
-                <div className="space-y-1.5">
-                  {(editingProduct.opciones_ropa?.fits || []).map((fit: string, i: number) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <TextInput value={fit} onChange={v => {
-                        const fits = [...(editingProduct.opciones_ropa?.fits || [])];
-                        fits[i] = v;
-                        setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), fits } } : p);
-                      }} placeholder="Ej: Oversized Streetwear" />
-                      <button onClick={() => {
-                        const fits = (editingProduct.opciones_ropa?.fits || []).filter((_: any, j: number) => j !== i);
-                        setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), fits } } : p);
-                      }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
-                    </div>
-                  ))}
-                  <button onClick={() => {
-                    const fits = [...(editingProduct.opciones_ropa?.fits || []), ''];
-                    setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), fits } } : p);
-                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar corte</button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Colores de tela</label>
-                <div className="space-y-1.5">
-                  {(editingProduct.opciones_ropa?.colors || []).map((c: any, i: number) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <input type="color" value={c.hex || '#000000'} onChange={e => {
-                        const colors = [...(editingProduct.opciones_ropa?.colors || [])];
-                        colors[i] = { ...colors[i], hex: e.target.value };
-                        setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), colors } } : p);
-                      }} className="w-8 h-8 rounded-lg border border-white/10 cursor-pointer bg-transparent shrink-0" />
-                      <TextInput value={c.name} onChange={v => {
-                        const colors = [...(editingProduct.opciones_ropa?.colors || [])];
-                        colors[i] = { ...colors[i], name: v };
-                        setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), colors } } : p);
-                      }} placeholder="Nombre del color" />
-                      <button onClick={() => {
-                        const colors = (editingProduct.opciones_ropa?.colors || []).filter((_: any, j: number) => j !== i);
-                        setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), colors } } : p);
-                      }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
-                    </div>
-                  ))}
-                  <button onClick={() => {
-                    const colors = [...(editingProduct.opciones_ropa?.colors || []), { name: 'Negro', hex: '#0A0A0A' }];
-                    setEditingProduct((p: any) => p ? { ...p, opciones_ropa: { ...(p.opciones_ropa || {}), colors } } : p);
-                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar color</button>
-                </div>
-              </div>
-            </div>
-
-            <div className="border-t border-white/10 pt-4 space-y-4">
-              <p className="text-[11px] font-extrabold text-[#D2E8A3] uppercase tracking-wider flex items-center gap-2"><Coffee className="w-3.5 h-3.5" /> Opciones de Vasos / Tazas / Placas</p>
-              <div>
-                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">{editingProduct.categoria_id === 'drops' ? 'Medidas' : 'Tipos'}</label>
-                <div className="space-y-1.5">
-                  {(editingProduct.opciones_vaso?.types || []).map((t: any, i: number) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <TextInput value={t.name} onChange={v => {
-                        const types = [...(editingProduct.opciones_vaso?.types || [])];
-                        types[i] = { ...types[i], name: v };
-                        setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
-                      }} placeholder={editingProduct.categoria_id === 'drops' ? 'Ej: 20x30cm' : 'Ej: Vaso Frosted 16oz'} />
-                      <div className="flex items-center gap-1 shrink-0">
-                        <span className="text-[10px] text-gray-500">+S/</span>
-                        <TextInput type="number" value={String(t.extraPrice || 0)} onChange={v => {
-                          const types = [...(editingProduct.opciones_vaso?.types || [])];
-                          types[i] = { ...types[i], extraPrice: parseInt(v) || 0 };
-                          setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
-                        }} />
-                      </div>
-                      <button onClick={() => {
-                        const types = (editingProduct.opciones_vaso?.types || []).filter((_: any, j: number) => j !== i);
-                        setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
-                      }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
-                    </div>
-                  ))}
-                  <button onClick={() => {
-                    const types = [...(editingProduct.opciones_vaso?.types || []), { name: '', extraPrice: 0 }];
-                    setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
-                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar {editingProduct.categoria_id === 'drops' ? 'medida' : 'tipo'}</button>
-                </div>
-              </div>
-              <div>
-                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Acabados</label>
-                <div className="space-y-1.5">
-                  {(editingProduct.opciones_vaso?.finishes || []).map((f: string, i: number) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <TextInput value={f} onChange={v => {
-                        const finishes = [...(editingProduct.opciones_vaso?.finishes || [])];
-                        finishes[i] = v;
-                        setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), finishes } } : p);
-                      }} placeholder="Ej: Acabado Mate" />
-                      <button onClick={() => {
-                        const finishes = (editingProduct.opciones_vaso?.finishes || []).filter((_: any, j: number) => j !== i);
-                        setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), finishes } } : p);
-                      }} className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all shrink-0"><Trash2 className="w-3.5 h-3.5" /></button>
-                    </div>
-                  ))}
-                  <button onClick={() => {
-                    const finishes = [...(editingProduct.opciones_vaso?.finishes || []), ''];
-                    setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), finishes } } : p);
-                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-bold hover:bg-[#D2E8A3]/20 transition-all"><Plus className="w-3 h-3" /> Agregar acabado</button>
-                </div>
-              </div>
-            </div>
-
-          </Section>
-          <div className="space-y-4">
-            <PreviewBox title="Vista Previa del Producto">
-              <div className="rounded-xl overflow-hidden bg-[#161814]">
-                <div className="aspect-square overflow-hidden bg-black/40">{editingProduct.imagen ? <img src={editingProduct.imagen} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">Sin imagen</div>}</div>
-                <div className="p-4 space-y-2">
-                  {editingProduct.etiqueta && <span className="inline-block px-2 py-0.5 rounded bg-black/80 text-[#D2E8A3] text-[10px] font-bold">{editingProduct.etiqueta}</span>}
-                  <p className="text-white font-extrabold text-sm">{editingProduct.nombre || 'Nombre del producto'}</p>
-                  <p className="text-gray-400 text-xs line-clamp-2">{editingProduct.descripcion || 'Descripción del producto...'}</p>
-                  <div className="flex items-baseline gap-2 pt-1">
-                    <span className="text-[#D2E8A3] font-black text-lg">S/ {editingProduct.precio.toFixed(2)}</span>
-                    {editingProduct.precio_original && <span className="text-gray-500 text-xs line-through">S/ {editingProduct.precio_original.toFixed(2)}</span>}
-                  </div>
-                  <div className="flex gap-2 pt-1">
-                    {!editingProduct.activo && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-bold">INACTIVO</span>}
-                    {editingProduct.destacado && <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#D2E8A3]/20 text-[#D2E8A3] font-bold">DESTACADO</span>}
-                  </div>
-                </div>
-              </div>
-            </PreviewBox>
-            <div className="flex items-center justify-between pt-3 border-t border-white/5">
-              {!isNewProduct ? <button onClick={() => handleProdDelete(editingProduct.id)} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-red-500/10 text-red-400 text-xs font-bold hover:bg-red-500/20 transition-all"><Trash2 className="w-3.5 h-3.5" /> Eliminar</button> : <div />}
-              <div className="flex gap-2 ml-auto">
-                <button onClick={() => setEditingProduct(null)} className="px-4 py-2.5 rounded-xl bg-white/5 text-gray-400 text-xs font-bold hover:bg-white/10 transition-all">Cancelar</button>
-                <button onClick={handleProdSave} disabled={prodSaving} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-sm hover:bg-[#c2e088] shadow-lg shadow-[#D2E8A3]/20 disabled:opacity-50 transition-all">
-                  {prodSaving ? 'Guardando...' : <><Check className="w-4 h-4" /> Guardar</>}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        </div>
-    );
-  }
-
-  const ProductCard = ({ p }: { p: ProductoRow }) => (
-    <div onClick={() => setEditingProduct(p)}
-      className="rounded-2xl overflow-hidden border border-white/5 bg-[#111311] cursor-pointer transition-all hover:border-[#D2E8A3]/30 hover:bg-[#161814] group">
-      <div className="aspect-video overflow-hidden bg-black/20">{p.imagen ? <img src={p.imagen} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">Sin imagen</div>}</div>
-      <div className="p-3 space-y-1.5">
-        <div className="flex items-center gap-1.5">
-          {!p.activo && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-bold">OFF</span>}
-          {p.destacado && <span className="text-[8px] px-1.5 py-0.5 rounded bg-[#D2E8A3]/20 text-[#D2E8A3] font-bold">★ DESTACADO</span>}
-        </div>
-        <p className="text-white text-xs font-extrabold truncate">{p.nombre}</p>
-        <div className="flex items-baseline justify-between">
-          <p className="text-[#D2E8A3] text-sm font-black">S/ {p.precio.toFixed(2)}</p>
-          {p.precio_original && <p className="text-gray-500 text-[10px] line-through">S/ {p.precio_original.toFixed(2)}</p>}
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className="p-5 sm:p-8 space-y-6 max-w-[1200px] mx-auto">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-[#D2E8A3]/10 flex items-center justify-center"><Package className="w-4 h-4 text-[#D2E8A3]" /></div>
-          <div>
-            <h3 className="text-sm font-extrabold uppercase text-white">{products.length} Productos</h3>
-            <p className="text-[9px] text-gray-500">Gestiona tu catálogo</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <button onClick={handleSyncGalleries} className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 text-gray-400 text-[10px] hover:text-[#D2E8A3] hover:bg-[#D2E8A3]/10 transition-all border border-white/5" title="Sincronizar galerías de productos existentes">🔄 Sincronizar</button>
-          <button onClick={startNewProduct} className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs hover:bg-[#c2e088] shadow-lg shadow-[#D2E8A3]/20 transition-all"><Plus className="w-4 h-4" /> Nuevo</button>
-        </div>
-      </div>
-
-      <Section title="Texto del Catálogo" icon={<Settings className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="Título"><TextInput value={cfgEdit.catalog_title || ''} onChange={(v: string) => setCfg('catalog_title', v)} /></Field>
-          <Field label="Subtítulo"><TextInput value={cfgEdit.catalog_subtitle || ''} onChange={(v: string) => setCfg('catalog_subtitle', v)} /></Field>
-        </div>
-        <Field label="Texto vacío"><TextInput value={cfgEdit.catalog_empty || ''} onChange={(v: string) => setCfg('catalog_empty', v)} /></Field>
-      </Section>
-
-      {[
-        { label: 'Polos Sublimados', items: streetProducts, cat: 'streetwear', emoji: '👕' },
-        { label: 'Vasos / Tazas', items: cupsProducts, cat: 'cups', emoji: '☕' },
-        { label: 'Placas de Aluminio', items: dropsProducts, cat: 'drops', emoji: '🖼️' },
-      ].map(group => (
-        <Section key={group.cat} title={`${group.emoji} ${group.label}`} icon={<Package className="w-3.5 h-3.5 text-[#D2E8A3]" />} badge={`${group.items.length} productos`}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {group.items.map((p: ProductoRow) => <ProductCard key={p.id} p={p} />)}
-            {group.items.length === 0 && <p className="text-xs text-gray-500 col-span-full text-center py-8">Sin productos en esta categoría</p>}
-          </div>
-        </Section>
-      ))}
-    </div>
-  );
-};
-TabCatalogo.displayName = 'TabCatalogo';
 
 /* ═══════════════════════════════════════════════════════
    TAB: FAVORITOS
@@ -1302,73 +631,6 @@ const TabFavoritos = memo(({ cfgEdit, setCfg }: any) => (
 TabFavoritos.displayName = 'TabFavoritos';
 
 /* ═══════════════════════════════════════════════════════
-   TAB: PEDIDOS
-   ═══════════════════════════════════════════════════════ */
-const TabPedidos = memo(({ orders, handleOrderStatus }: { orders: PedidoRow[]; handleOrderStatus: (id: string, status: string) => void }) => {
-  const statusColors: Record<string, string> = {
-    pendiente: 'bg-yellow-500/15 text-yellow-400 border-yellow-500/30',
-    produccion: 'bg-blue-500/15 text-blue-400 border-blue-500/30',
-    enviado: 'bg-purple-500/15 text-purple-400 border-purple-500/30',
-    entregado: 'bg-green-500/15 text-green-400 border-green-500/30',
-  };
-  const statusLabels: Record<string, string> = {
-    pendiente: 'Pendiente', produccion: 'En Producción', enviado: 'Enviado', entregado: 'Entregado',
-  };
-
-  return (
-    <div className="p-5 sm:p-8 space-y-4 max-w-[1200px] mx-auto">
-      <div className="flex items-center gap-3 mb-2">
-        <div className="w-8 h-8 rounded-xl bg-[#D2E8A3]/10 flex items-center justify-center"><ShoppingCart className="w-4 h-4 text-[#D2E8A3]" /></div>
-        <div>
-          <h3 className="text-sm font-extrabold uppercase text-white">{orders.length} Pedidos</h3>
-          <p className="text-[9px] text-gray-500">Gestiona los estados de entrega</p>
-        </div>
-      </div>
-      {orders.length === 0 ? (
-        <div className="text-center py-20 space-y-4">
-          <div className="w-24 h-24 mx-auto rounded-full bg-[#D2E8A3]/5 border border-[#D2E8A3]/10 flex items-center justify-center"><ShoppingCart className="w-10 h-10 text-[#D2E8A3]/30" /></div>
-          <div>
-            <p className="text-sm text-gray-400 font-bold">No hay pedidos aún</p>
-            <p className="text-[10px] text-gray-600 mt-1">Los pedidos de WhatsApp aparecerán aquí</p>
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {orders.map(order => (
-            <div key={order.id} className="p-4 sm:p-5 rounded-2xl border border-white/5 bg-[#111311] hover:bg-[#161814] transition-all">
-              <div className="flex items-start justify-between gap-4">
-                <div className="space-y-1.5 flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-[10px] font-mono text-gray-600">#{order.id.slice(0, 8)}</span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusColors[order.estado] || 'bg-white/10 text-gray-400 border-white/10'}`}>
-                      {statusLabels[order.estado] || order.estado}
-                    </span>
-                  </div>
-                  <p className="text-xs text-white font-bold">{order.cliente_nombre || 'Sin nombre'}</p>
-                  <p className="text-[11px] text-gray-400">{order.cliente_telefono || ''} {order.cliente_direccion ? `— ${order.cliente_direccion}` : ''}</p>
-                  <p className="text-[10px] text-gray-600">{order.created_at ? new Date(order.created_at).toLocaleString('es-PE') : ''}</p>
-                </div>
-                <div className="text-right space-y-2 flex-shrink-0">
-                  <p className="text-base font-black text-[#D2E8A3]">S/ {order.total?.toFixed(2)}</p>
-                  <select value={order.estado || 'pendiente'} onChange={e => handleOrderStatus(order.id, e.target.value)}
-                    className="text-[11px] font-bold px-3 py-1.5 rounded-xl border bg-[#161814] text-gray-300 border-white/10 focus:outline-none focus:border-[#D2E8A3]/50 transition-all cursor-pointer">
-                    <option value="pendiente">⏳ Pendiente</option>
-                    <option value="produccion">🔨 Producción</option>
-                    <option value="enviado">📦 Enviado</option>
-                    <option value="entregado">✅ Entregado</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-});
-TabPedidos.displayName = 'TabPedidos';
-
-/* ═══════════════════════════════════════════════════════
    TAB: MI CUENTA
    ═══════════════════════════════════════════════════════ */
 const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTarget, backupStatus, handleBackup, handleRestoreFile, handleRestoreConfirm, restorePreview, setRestorePreview }: any) => (
@@ -1382,12 +644,7 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
             <Field label="Nombre"><TextInput value={cfgEdit.brand_name || ''} onChange={(v: string) => setCfg('brand_name', v)} /></Field>
             <Field label="Slogan"><TextInput value={cfgEdit.brand_slogan || ''} onChange={(v: string) => setCfg('brand_slogan', v)} /></Field>
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            <Field label="Teléfono"><TextInput value={cfgEdit.brand_phone || ''} onChange={(v: string) => setCfg('brand_phone', v)} /></Field>
-            <Field label="Ubicación"><TextInput value={cfgEdit.brand_location || ''} onChange={(v: string) => setCfg('brand_location', v)} /></Field>
-            <Field label="Instagram"><TextInput value={cfgEdit.brand_instagram || ''} onChange={(v: string) => setCfg('brand_instagram', v)} /></Field>
-          </div>
-          <Field label="WhatsApp Link"><TextInput value={cfgEdit.brand_whatsapp || ''} onChange={(v: string) => setCfg('brand_whatsapp', v)} /></Field>
+          <p className="text-[10px] text-gray-500">Teléfono y redes sociales se configuran en la pestaña <strong className="text-[#D2E8A3]">Config</strong>.</p>
         </div>
         <PreviewBox title="Vista Previa — Header">
           <div className="rounded-xl bg-[#070806] p-5 space-y-3">
@@ -1565,62 +822,27 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
     <Section title="Backup & Restaurar Datos" icon={<RefreshCw className="w-3.5 h-3.5 text-[#D2E8A3]" />} badge="Seguridad">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-4">
-          {/* Backup */}
           <div className="p-4 rounded-xl bg-[#0A0B0A] border border-white/5 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase flex items-center gap-2">
-              <Download className="w-3.5 h-3.5 text-[#D2E8A3]" />
-              Descargar Backup Completo
-            </h4>
-            <p className="text-[11px] text-gray-400">
-              Exporta todos tus productos, configuración, pedidos y categorías como archivo JSON.
-              Úsalo para restaurar tu tienda si algo sale mal.
-            </p>
-            <button
-              onClick={handleBackup}
-              disabled={backupStatus === 'backing_up'}
+            <h4 className="text-xs font-bold text-white uppercase flex items-center gap-2"><Download className="w-3.5 h-3.5 text-[#D2E8A3]" /> Descargar Backup Completo</h4>
+            <p className="text-[11px] text-gray-400">Exporta todos tus productos, configuración, pedidos y categorías como archivo JSON. Úsalo para restaurar tu tienda si algo sale mal.</p>
+            <button onClick={handleBackup} disabled={backupStatus === 'backing_up'}
               className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-                backupStatus === 'done'
-                  ? 'bg-green-500/20 text-green-400 border border-green-500/30'
-                  : 'bg-[#D2E8A3]/10 text-[#D2E8A3] border border-[#D2E8A3]/30 hover:bg-[#D2E8A3]/20'
-              }`}
-            >
-              {backupStatus === 'backing_up' ? (
-                <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Generando backup...</>
-              ) : backupStatus === 'done' ? (
-                <><Check className="w-3.5 h-3.5" /> Backup descargado</>
-              ) : (
-                <><Download className="w-3.5 h-3.5" /> Descargar Backup JSON</>
-              )}
+                backupStatus === 'done' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-[#D2E8A3]/10 text-[#D2E8A3] border border-[#D2E8A3]/30 hover:bg-[#D2E8A3]/20'
+              }`}>
+              {backupStatus === 'backing_up' ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Generando backup...</> : backupStatus === 'done' ? <><Check className="w-3.5 h-3.5" /> Backup descargado</> : <><Download className="w-3.5 h-3.5" /> Descargar Backup JSON</>}
             </button>
           </div>
-
-          {/* Restore */}
           <div className="p-4 rounded-xl bg-[#0A0B0A] border border-white/5 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase flex items-center gap-2">
-              <Upload className="w-3.5 h-3.5 text-[#D2E8A3]" />
-              Restaurar desde Backup
-            </h4>
-            <p className="text-[11px] text-gray-400">
-              Sube un archivo de backup JSON para restaurar todos tus datos. Esto reemplazará la configuración actual.
-            </p>
+            <h4 className="text-xs font-bold text-white uppercase flex items-center gap-2"><Upload className="w-3.5 h-3.5 text-[#D2E8A3]" /> Restaurar desde Backup</h4>
+            <p className="text-[11px] text-gray-400">Sube un archivo de backup JSON para restaurar todos tus datos. Esto reemplazará la configuración actual.</p>
             <label className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border ${
-              backupStatus === 'restored'
-                ? 'bg-green-500/20 text-green-400 border-green-500/30'
-                : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
+              backupStatus === 'restored' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
             }`}>
-              {backupStatus === 'restoring' ? (
-                <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Restaurando...</>
-              ) : backupStatus === 'restored' ? (
-                <><Check className="w-3.5 h-3.5" /> Datos restaurados</>
-              ) : (
-                <><Upload className="w-3.5 h-3.5" /> Seleccionar Archivo de Backup</>
-              )}
+              {backupStatus === 'restoring' ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Restaurando...</> : backupStatus === 'restored' ? <><Check className="w-3.5 h-3.5" /> Datos restaurados</> : <><Upload className="w-3.5 h-3.5" /> Seleccionar Archivo de Backup</>}
               <input type="file" accept=".json" className="hidden" onChange={handleRestoreFile} disabled={backupStatus === 'restoring'} />
             </label>
           </div>
         </div>
-
-        {/* Restore Preview */}
         <div className="space-y-3">
           {restorePreview ? (
             <div className="p-4 rounded-xl bg-[#0A0B0A] border border-[#D2E8A3]/30 space-y-3">
@@ -1630,33 +852,18 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
                 <p className="text-gray-400"><span className="text-white font-bold">Fecha:</span> {new Date(restorePreview.created_at).toLocaleString('es-PE')}</p>
                 <p className="text-gray-400"><span className="text-white font-bold">Tablas:</span> {(restorePreview.tables || Object.keys(restorePreview.data)).length}</p>
                 {(restorePreview.tables || Object.keys(restorePreview.data)).map((t: string) => (
-                  <p key={t} className="text-gray-400 pl-3">
-                    <span className="text-[#D2E8A3] font-mono">{t}:</span> {restorePreview.data[t]?.length || 0} registros
-                  </p>
+                  <p key={t} className="text-gray-400 pl-3"><span className="text-[#D2E8A3] font-mono">{t}:</span> {restorePreview.data[t]?.length || 0} registros</p>
                 ))}
               </div>
               <div className="flex gap-2 pt-2">
-                <button
-                  onClick={handleRestoreConfirm}
-                  disabled={backupStatus === 'restoring'}
-                  className="flex-1 py-2 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] text-xs font-bold hover:bg-[#c2e088] transition-all"
-                >
-                  Confirmar Restauración
-                </button>
-                <button
-                  onClick={() => setRestorePreview(null)}
-                  className="px-4 py-2 rounded-xl bg-white/5 text-gray-400 text-xs font-bold border border-white/10 hover:bg-white/10 transition-all"
-                >
-                  Cancelar
-                </button>
+                <button onClick={handleRestoreConfirm} disabled={backupStatus === 'restoring'} className="flex-1 py-2 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] text-xs font-bold hover:bg-[#c2e088] transition-all">Confirmar Restauración</button>
+                <button onClick={() => setRestorePreview(null)} className="px-4 py-2 rounded-xl bg-white/5 text-gray-400 text-xs font-bold border border-white/10 hover:bg-white/10 transition-all">Cancelar</button>
               </div>
             </div>
           ) : (
             <div className="p-4 rounded-xl bg-[#0A0B0A] border border-white/5 space-y-2 text-center">
               <RefreshCw className="w-8 h-8 text-gray-600 mx-auto" />
-              <p className="text-[11px] text-gray-500">
-                Selecciona un archivo de backup JSON para vista previa antes de restaurar.
-              </p>
+              <p className="text-[11px] text-gray-500">Selecciona un archivo de backup JSON para vista previa antes de restaurar.</p>
             </div>
           )}
         </div>
