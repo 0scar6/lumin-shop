@@ -3,6 +3,14 @@
 -- Ejecuta esto en el SQL Editor de Supabase
 -- ============================================
 
+-- CONFIGURACION: deshabilitar RLS (es config pública, no necesita protección)
+ALTER TABLE configuracion DISABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Configuracion public read" ON configuracion;
+DROP POLICY IF EXISTS "Configuracion public update" ON configuracion;
+DROP POLICY IF EXISTS "Configuracion public write" ON configuracion;
+DROP POLICY IF EXISTS "Configuracion admin write" ON configuracion;
+DROP POLICY IF EXISTS "pub" ON configuracion;
+
 -- PERFILES: permitir lectura/escritura a todos (anon)
 DROP POLICY IF EXISTS "Usuarios ven su perfil" ON perfiles;
 DROP POLICY IF EXISTS "Usuarios crean su perfil" ON perfiles;
@@ -39,15 +47,4 @@ DROP POLICY IF EXISTS "Usuarios insertan su registro" ON usuarios;
 DROP POLICY IF EXISTS "Usuarios actualizan su registro" ON usuarios;
 
 CREATE POLICY "Usuarios public read/write" ON usuarios
-  FOR ALL USING (true) WITH CHECK (true);
-
--- CONFIGURACION: permitir lectura a todos (necesario para cargar config pública)
-DROP POLICY IF EXISTS "Configuracion public read" ON configuracion;
-
-CREATE POLICY "Configuracion public read" ON configuracion
-  FOR SELECT USING (true);
-
-DROP POLICY IF EXISTS "Configuracion admin write" ON configuracion;
-
-CREATE POLICY "Configuracion admin write" ON configuracion
   FOR ALL USING (true) WITH CHECK (true);
