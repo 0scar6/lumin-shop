@@ -190,23 +190,26 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
   };
 
   const handleProdSave = async () => {
-    if (!editingProduct || !supabase) return;
+    if (!editingProduct || !supabase) { alert('No hay conexión a Supabase'); return; }
     if (!editingProduct.nombre.trim()) { alert('El nombre es obligatorio'); return; }
     setProdSaving(true);
     try {
       let galeria = editingProduct.galeria;
       if ((!galeria || galeria.length === 0) && editingProduct.imagen) galeria = [editingProduct.imagen];
-      const { error } = await supabase.from('productos').upsert({
+      const payload = {
         id: editingProduct.id, nombre: editingProduct.nombre, categoria_id: editingProduct.categoria_id,
         precio: editingProduct.precio, precio_original: editingProduct.precio_original,
         tecnica: editingProduct.tecnica, tiempo_produccion: editingProduct.tiempo_produccion,
         imagen: editingProduct.imagen, galeria, descripcion: editingProduct.descripcion,
         etiqueta: editingProduct.etiqueta, opciones_ropa: editingProduct.opciones_ropa, opciones_vaso: editingProduct.opciones_vaso,
         personalizable: editingProduct.personalizable, activo: editingProduct.activo, destacado: editingProduct.destacado, agotado: editingProduct.agotado || false,
-      }, { onConflict: 'id' });
-      if (error) throw error;
+      };
+      console.log('[LUMIN] Saving product:', payload.id, payload.nombre);
+      const { data, error } = await supabase.from('productos').upsert(payload, { onConflict: 'id' }).select();
+      if (error) { console.error('[LUMIN] Save error:', error.message, error); throw error; }
+      console.log('[LUMIN] Save success:', data);
       await loadProducts(); setEditingProduct(null); setIsNewProduct(false);
-    } catch (err: any) { alert('Error: ' + (err.message || JSON.stringify(err))); }
+    } catch (err: any) { alert('Error al guardar: ' + (err.message || JSON.stringify(err))); }
     setProdSaving(false);
   };
 

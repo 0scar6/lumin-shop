@@ -299,31 +299,34 @@ export let PRODUCTS: Product[] = PRODUCTS_STATIC;
 
 export async function loadProductsFromSupabase(): Promise<Product[]> {
   if (!supabase) {
+    console.error('[LUMIN] ⚠️ Supabase client is NULL. Check VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
     return PRODUCTS_STATIC;
   }
+
+  console.log('[LUMIN] Fetching products from Supabase...');
 
   try {
     const { data, error } = await supabase
       .from('productos')
       .select('*')
-      .eq('activo', true)
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('[LUMIN] Supabase fetch error:', error.message, error);
+      console.error('[LUMIN] ❌ Supabase fetch error:', error.message, error);
       return PRODUCTS_STATIC;
     }
 
     if (!data || data.length === 0) {
-      console.warn('[LUMIN] No products in Supabase, using static fallback');
+      console.warn('[LUMIN] ⚠️ No products in Supabase, using static fallback');
       return PRODUCTS_STATIC;
     }
 
+    console.log('[LUMIN] ✅ Loaded', data.length, 'products from Supabase:', data.map(d => d.nombre));
     const mapped = data.map(mapSupabaseToProduct);
     PRODUCTS = mapped;
     return mapped;
   } catch (err) {
-    console.error('[LUMIN] Supabase connection failed:', err);
+    console.error('[LUMIN] ❌ Supabase connection failed:', err);
     return PRODUCTS_STATIC;
   }
 }
