@@ -182,9 +182,6 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       <span className="text-orange-400 font-black text-xl sm:text-3xl uppercase tracking-[0.25em] drop-shadow-[0_0_20px_rgba(249,115,22,0.5)]">
                         Agotado
                       </span>
-                      <span className="text-orange-300/50 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
-                        Drop finalizado
-                      </span>
                     </div>
                   </div>
                 )}

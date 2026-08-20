@@ -56,9 +56,6 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
               <span className="text-orange-400 font-black text-sm sm:text-base uppercase tracking-[0.2em] drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">
                 Agotado
               </span>
-              <span className="text-orange-300/60 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider">
-                Drop finalizado
-              </span>
             </div>
           </div>
         )}
