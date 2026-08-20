@@ -282,6 +282,7 @@ function mapSupabaseToProduct(row: SupabaseProductRow): Product {
         }
       : undefined,
     customizable: row.personalizable ?? false,
+    agotado: row.agotado ?? false,
   };
 }
 

@@ -185,7 +185,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
   };
 
   const startNewProduct = () => {
-    setEditingProduct({ id: `prod-${Date.now()}`, nombre: '', categoria_id: 'streetwear', precio: 0, precio_original: null, tecnica: '', tiempo_produccion: '24-48 hrs', imagen: '', galeria: null, descripcion: '', etiqueta: '', opciones_ropa: { sizes: ['S', 'M', 'L', 'XL'], fits: ['Oversized Streetwear'], colors: [{ name: 'Negro', hex: '#0A0A0A' }] }, opciones_vaso: null, personalizable: false, activo: true, destacado: false });
+    setEditingProduct({ id: `prod-${Date.now()}`, nombre: '', categoria_id: 'streetwear', precio: 0, precio_original: null, tecnica: '', tiempo_produccion: '24-48 hrs', imagen: '', galeria: null, descripcion: '', etiqueta: '', opciones_ropa: { sizes: ['S', 'M', 'L', 'XL'], fits: ['Oversized Streetwear'], colors: [{ name: 'Negro', hex: '#0A0A0A' }] }, opciones_vaso: null, personalizable: false, activo: true, destacado: false, agotado: false });
     setIsNewProduct(true);
   };
 
@@ -202,7 +202,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
         tecnica: editingProduct.tecnica, tiempo_produccion: editingProduct.tiempo_produccion,
         imagen: editingProduct.imagen, galeria, descripcion: editingProduct.descripcion,
         etiqueta: editingProduct.etiqueta, opciones_ropa: editingProduct.opciones_ropa, opciones_vaso: editingProduct.opciones_vaso,
-        personalizable: editingProduct.personalizable, activo: editingProduct.activo, destacado: editingProduct.destacado,
+        personalizable: editingProduct.personalizable, activo: editingProduct.activo, destacado: editingProduct.destacado, agotado: editingProduct.agotado || false,
       }, { onConflict: 'id' });
       if (error) throw error;
       await loadProducts(); setEditingProduct(null); setIsNewProduct(false);

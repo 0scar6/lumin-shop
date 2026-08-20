@@ -62,6 +62,11 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
 
         {/* Badges */}
         <div className="absolute top-2 left-2 sm:top-3 sm:left-3 right-10 flex flex-wrap items-center gap-1 z-10 pointer-events-none">
+          {product.agotado && (
+            <div className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded bg-orange-600 text-white text-[8px] sm:text-[10px] font-black uppercase tracking-wider shadow-lg">
+              Agotado
+            </div>
+          )}
           {product.tag && (
             <div className="px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded bg-black/70 backdrop-blur-md text-[8px] sm:text-[10px] font-bold text-[#D2E8A3] uppercase tracking-wider">
               {product.tag}
@@ -149,11 +154,22 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
 
           <button
             onClick={() => onSelectProduct(product)}
-            className="flex items-center gap-0.5 sm:gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A] font-extrabold text-[10px] sm:text-[11px] transition-all shadow-md active:scale-95"
-            aria-label={cfg('pc_order_label', 'Configurar Pedido')}
+            disabled={product.agotado}
+            className={`flex items-center gap-0.5 sm:gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl font-extrabold text-[10px] sm:text-[11px] transition-all shadow-md active:scale-95 ${
+              product.agotado
+                ? 'bg-orange-500/10 text-orange-400 border border-orange-500/30 cursor-not-allowed shadow-none'
+                : 'bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A]'
+            }`}
+            aria-label={product.agotado ? 'Agotado' : cfg('pc_order_label', 'Configurar Pedido')}
           >
-            <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
-            <span>{cfg('pc_order_btn', 'Pedir')}</span>
+            {product.agotado ? (
+              <span>Agotado</span>
+            ) : (
+              <>
+                <Plus className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
+                <span>{cfg('pc_order_btn', 'Pedir')}</span>
+              </>
+            )}
           </button>
         </div>
 

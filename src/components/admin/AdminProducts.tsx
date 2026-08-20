@@ -5,7 +5,7 @@ import {
 import { supabase } from '../../lib/supabase';
 import { Field, TextInput, TextArea, MediaUpload, Section, PreviewBox } from './AdminShared';
 
-export interface ProductoRow { id: string; nombre: string; categoria_id: string; precio: number; precio_original: number | null; tecnica: string; tiempo_produccion: string; imagen: string; galeria: any; descripcion: string; etiqueta: string; opciones_ropa: any; opciones_vaso: any; personalizable: boolean; activo: boolean; destacado: boolean; }
+export interface ProductoRow { id: string; nombre: string; categoria_id: string; precio: number; precio_original: number | null; tecnica: string; tiempo_produccion: string; imagen: string; galeria: any; descripcion: string; etiqueta: string; opciones_ropa: any; opciones_vaso: any; personalizable: boolean; activo: boolean; destacado: boolean; agotado: boolean; }
 
 interface AdminProductsProps {
   cfgEdit: Record<string, string>;
@@ -126,7 +126,7 @@ export const AdminProducts = ({
             </div>
 
             <div className="flex items-center gap-6 pt-2">
-              {[{ key: 'activo', label: 'Activo' }, { key: 'destacado', label: 'Destacado' }, { key: 'personalizable', label: 'Personalizable' }].map((cb: any) => (
+              {[{ key: 'activo', label: 'Activo' }, { key: 'destacado', label: 'Destacado' }, { key: 'personalizable', label: 'Personalizable' }, { key: 'agotado', label: 'Agotado / Drop Finalizado' }].map((cb: any) => (
                 <label key={cb.key} className="flex items-center gap-2 cursor-pointer group">
                   <div className="relative">
                     <input type="checkbox" checked={(editingProduct as any)[cb.key]} onChange={e => setEditingProduct((p: any) => p ? { ...p, [cb.key]: e.target.checked } : p)} className="sr-only peer" />
@@ -297,6 +297,7 @@ export const AdminProducts = ({
                     {editingProduct.precio_original && <span className="text-gray-500 text-xs line-through">S/ {editingProduct.precio_original.toFixed(2)}</span>}
                   </div>
                   <div className="flex gap-2 pt-1">
+                    {editingProduct.agotado && <span className="text-[9px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400 font-bold">AGOTADO</span>}
                     {!editingProduct.activo && <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-bold">INACTIVO</span>}
                     {editingProduct.destacado && <span className="text-[9px] px-1.5 py-0.5 rounded bg-[#D2E8A3]/20 text-[#D2E8A3] font-bold">DESTACADO</span>}
                   </div>
@@ -324,6 +325,7 @@ export const AdminProducts = ({
       <div className="aspect-video overflow-hidden bg-black/20">{p.imagen ? <img src={p.imagen} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs">Sin imagen</div>}</div>
       <div className="p-3 space-y-1.5">
         <div className="flex items-center gap-1.5">
+          {p.agotado && <span className="text-[8px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400 font-bold">AGOTADO</span>}
           {!p.activo && <span className="text-[8px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-bold">OFF</span>}
           {p.destacado && <span className="text-[8px] px-1.5 py-0.5 rounded bg-[#D2E8A3]/20 text-[#D2E8A3] font-bold">★ DESTACADO</span>}
         </div>

@@ -28,6 +28,7 @@ export interface Product {
   apparelOptions?: ApparelOptions;
   cupOptions?: CupOptions;
   customizable?: boolean;
+  agotado?: boolean;
 }
 
 export interface CartItem {

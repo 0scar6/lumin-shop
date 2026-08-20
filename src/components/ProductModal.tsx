@@ -175,6 +175,11 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   alt={product.name}
                   className="w-full h-full object-cover"
                 />
+                {product.agotado && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
+                    <span className="text-orange-400 font-black text-lg sm:text-2xl uppercase tracking-widest bg-black/50 px-4 py-2 rounded-xl border border-orange-400/30">Agotado</span>
+                  </div>
+                )}
                 <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-[#D2E8A3]">
                   {product.technique}
                 </div>
@@ -473,13 +478,20 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           </div>
 
           {/* Submit Button */}
-          <button
-            onClick={handleAdd}
-            className="w-full sm:w-auto sm:px-8 py-2.5 sm:py-3.5 rounded-xl bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A] font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#D2E8A3]/15 active:scale-98"
-          >
-            <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>{cfg('pm_add_to_cart', 'AÑADIR A MI PEDIDO')}</span>
-          </button>
+          {product.agotado ? (
+            <div className="w-full sm:w-auto sm:px-8 py-2.5 sm:py-3.5 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-400 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-not-allowed">
+              <Tag className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>Este producto está agotado</span>
+            </div>
+          ) : (
+            <button
+              onClick={handleAdd}
+              className="w-full sm:w-auto sm:px-8 py-2.5 sm:py-3.5 rounded-xl bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A] font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#D2E8A3]/15 active:scale-98"
+            >
+              <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span>{cfg('pm_add_to_cart', 'AÑADIR A MI PEDIDO')}</span>
+            </button>
+          )}
 
         </div>
 
