@@ -173,11 +173,19 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 <MediaDisplay
                   src={activeImage}
                   alt={product.name}
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover ${product.agotado ? 'opacity-30 grayscale-[60%] brightness-75' : ''}`}
                 />
                 {product.agotado && (
-                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center z-10">
-                    <span className="text-orange-400 font-black text-lg sm:text-2xl uppercase tracking-widest bg-black/50 px-4 py-2 rounded-xl border border-orange-400/30">Agotado</span>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
+                    <div className="relative z-20 flex flex-col items-center gap-1.5">
+                      <span className="text-orange-400 font-black text-xl sm:text-3xl uppercase tracking-[0.25em] drop-shadow-[0_0_20px_rgba(249,115,22,0.5)]">
+                        Agotado
+                      </span>
+                      <span className="text-orange-300/50 text-[10px] sm:text-xs font-bold uppercase tracking-widest">
+                        Drop finalizado
+                      </span>
+                    </div>
                   </div>
                 )}
                 <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-[#D2E8A3]">

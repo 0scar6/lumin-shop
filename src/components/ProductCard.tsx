@@ -40,9 +40,28 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
         <img
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+          className={`w-full h-full object-cover object-center transition-transform duration-500 ${
+            product.agotado
+              ? 'opacity-40 grayscale-[60%] brightness-75'
+              : 'group-hover:scale-105'
+          }`}
           loading="lazy"
         />
+
+        {/* Sold Out Overlay */}
+        {product.agotado && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-10 pointer-events-none">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/50" />
+            <div className="relative z-20 flex flex-col items-center gap-1">
+              <span className="text-orange-400 font-black text-sm sm:text-base uppercase tracking-[0.2em] drop-shadow-[0_0_12px_rgba(249,115,22,0.5)]">
+                Agotado
+              </span>
+              <span className="text-orange-300/60 text-[8px] sm:text-[9px] font-bold uppercase tracking-wider">
+                Drop finalizado
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Favorite Heart */}
         <button
