@@ -240,6 +240,7 @@ interface SupabaseProductRow {
   } | null;
   destacado: boolean | null;
   activo: boolean | null;
+  agotado?: boolean | null;
 }
 
 function mapSupabaseToProduct(row: SupabaseProductRow): Product {
@@ -309,7 +310,7 @@ export async function loadProductsFromSupabase(): Promise<Product[]> {
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.warn('[LUMIN] Supabase fetch error, using static fallback:', error.message);
+      console.error('[LUMIN] Supabase fetch error:', error.message, error);
       return PRODUCTS_STATIC;
     }
 
@@ -322,7 +323,7 @@ export async function loadProductsFromSupabase(): Promise<Product[]> {
     PRODUCTS = mapped;
     return mapped;
   } catch (err) {
-    console.warn('[LUMIN] Supabase connection failed, using static fallback:', err);
+    console.error('[LUMIN] Supabase connection failed:', err);
     return PRODUCTS_STATIC;
   }
 }
