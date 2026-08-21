@@ -509,9 +509,49 @@ export default function App() {
 
   if (!allLoaded) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0A0A0A] font-sans">
-        <div className="w-10 h-10 border-2 border-[#D2E8A3] border-t-transparent rounded-full animate-spin mb-4" />
-        <p className="text-[#D2E8A3] font-bold text-sm tracking-widest uppercase">LUMIN SHOP</p>
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0A0A0A] font-sans overflow-hidden relative">
+        {/* Ambient glow */}
+        <div className="absolute w-[500px] h-[500px] rounded-full bg-[#D2E8A3]/5 blur-[120px] animate-pulse" />
+        <div className="absolute w-[300px] h-[300px] rounded-full bg-[#D2E8A3]/3 blur-[80px] animate-pulse" style={{ animationDelay: '1s' }} />
+
+        {/* Logo mark */}
+        <div className="relative mb-8">
+          <div className="w-20 h-20 rounded-2xl border-2 border-[#D2E8A3]/30 flex items-center justify-center relative">
+            {/* Rotating border */}
+            <div className="absolute inset-[-2px] rounded-2xl border-2 border-transparent border-t-[#D2E8A3] animate-spin" style={{ animationDuration: '2s' }} />
+            {/* Inner content */}
+            <span className="text-[#D2E8A3] font-black text-2xl tracking-tighter" style={{ fontFamily: 'Georgia, serif' }}>L</span>
+          </div>
+          {/* Pulse rings */}
+          <div className="absolute inset-0 rounded-2xl border border-[#D2E8A3]/20 animate-ping" style={{ animationDuration: '2s' }} />
+          <div className="absolute inset-[-12px] rounded-3xl border border-[#D2E8A3]/10 animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.3s' }} />
+        </div>
+
+        {/* Brand name */}
+        <h1 className="text-[#D2E8A3] font-black text-lg sm:text-xl tracking-[0.35em] uppercase mb-3" style={{ fontFamily: 'Georgia, serif' }}>
+          LUMIN SHOP
+        </h1>
+
+        {/* Loading dots */}
+        <div className="flex items-center gap-1.5 mb-6">
+          <div className="w-1.5 h-1.5 rounded-full bg-[#D2E8A3] animate-bounce" style={{ animationDelay: '0s' }} />
+          <div className="w-1.5 h-1.5 rounded-full bg-[#D2E8A3] animate-bounce" style={{ animationDelay: '0.15s' }} />
+          <div className="w-1.5 h-1.5 rounded-full bg-[#D2E8A3] animate-bounce" style={{ animationDelay: '0.3s' }} />
+        </div>
+
+        {/* Progress bar */}
+        <div className="w-48 h-[2px] bg-white/5 rounded-full overflow-hidden">
+          <div className="h-full bg-gradient-to-r from-transparent via-[#D2E8A3] to-transparent rounded-full animate-loading-bar" />
+        </div>
+
+        <style>{`
+          @keyframes loading-bar {
+            0% { transform: translateX(-100%); width: 40%; }
+            50% { width: 60%; }
+            100% { transform: translateX(350%); width: 40%; }
+          }
+          .animate-loading-bar { animation: loading-bar 1.5s ease-in-out infinite; }
+        `}</style>
       </div>
     );
   }
