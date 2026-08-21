@@ -80,11 +80,13 @@ export default function App() {
   const [configVersion, setConfigVersion] = useState(0);
 
   useEffect(() => {
-    loadProductsFromSupabase().then((p) => { setProducts(p); setProductsLoaded(true); });
-    loadCategoriesFromSupabase().then((cats) => {
-      if (cats.length > 0) setCategories(cats);
-    });
-    loadConfig().then((ok) => setConfigLoaded(ok));
+    Promise.all([
+      loadProductsFromSupabase().then((p) => setProducts(p)),
+      loadConfig(),
+      loadCategoriesFromSupabase().then((cats) => {
+        if (cats.length > 0) setCategories(cats);
+      }),
+    ]).then(() => { setConfigLoaded(true); setProductsLoaded(true); });
 
     const timeout = setTimeout(() => { setConfigLoaded(true); setProductsLoaded(true); }, 5000);
     return () => clearTimeout(timeout);
@@ -509,48 +511,53 @@ export default function App() {
 
   if (!allLoaded) {
     return (
-      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0A0A0A] font-sans overflow-hidden relative">
-        {/* Ambient glow */}
-        <div className="absolute w-[500px] h-[500px] rounded-full bg-[#D2E8A3]/5 blur-[120px] animate-pulse" />
-        <div className="absolute w-[300px] h-[300px] rounded-full bg-[#D2E8A3]/3 blur-[80px] animate-pulse" style={{ animationDelay: '1s' }} />
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0A0A0A] font-sans overflow-hidden relative select-none">
+        {/* Subtle grid background */}
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: 'linear-gradient(#D2E8A3 1px, transparent 1px), linear-gradient(90deg, #D2E8A3 1px, transparent 1px)',
+          backgroundSize: '60px 60px'
+        }} />
 
-        {/* Logo mark */}
-        <div className="relative mb-8">
-          <div className="w-20 h-20 rounded-2xl border-2 border-[#D2E8A3]/30 flex items-center justify-center relative">
-            {/* Rotating border */}
-            <div className="absolute inset-[-2px] rounded-2xl border-2 border-transparent border-t-[#D2E8A3] animate-spin" style={{ animationDuration: '2s' }} />
-            {/* Inner content */}
-            <span className="text-[#D2E8A3] font-black text-2xl tracking-tighter" style={{ fontFamily: 'Georgia, serif' }}>L</span>
+        {/* Central animation */}
+        <div className="relative mb-10">
+          {/* Outer rotating square */}
+          <div className="w-24 h-24 border border-[#D2E8A3]/20 rotate-45 animate-[spin_8s_linear_infinite]" />
+          {/* Middle rotating square (opposite) */}
+          <div className="absolute inset-2 border border-[#D2E8A3]/30 rotate-12 animate-[spin_5s_linear_infinite_reverse]" />
+          {/* Inner glowing square */}
+          <div className="absolute inset-4 bg-[#D2E8A3]/5 border border-[#D2E8A3]/40 rotate-[30deg] animate-pulse" style={{ animationDuration: '2s' }} />
+          {/* Center dot */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-3 h-3 bg-[#D2E8A3] rounded-full shadow-[0_0_20px_#D2E8A3,0_0_40px_#D2E8A3,0_0_60px_rgba(210,232,163,0.3)] animate-pulse" style={{ animationDuration: '1.5s' }} />
           </div>
-          {/* Pulse rings */}
-          <div className="absolute inset-0 rounded-2xl border border-[#D2E8A3]/20 animate-ping" style={{ animationDuration: '2s' }} />
-          <div className="absolute inset-[-12px] rounded-3xl border border-[#D2E8A3]/10 animate-ping" style={{ animationDuration: '2.5s', animationDelay: '0.3s' }} />
         </div>
 
-        {/* Brand name */}
-        <h1 className="text-[#D2E8A3] font-black text-lg sm:text-xl tracking-[0.35em] uppercase mb-3" style={{ fontFamily: 'Georgia, serif' }}>
-          LUMIN SHOP
-        </h1>
-
-        {/* Loading dots */}
-        <div className="flex items-center gap-1.5 mb-6">
-          <div className="w-1.5 h-1.5 rounded-full bg-[#D2E8A3] animate-bounce" style={{ animationDelay: '0s' }} />
-          <div className="w-1.5 h-1.5 rounded-full bg-[#D2E8A3] animate-bounce" style={{ animationDelay: '0.15s' }} />
-          <div className="w-1.5 h-1.5 rounded-full bg-[#D2E8A3] animate-bounce" style={{ animationDelay: '0.3s' }} />
+        {/* Brand */}
+        <div className="text-center space-y-3">
+          <h1 className="text-[#D2E8A3] font-black text-xl sm:text-2xl tracking-[0.4em] uppercase">
+            LUMIN
+          </h1>
+          <div className="flex items-center justify-center gap-3">
+            <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-[#D2E8A3]/50" />
+            <span className="text-[#D2E8A3]/40 text-[10px] font-bold tracking-[0.3em] uppercase">SHOP</span>
+            <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-[#D2E8A3]/50" />
+          </div>
         </div>
 
-        {/* Progress bar */}
-        <div className="w-48 h-[2px] bg-white/5 rounded-full overflow-hidden">
-          <div className="h-full bg-gradient-to-r from-transparent via-[#D2E8A3] to-transparent rounded-full animate-loading-bar" />
+        {/* Loading bar */}
+        <div className="mt-10 w-40 h-[1px] bg-white/5 rounded-full overflow-hidden">
+          <div className="h-full bg-[#D2E8A3]/60 rounded-full animate-loading-bar" />
         </div>
 
         <style>{`
           @keyframes loading-bar {
-            0% { transform: translateX(-100%); width: 40%; }
-            50% { width: 60%; }
-            100% { transform: translateX(350%); width: 40%; }
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(400%); }
           }
-          .animate-loading-bar { animation: loading-bar 1.5s ease-in-out infinite; }
+          .animate-loading-bar {
+            width: 25%;
+            animation: loading-bar 1.2s ease-in-out infinite;
+          }
         `}</style>
       </div>
     );
