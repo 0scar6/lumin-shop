@@ -84,7 +84,10 @@ export default function App() {
     loadCategoriesFromSupabase().then((cats) => {
       if (cats.length > 0) setCategories(cats);
     });
-    loadConfig().then(() => setConfigLoaded(true));
+    loadConfig().then((ok) => setConfigLoaded(ok));
+
+    const timeout = setTimeout(() => { setConfigLoaded(true); setProductsLoaded(true); }, 5000);
+    return () => clearTimeout(timeout);
   }, []);
 
   // Interactive Modals
@@ -501,6 +504,17 @@ export default function App() {
     if (themeMode === 'light') return 'bg-[#F4F5F0] text-slate-900 selection:bg-[#8AB73B] selection:text-white';
     return 'bg-[#0A0A0A] text-white selection:bg-[#D2E8A3] selection:text-[#0A0A0A]';
   };
+
+  const allLoaded = configLoaded && productsLoaded;
+
+  if (!allLoaded) {
+    return (
+      <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0A0A0A] font-sans">
+        <div className="w-10 h-10 border-2 border-[#D2E8A3] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="text-[#D2E8A3] font-bold text-sm tracking-widest uppercase">LUMIN SHOP</p>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen w-full overflow-x-hidden flex flex-col font-sans transition-colors duration-300 pb-32 sm:pb-36 ${getThemeWrapperClass()}`}>
