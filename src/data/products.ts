@@ -291,7 +291,7 @@ function mapSupabaseToProduct(row: SupabaseProductRow): Product {
 // EXPORTED PRODUCTS (starts as static, updated from Supabase)
 // ============================================
 
-export let PRODUCTS: Product[] = PRODUCTS_STATIC;
+export let PRODUCTS: Product[] = [];
 
 // ============================================
 // SUPABASE FETCH FUNCTION

@@ -11,7 +11,7 @@ import { SocialQuickBar, FloatingWhatsAppWidget } from './components/SocialQuick
 import { AdminPanel } from './components/AdminPanel';
 import { TermsAndPrivacy } from './components/TermsAndPrivacy';
 
-import { PRODUCTS as PRODUCTS_STATIC, CATEGORIES as CATEGORIES_STATIC, loadProductsFromSupabase } from './data/products';
+import { CATEGORIES as CATEGORIES_STATIC, loadProductsFromSupabase } from './data/products';
 import {
   syncFavoritesToSupabase,
   syncCartStateToSupabase,
