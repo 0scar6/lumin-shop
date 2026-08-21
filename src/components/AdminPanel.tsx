@@ -46,6 +46,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
   const [uploadTarget, setUploadTarget] = useState('');
 
   const [products, setProducts] = useState<ProductoRow[]>([]);
+  const [productsLoaded, setProductsLoaded] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductoRow | null>(null);
   const [isNewProduct, setIsNewProduct] = useState(false);
   const [prodSaving, setProdSaving] = useState(false);
@@ -76,7 +77,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
   useEffect(() => { if (!authenticated || !supabase) return; loadConfig(); loadProducts(); loadOrders(); }, [authenticated]);
 
   const loadConfig = async () => { try { const { data } = await supabase!.from('configuracion').select('*'); if (data) { setConfigRows(data); const v: Record<string, string> = {}; data.forEach((r: ConfigRow) => { v[r.id] = r.valor; }); setCfgEdit(v); setCfgOriginal(v); } } catch {} };
-  const loadProducts = async () => { try { const { data } = await supabase!.from('productos').select('*').order('created_at', { ascending: false }); if (data) setProducts(data as ProductoRow[]); } catch {} };
+  const loadProducts = async () => { try { const { data } = await supabase!.from('productos').select('*').order('created_at', { ascending: false }); if (data) { setProducts(data as ProductoRow[]); setProductsLoaded(true); } else { setProductsLoaded(true); } } catch { setProductsLoaded(true); } };
   const loadOrders = async () => { try { const { data } = await supabase!.from('pedidos').select('*').order('created_at', { ascending: false }); if (data) setOrders(data as PedidoRow[]); } catch {} };
 
   const cfgChanged = useMemo(() => {
@@ -191,6 +192,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
 
   const handleProdSave = async () => {
     if (!editingProduct || !supabase) { alert('No hay conexión a Supabase'); return; }
+    if (!productsLoaded) { alert('Espera a que carguen los productos desde Supabase'); return; }
     if (!editingProduct.nombre.trim()) { alert('El nombre es obligatorio'); return; }
     setProdSaving(true);
     try {

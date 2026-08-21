@@ -70,8 +70,9 @@ export default function App() {
   const [selectedTechnique, setSelectedTechnique] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc'>('featured');
 
-  // Products from Supabase (with static fallback)
-  const [products, setProducts] = useState<Product[]>(PRODUCTS_STATIC);
+  // Products from Supabase (empty until loaded)
+  const [products, setProducts] = useState<Product[]>([]);
+  const [productsLoaded, setProductsLoaded] = useState(false);
   const [categories, setCategories] = useState(CATEGORIES_STATIC);
 
   // Config state
@@ -79,7 +80,7 @@ export default function App() {
   const [configVersion, setConfigVersion] = useState(0);
 
   useEffect(() => {
-    loadProductsFromSupabase().then(setProducts);
+    loadProductsFromSupabase().then((p) => { setProducts(p); setProductsLoaded(true); });
     loadCategoriesFromSupabase().then((cats) => {
       if (cats.length > 0) setCategories(cats);
     });
@@ -607,7 +608,7 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                {products.slice(0, 4).map((product, idx) => (
+                {productsLoaded ? products.slice(0, 4).map((product, idx) => (
                   <ProductCard
                     key={product.id}
                     index={idx}
@@ -617,7 +618,11 @@ export default function App() {
                     onSelectProduct={(p) => setSelectedProduct(p)}
                     themeMode={themeMode}
                   />
-                ))}
+                )) : (
+                  <div className="col-span-full py-8 text-center">
+                    <div className="w-6 h-6 border-2 border-[#D2E8A3] border-t-transparent rounded-full animate-spin mx-auto" />
+                  </div>
+                )}
               </div>
             </section>
 
@@ -749,7 +754,12 @@ export default function App() {
             </div>
 
             {/* Product Grid */}
-            {filteredProducts.length === 0 ? (
+            {!productsLoaded ? (
+              <div className="py-16 text-center space-y-3 glass-card rounded-3xl p-8 border border-white/10">
+                <div className="w-8 h-8 border-2 border-[#D2E8A3] border-t-transparent rounded-full animate-spin mx-auto" />
+                <p className="text-gray-400 text-sm">Cargando productos...</p>
+              </div>
+            ) : filteredProducts.length === 0 ? (
               <div className="py-16 text-center space-y-3 glass-card rounded-3xl p-8 border border-white/10">
                 <Tag className="w-12 h-12 text-gray-600 mx-auto" />
                 <p className="text-gray-400 text-sm">
