@@ -36,9 +36,9 @@ export const ProductionBadgeBar: React.FC<ProductionBadgeBarProps> = ({ themeMod
       {/* Top Banner Statement */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest ${
-          isLight ? 'bg-lime-100 border border-lime-300 text-lime-800' : 'bg-[#D2E8A3]/10 border border-[#D2E8A3]/20 text-[#D2E8A3]'
+          isLight ? 'bg-lime-100 border border-lime-300 text-lime-800' : 'bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[var(--accent)]'
         }`}>
-          <RefreshCw className="w-3.5 h-3.5 animate-spin text-lime-600 dark:text-[#D2E8A3]" />
+          <RefreshCw className="w-3.5 h-3.5 animate-spin text-lime-600 dark:text-[var(--accent)]" />
           <span>{cfg('badge_model_title', 'MODELO SUSTENTABLE BAJO DEMANDA')}</span>
         </div>
         <h3 className={`font-display text-2xl sm:text-3xl font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
@@ -59,15 +59,15 @@ export const ProductionBadgeBar: React.FC<ProductionBadgeBarProps> = ({ themeMod
               className={`p-6 rounded-2xl border relative overflow-hidden transition-all ${
                 isLight
                   ? 'bg-white border-slate-300 text-slate-900 shadow-sm hover:border-lime-600'
-                  : 'bg-[#161814] border-white/10 text-white hover:border-[#D2E8A3]/40'
+                  : 'bg-[#161814] border-white/10 text-white hover:border-[var(--accent)]/40'
               }`}
             >
               <div className="flex items-center justify-between mb-4">
-                <span className={`font-mono text-2xl font-black ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]/80'}`}>
+                <span className={`font-mono text-2xl font-black ${isLight ? 'text-lime-700' : 'text-[var(--accent)]/80'}`}>
                   {item.step}
                 </span>
                 <div className={`p-3 rounded-xl border ${
-                  isLight ? 'bg-slate-100 border-slate-300 text-lime-800' : 'bg-[#0A0A0A] border-white/10 text-[#D2E8A3]'
+                  isLight ? 'bg-slate-100 border-slate-300 text-lime-800' : 'bg-[#0A0A0A] border-white/10 text-[var(--accent)]'
                 }`}>
                   <Icon className="w-5 h-5" />
                 </div>
@@ -89,15 +89,15 @@ export const ProductionBadgeBar: React.FC<ProductionBadgeBarProps> = ({ themeMod
         isLight ? 'bg-white border-slate-300 text-slate-800 shadow-sm' : 'bg-[#161814] border-white/5 text-gray-300'
       }`}>
         <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-lime-600 dark:text-[#D2E8A3]" />
+          <ShieldCheck className="w-4 h-4 text-lime-600 dark:text-[var(--accent)]" />
           <span>Fijación Térmica HD de Alta Durabilidad</span>
         </div>
         <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-lime-600 dark:text-[#D2E8A3]" />
+          <Clock className="w-4 h-4 text-lime-600 dark:text-[var(--accent)]" />
           <span>Tiempo de fabricación: 24-48 hrs</span>
         </div>
         <div className="flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-lime-600 dark:text-[#D2E8A3]" />
+          <CheckCircle className="w-4 h-4 text-lime-600 dark:text-[var(--accent)]" />
           <span>Atención Directa por WhatsApp</span>
         </div>
       </div>

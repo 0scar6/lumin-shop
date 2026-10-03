@@ -123,7 +123,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between bg-[#0A0A0A]">
           <div className="flex items-center gap-2">
-            <ShoppingBag className="w-5 h-5 text-[#D2E8A3]" />
+            <ShoppingBag className="w-5 h-5 text-[var(--accent)]" />
             <h2 className="font-display text-base sm:text-lg font-black uppercase text-white">
               {cfg('cd_title', 'Mi Pedido LUMIN')} ({cartItems.length})
             </h2>
@@ -147,7 +147,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <p className="text-sm">{cfg('cd_empty_msg', 'Aún no has añadido ningún producto a tu pedido.')}</p>
               <button
                 onClick={onClose}
-                className="px-5 py-2.5 rounded-full bg-[#D2E8A3] text-[#0A0A0A] font-bold text-xs shadow-lg"
+                className="px-5 py-2.5 rounded-full bg-[var(--accent)] text-[#0A0A0A] font-bold text-xs shadow-lg"
               >
                 {cfg('cd_view_catalog', 'VER CATÁLOGO')}
               </button>
@@ -155,8 +155,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           ) : (
             <>
               {/* Production Workflow Banner */}
-              <div className="p-3.5 rounded-2xl bg-[#161814] border border-[#D2E8A3]/20 space-y-2">
-                <div className="flex items-center gap-1.5 text-xs font-bold text-[#D2E8A3]">
+              <div className="p-3.5 rounded-2xl bg-[#161814] border border-[var(--accent)]/20 space-y-2">
+                <div className="flex items-center gap-1.5 text-xs font-bold text-[var(--accent)]">
                   <Tag className="w-4 h-4" />
                   <span>{cfg('cd_process_title', 'PROCESO DE ATENCIÓN BAJO PEDIDO:')}</span>
                 </div>
@@ -220,7 +220,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         </div>
 
                         {item.customText && (
-                          <div className="text-[10px] text-[#D2E8A3] italic">
+                          <div className="text-[10px] text-[var(--accent)] italic">
                             {cfg('cd_custom_text', 'Texto personalizado:')} "{item.customText}"
                           </div>
                         )}
@@ -245,7 +245,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                             </button>
                           </div>
 
-                          <span className="font-black text-sm text-[#D2E8A3]">
+                          <span className="font-black text-sm text-[var(--accent)]">
                             S/ {itemTotal.toFixed(2)}
                           </span>
                         </div>
@@ -268,11 +268,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <div className="p-3.5 rounded-2xl bg-[#161814] border border-white/10 space-y-2.5 pt-3">
                 <div className="flex items-center justify-between">
                   <h4 className="text-xs font-bold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <UserCheck className="w-3.5 h-3.5 text-[#D2E8A3]" />
+                    <UserCheck className="w-3.5 h-3.5 text-[var(--accent)]" />
                     <span>{cfg('cd_customer_form_title', 'Datos para la orden:')}</span>
                   </h4>
                   {userProfile?.name && (
-                    <span className="text-[10px] text-[#D2E8A3] font-mono">{cfg('cd_autofill_hint', 'Autocompletado desde "Yo"')}</span>
+                    <span className="text-[10px] text-[var(--accent)] font-mono">{cfg('cd_autofill_hint', 'Autocompletado desde "Yo"')}</span>
                   )}
                 </div>
 
@@ -282,13 +282,13 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                     placeholder={cfg('cd_name_placeholder', 'Tu nombre completo...')}
-                    className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#D2E8A3]"
+                    className="w-full bg-[#0A0A0A] border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[var(--accent)]"
                   />
                 </div>
 
                 {userProfile?.address && (
                   <div className="text-[10px] text-gray-400 flex items-center gap-1 px-1">
-                    <MapPin className="w-3 h-3 text-[#D2E8A3] flex-shrink-0" />
+                    <MapPin className="w-3 h-3 text-[var(--accent)] flex-shrink-0" />
                     <span className="truncate">{userProfile.address}</span>
                   </div>
                 )}
@@ -298,7 +298,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     onClick={() => setDeliveryType('envio')}
                     className={`flex-1 py-1.5 rounded-lg text-xs font-medium border ${
                       deliveryType === 'envio'
-                        ? 'bg-[#D2E8A3] text-[#0A0A0A] border-[#D2E8A3] font-bold'
+                        ? 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)] font-bold'
                         : 'bg-[#0A0A0A] text-gray-400 border-white/10'
                     }`}
                   >
@@ -308,7 +308,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     onClick={() => setDeliveryType('recojo')}
                     className={`flex-1 py-1.5 rounded-lg text-xs font-medium border ${
                       deliveryType === 'recojo'
-                        ? 'bg-[#D2E8A3] text-[#0A0A0A] border-[#D2E8A3] font-bold'
+                        ? 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)] font-bold'
                         : 'bg-[#0A0A0A] text-gray-400 border-white/10'
                     }`}
                   >
@@ -349,7 +349,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
                   <button
                     onClick={handleCopyYapePhone}
-                    className="text-[10px] font-bold text-[#D2E8A3] hover:underline flex items-center gap-1"
+                    className="text-[10px] font-bold text-[var(--accent)] hover:underline flex items-center gap-1"
                   >
                     {copiedPhone ? (
                       <>
@@ -471,7 +471,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                     </div>
                     <div className="w-full h-1.5 bg-black/60 rounded-full overflow-hidden border border-white/5">
                       <div
-                        className="h-full bg-[#D2E8A3] transition-all duration-300"
+                        className="h-full bg-[var(--accent)] transition-all duration-300"
                         style={{ width: `${Math.min(100, (totalAmount / 200) * 100)}%` }}
                       ></div>
                     </div>
@@ -482,7 +482,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               {/* Total Final */}
               <div className="pt-2 border-t border-white/10 flex justify-between items-baseline">
                 <span className="text-xs text-white uppercase font-black font-mono">{cfg('cd_total_final', 'Total Final:')}</span>
-                <span className="text-2xl font-black text-[#D2E8A3]">
+                <span className="text-2xl font-black text-[var(--accent)]">
                   S/ {totalAmount.toFixed(2)}
                 </span>
               </div>

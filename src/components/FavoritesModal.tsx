@@ -34,7 +34,7 @@ export const FavoritesModal: React.FC<FavoritesModalProps> = ({
         {/* Header */}
         <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between bg-[#0A0A0A]">
           <div className="flex items-center gap-2">
-            <Heart className="w-5 h-5 text-[#D2E8A3] fill-[#D2E8A3]" />
+            <Heart className="w-5 h-5 text-[var(--accent)] fill-[var(--accent)]" />
             <h2 className="font-display text-base sm:text-lg font-black uppercase text-white">
               Mis Favoritos ({favorites.length})
             </h2>
@@ -57,7 +57,7 @@ export const FavoritesModal: React.FC<FavoritesModalProps> = ({
               <p className="text-sm">No tienes productos guardados en tus favoritos.</p>
               <button
                 onClick={onClose}
-                className="px-5 py-2 rounded-full bg-[#D2E8A3] text-[#0A0A0A] font-bold text-xs"
+                className="px-5 py-2 rounded-full bg-[var(--accent)] text-[#0A0A0A] font-bold text-xs"
               >
                 EXPLORAR PRODUCTOS
               </button>
@@ -81,7 +81,7 @@ export const FavoritesModal: React.FC<FavoritesModalProps> = ({
                   <span className="text-[10px] text-gray-400 font-mono">
                     {product.technique}
                   </span>
-                  <div className="text-sm font-black text-[#D2E8A3] mt-0.5">
+                  <div className="text-sm font-black text-[var(--accent)] mt-0.5">
                     S/ {product.price.toFixed(2)}
                   </div>
                 </div>
@@ -92,7 +92,7 @@ export const FavoritesModal: React.FC<FavoritesModalProps> = ({
                       onSelectProduct(product);
                       onClose();
                     }}
-                    className="p-2.5 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-bold text-xs hover:bg-[#b8d682] transition-colors shadow-md"
+                    className="p-2.5 rounded-xl bg-[var(--accent)] text-[#0A0A0A] font-bold text-xs hover:bg-[var(--accent-hover2)] transition-colors shadow-md"
                     title="Configurar Pedido"
                   >
                     <ShoppingBag className="w-4 h-4" />

@@ -21,7 +21,7 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ themeMode = 'dark' }) =>
         <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-mono font-bold ${
           isLight ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-[#161814] border-white/20 text-gray-200'
         }`}>
-          <HelpCircle className="w-3.5 h-3.5 text-lime-700 dark:text-[#D2E8A3]" />
+          <HelpCircle className="w-3.5 h-3.5 text-lime-700 dark:text-[var(--accent)]" />
           <span>{cfg('faq_badge', 'RESOLVEMOS TUS DUDAS')}</span>
         </div>
         <h3 className={`font-display text-2xl sm:text-3xl font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
@@ -45,13 +45,13 @@ export const FaqSection: React.FC<FaqSectionProps> = ({ themeMode = 'dark' }) =>
               <button
                 onClick={() => toggleFaq(idx)}
                 className={`w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-sm sm:text-base transition-colors ${
-                  isLight ? 'text-slate-900 hover:text-lime-700' : 'text-white hover:text-[#D2E8A3]'
+                  isLight ? 'text-slate-900 hover:text-lime-700' : 'text-white hover:text-[var(--accent)]'
                 }`}
               >
                 <span>{faq.question}</span>
                 <ChevronDown
                   className={`w-5 h-5 transition-transform duration-300 flex-shrink-0 ${
-                    isLight ? 'text-lime-700' : 'text-[#D2E8A3]'
+                    isLight ? 'text-lime-700' : 'text-[var(--accent)]'
                   } ${isOpen ? 'rotate-180' : ''}`}
                 />
               </button>

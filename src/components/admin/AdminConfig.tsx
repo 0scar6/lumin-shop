@@ -1,6 +1,8 @@
 import React, { memo } from 'react';
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Palette, PartyPopper, Check } from 'lucide-react';
 import { Field, TextInput, Section, PreviewBox, EditableText } from './AdminShared';
+import { PALETTES, PALETTE_LABELS } from '../../lib/palette';
+import { SEASON_OPTIONS, SEASONS } from '../CampaignStrip';
 
 export const AdminConfig = memo(({ cfgEdit, setCfg }: { cfgEdit: Record<string, string>; setCfg: (key: string, value: string) => void }) => (
   <div className="p-5 sm:p-8 space-y-6 max-w-[1200px] mx-auto">
@@ -71,7 +73,7 @@ export const AdminConfig = memo(({ cfgEdit, setCfg }: { cfgEdit: Record<string, 
       </div>
     </Section>
 
-    <Section title="Textos del Social Bar" icon={<MessageCircle className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+    <Section title="Textos del Social Bar" icon={<MessageCircle className="w-3.5 h-3.5 text-[var(--accent)]" />}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-3">
           <Field label="Título del Social Bar">
@@ -91,6 +93,111 @@ export const AdminConfig = memo(({ cfgEdit, setCfg }: { cfgEdit: Record<string, 
               {cfgEdit.social_bar_text || 'Contacto directo'} <strong className="text-white">{cfgEdit.brand_phone || '993 365 099'}</strong> • {cfgEdit.social_bar_sub || 'Respuesta inmediata'}
             </p>
           </div>
+        </PreviewBox>
+      </div>
+    </Section>
+
+    <Section title="Paleta de Color de la Marca" icon={<Palette className="w-3.5 h-3.5 text-[var(--accent)]" />} badge="Nuevo">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-3">
+          <p className="text-[10px] text-gray-500 leading-relaxed">
+            Cambia el color de acento de <strong className="text-white">toda la web</strong>: botones, enlaces, badges y detalles. Se aplica al <strong className="text-white">guardar</strong>.
+          </p>
+          {Object.entries(PALETTE_LABELS).map(([key, meta]) => {
+            const selected = (cfgEdit.brand_palette || 'green') === key;
+            return (
+              <button
+                key={key}
+                onClick={() => setCfg('brand_palette', key)}
+                className={`w-full flex items-center gap-3 p-3 rounded-xl border text-left transition-all min-h-[58px] ${
+                  selected ? 'border-[var(--accent)] bg-[var(--accent)]/10' : 'border-white/10 bg-white/5 hover:border-white/25'
+                }`}
+              >
+                <span className="w-9 h-9 rounded-full flex-shrink-0 border border-white/20 shadow-lg" style={{ background: PALETTES[key].accent }} />
+                <span className="flex-1">
+                  <span className="block text-xs font-bold text-white">{meta.name}</span>
+                  <span className="block text-[10px] text-gray-500 leading-snug">{meta.desc}</span>
+                </span>
+                {selected && <Check className="w-4 h-4 text-[var(--accent)] flex-shrink-0" />}
+              </button>
+            );
+          })}
+        </div>
+        <PreviewBox title="Vista Previa — Paleta">
+          {(() => {
+            const pal = PALETTES[cfgEdit.brand_palette || 'green'] || PALETTES.green;
+            return (
+              <div className="rounded-xl bg-[#0A0A0A] border border-white/10 p-4 space-y-4">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="px-4 py-2 rounded-xl text-xs font-extrabold shadow-lg" style={{ background: pal.accent, color: '#0A0A0A' }}>Personalizar</span>
+                  <span className="px-3 py-2 rounded-xl text-xs font-bold border" style={{ color: pal.accent, borderColor: `${pal.accent}66`, background: `${pal.accent}14` }}>#DROP 04</span>
+                  <span className="text-xs font-bold" style={{ color: pal.accent }}>Enlace de acento</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="w-6 h-6 rounded-md border border-white/20" style={{ background: pal.accent }} />
+                  <span className="w-6 h-6 rounded-md border border-white/20" style={{ background: pal.hover }} />
+                  <span className="w-6 h-6 rounded-md border border-white/20" style={{ background: pal.hover2 }} />
+                  <span className="w-6 h-6 rounded-md border border-white/20" style={{ background: pal.light }} />
+                  <span className="text-[9px] font-mono text-gray-500 ml-1">{pal.accent}</span>
+                </div>
+                <p className="text-[10px] text-gray-600 leading-relaxed">El modo claro usa automáticamente una variante más oscura del mismo color para mantener la legibilidad.</p>
+              </div>
+            );
+          })()}
+        </PreviewBox>
+      </div>
+    </Section>
+
+    <Section title="Campaña de Temporada" icon={<PartyPopper className="w-3.5 h-3.5 text-[var(--accent)]" />} badge="Nuevo">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="space-y-3">
+          <p className="text-[10px] text-gray-500 leading-relaxed">
+            Muestra una franja decorativa arriba del inicio de la web con el mensaje que elijas. <strong className="text-white">No cambia precios ni productos.</strong>
+          </p>
+          <Field label="Temporada activa">
+            <select
+              value={cfgEdit.season_active || 'none'}
+              onChange={(e) => setCfg('season_active', e.target.value)}
+              className="w-full bg-[#141414] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-[var(--accent)] transition-colors"
+            >
+              {SEASON_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+            </select>
+          </Field>
+          <Field label="Mensaje de campaña (opcional)">
+            <TextInput
+              value={cfgEdit.season_message || ''}
+              onChange={(v: string) => setCfg('season_message', v)}
+              placeholder="Ej. Regalos con tu propio diseño"
+            />
+          </Field>
+          <p className="text-[9px] text-gray-600">Sin mensaje se usa una frase predeterminada de la temporada. Vuelve a «Sin campaña» para ocultarla.</p>
+        </div>
+        <PreviewBox title="Vista Previa — Franja">
+          {(() => {
+            const key = cfgEdit.season_active || 'none';
+            const meta = SEASONS[key];
+            if (!meta) {
+              return (
+                <div className="rounded-xl bg-[#0A0A0A] border border-dashed border-white/10 p-6 text-center">
+                  <p className="text-[11px] text-gray-500">Sin campaña activa.<br />Elige una temporada para mostrar la franja en el inicio.</p>
+                </div>
+              );
+            }
+            const msg = (cfgEdit.season_message || '').trim() || meta.message;
+            return (
+              <div className="rounded-xl bg-[#0A0A0A] p-4 space-y-3">
+                <div className="flex flex-wrap items-center gap-3 px-3 py-2.5 rounded-2xl border" style={{ borderColor: `${meta.accent}55`, backgroundColor: `${meta.accent}12` }}>
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] font-black uppercase tracking-[0.15em] border" style={{ color: meta.accent, borderColor: `${meta.accent}66`, backgroundColor: `${meta.accent}1a` }}>
+                    <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: meta.accent }} />
+                    {meta.emoji} {meta.label}
+                  </span>
+                  <span className="flex-1 min-w-[100px] text-[11px] text-gray-300 leading-snug">{msg}</span>
+                  <span className="text-[10px] font-extrabold uppercase" style={{ color: meta.accent }}>Ver diseños →</span>
+                </div>
+                <p className="text-[9px] text-gray-600">Aparece sobre el banner principal en la pestaña de inicio.</p>
+              </div>
+            );
+          })()}
         </PreviewBox>
       </div>
     </Section>

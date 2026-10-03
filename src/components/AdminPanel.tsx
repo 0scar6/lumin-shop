@@ -6,7 +6,8 @@ import {
   Clock, ShieldCheck, Truck, RefreshCw, Tag, HelpCircle, ChevronUp, Download,
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { reloadConfig } from '../lib/config';
+import { reloadConfig, cfg } from '../lib/config';
+import { paletteAccent } from '../lib/palette';
 import { AdminSharedProps, Field, TextInput, TextArea, MediaUpload, Section, PreviewBox, EditableText, EditableImage, MirrorSection } from './admin/AdminShared';
 import { AdminConfig } from './admin/AdminConfig';
 import { AdminProducts, ProductoRow } from './admin/AdminProducts';
@@ -237,7 +238,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     alert(`Sincronizados ${count} productos. Galería actualizada.`); await loadProducts();
   };
 
-  const inputCls = 'w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#1a1d1a] border-white/10 placeholder-gray-500 focus:outline-none focus:border-[#D2E8A3] focus:ring-1 focus:ring-[#D2E8A3]/30 transition-all';
+  const inputCls = 'w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#1a1d1a] border-white/10 placeholder-gray-500 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]/30 transition-all';
   const labelCls = 'block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5';
 
   if (!isOpen) return null;
@@ -248,7 +249,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
         <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-[#0A0A0A] p-8 space-y-6" onClick={e => e.stopPropagation()}>
           <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10"><X className="w-5 h-5" /></button>
           <div className="text-center space-y-2">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-[#D2E8A3]/10 border border-[#D2E8A3]/30 flex items-center justify-center"><Lock className="w-6 h-6 text-[#D2E8A3]" /></div>
+            <div className="w-14 h-14 mx-auto rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/30 flex items-center justify-center"><Lock className="w-6 h-6 text-[var(--accent)]" /></div>
             <h2 className="text-lg font-extrabold uppercase text-white">Admin</h2>
             <p className="text-xs text-gray-400">Contraseña requerida</p>
           </div>
@@ -259,7 +260,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
               <button onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">{showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
             </div>
             {pwError && <p className="text-xs text-red-400 text-center">Contraseña incorrecta</p>}
-            <button onClick={handleLogin} className="w-full py-3 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-sm hover:bg-[#c2e088] transition-all shadow-lg">ENTRAR</button>
+            <button onClick={handleLogin} className="w-full py-3 rounded-xl bg-[var(--accent)] text-[#0A0A0A] font-extrabold text-sm hover:bg-[var(--accent-hover)] transition-all shadow-lg">ENTRAR</button>
           </div>
         </div>
       </div>
@@ -284,7 +285,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
         {/* Header Bar */}
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/5 flex-shrink-0 bg-[#0A0A0A]">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[#D2E8A3] flex items-center justify-center shadow-lg shadow-[#D2E8A3]/20">
+            <div className="w-9 h-9 rounded-xl bg-[var(--accent)] flex items-center justify-center shadow-lg shadow-[var(--accent)]/20">
               <span className="text-[#0A0A0A] font-extrabold text-base">L</span>
             </div>
             <div>
@@ -294,11 +295,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
           </div>
           <div className="flex items-center gap-2">
             {cfgChanged > 0 && (
-              <span className="text-[10px] font-bold text-[#D2E8A3] bg-[#D2E8A3]/10 px-2.5 py-1.5 rounded-lg border border-[#D2E8A3]/20">{cfgChanged} cambio{cfgChanged > 1 ? 's' : ''}</span>
+              <span className="text-[10px] font-bold text-[var(--accent)] bg-[var(--accent)]/10 px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/20">{cfgChanged} cambio{cfgChanged > 1 ? 's' : ''}</span>
             )}
             {cfgSaved && <span className="text-[10px] font-bold text-green-400 bg-green-400/10 px-2.5 py-1.5 rounded-lg border border-green-400/20">Guardado</span>}
             <button onClick={handleCfgSave} disabled={cfgChanged === 0}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl font-extrabold text-[11px] transition-all ${cfgChanged > 0 ? 'bg-[#D2E8A3] text-[#0A0A0A] hover:bg-[#c2e088] shadow-lg shadow-[#D2E8A3]/20' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}>
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl font-extrabold text-[11px] transition-all ${cfgChanged > 0 ? 'bg-[var(--accent)] text-[#0A0A0A] hover:bg-[var(--accent-hover)] shadow-lg shadow-[var(--accent)]/20' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}>
               <Save className="w-3.5 h-3.5" /> Guardar
             </button>
             <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-all"><X className="w-5 h-5" /></button>
@@ -311,7 +312,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
             <button key={t.key} onClick={() => { setMainTab(t.key); setEditingProduct(null); setIsNewProduct(false); }}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
                 mainTab === t.key
-                  ? 'bg-[#D2E8A3] text-[#0A0A0A] shadow-lg shadow-[#D2E8A3]/20'
+                  ? 'bg-[var(--accent)] text-[#0A0A0A] shadow-lg shadow-[var(--accent)]/20'
                   : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
               }`}>
               <t.icon className="w-4 h-4" />
@@ -351,33 +352,33 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
     <div className="p-3 sm:p-6 space-y-4 max-w-[1200px] mx-auto">
 
       {/* ─── HOW-TO BANNER ─── */}
-      <div className="rounded-2xl border border-[#D2E8A3]/20 bg-[#D2E8A3]/5 p-4 flex items-start gap-3">
-        <div className="w-8 h-8 rounded-xl bg-[#D2E8A3]/15 flex items-center justify-center flex-shrink-0 mt-0.5">
-          <Pencil className="w-4 h-4 text-[#D2E8A3]" />
+      <div className="rounded-2xl border border-[var(--accent)]/20 bg-[var(--accent)]/5 p-4 flex items-start gap-3">
+        <div className="w-8 h-8 rounded-xl bg-[var(--accent)]/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+          <Pencil className="w-4 h-4 text-[var(--accent)]" />
         </div>
         <div className="space-y-1">
-          <p className="text-xs font-extrabold text-[#D2E8A3] uppercase tracking-wider">Modo Edición Visual — Doble clic para editar</p>
+          <p className="text-xs font-extrabold text-[var(--accent)] uppercase tracking-wider">Modo Edición Visual — Doble clic para editar</p>
           <p className="text-[11px] text-gray-400 leading-relaxed">
             Haz <strong className="text-white">doble clic</strong> en cualquier texto verde o blanco para editarlo directamente.
-            Los cambios se guardan localmente — presiona <strong className="text-[#D2E8A3]">"Guardar"</strong> arriba para subirlos a Supabase.
+            Los cambios se guardan localmente — presiona <strong className="text-[var(--accent)]">"Guardar"</strong> arriba para subirlos a Supabase.
             Las imágenes se cambian pasando el cursor encima.
           </p>
         </div>
       </div>
 
       {/* ─── HERO BANNER ─── */}
-      <MirrorSection title="Hero Banner" icon={<Home className="w-3.5 h-3.5 text-[#D2E8A3]" />} badge="Sección principal" editCount={heroEdits}>
+      <MirrorSection title="Hero Banner" icon={<Home className="w-3.5 h-3.5 text-[var(--accent)]" />} badge="Sección principal" editCount={heroEdits}>
         <div className="p-4 sm:p-8 bg-gradient-to-br from-[#161814] via-[#0F110D] to-[#0A0A0A] relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full blur-3xl bg-[#D2E8A3]/10 pointer-events-none"></div>
+          <div className="absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full blur-3xl bg-[var(--accent)]/10 pointer-events-none"></div>
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7 space-y-4 sm:space-y-5">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D2E8A3]/10 border border-[#D2E8A3]/30 text-[#D2E8A3] text-xs font-bold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--accent)]/10 border border-[var(--accent)]/30 text-[var(--accent)] text-xs font-bold uppercase tracking-wider">
                 <span className="text-lime-600">🔥</span>
                 <EditableText cfgKey="hero_badge" value={cfgEdit.hero_badge || ''} setCfg={setCfg} fallback="Exclusivo — COLECCIÓN BAJO DEMANDA" />
               </div>
               <h2 className="font-display text-3xl sm:text-5xl font-extrabold leading-tight uppercase tracking-tight text-white">
                 <EditableText cfgKey="hero_title_1" value={cfgEdit.hero_title_1 || ''} setCfg={setCfg} fallback="MODA URBANA &" /><br />
-                <EditableText cfgKey="hero_title_2" value={cfgEdit.hero_title_2 || ''} setCfg={setCfg} fallback="VASOS SUBLIMADOS" className="text-[#D2E8A3]" />
+                <EditableText cfgKey="hero_title_2" value={cfgEdit.hero_title_2 || ''} setCfg={setCfg} fallback="VASOS SUBLIMADOS" className="text-[var(--accent)]" />
               </h2>
               <p className="text-sm sm:text-base max-w-xl leading-relaxed text-gray-400">
                 <EditableText cfgKey="hero_subtitle_1" value={cfgEdit.hero_subtitle_1 || ''} setCfg={setCfg} fallback="Polos Sublimados con" />{' '}
@@ -387,20 +388,20 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
               </p>
               <div className="flex flex-wrap gap-2 pt-1">
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-black/60 border border-white/15 text-gray-200">
-                  <span className="text-[#D2E8A3]">⚡</span>
+                  <span className="text-[var(--accent)]">⚡</span>
                   <EditableText cfgKey="hero_badge_1" value={cfgEdit.hero_badge_1 || ''} setCfg={setCfg} fallback="Producción Express: 24 a 48 hrs" />
                 </span>
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold bg-black/60 border border-white/15 text-gray-200">
-                  <span className="text-[#D2E8A3]">🛡️</span>
+                  <span className="text-[var(--accent)]">🛡️</span>
                   <EditableText cfgKey="hero_badge_2" value={cfgEdit.hero_badge_2 || ''} setCfg={setCfg} fallback="Garantía de Fijación Térmica & Color" />
                 </span>
               </div>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-3">
-                <span className="px-6 py-3.5 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg">
+                <span className="px-6 py-3.5 rounded-xl bg-[var(--accent)] text-[#0A0A0A] font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg">
                   <EditableText cfgKey="hero_cta_catalogo" value={cfgEdit.hero_cta_catalogo || ''} setCfg={setCfg} fallback="EXPLORAR CATÁLOGO" />
                 </span>
                 <span className="px-6 py-3.5 rounded-xl border bg-white/5 border-white/10 text-white font-bold text-sm flex items-center justify-center gap-2">
-                  <span className="text-[#D2E8A3]">✨</span>
+                  <span className="text-[var(--accent)]">✨</span>
                   <EditableText cfgKey="hero_cta_idea" value={cfgEdit.hero_cta_idea || ''} setCfg={setCfg} fallback="Personalizar Mi Idea" />
                 </span>
               </div>
@@ -410,14 +411,14 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
                 <div className="relative group overflow-hidden rounded-2xl border border-white/10 aspect-[4/5] bg-[#161814]">
                   <EditableImage cfgKey="hero_media_1_url" value={cfgEdit.hero_media_1_url || ''} setCfg={setCfg} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} className="w-full h-full" fallback="Media 1" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-3 flex flex-col justify-end pointer-events-none">
-                    <EditableText cfgKey="hero_street_title" value={cfgEdit.hero_street_title || ''} setCfg={setCfg} fallback="STREETWEAR" className="text-[10px] font-mono text-[#D2E8A3] uppercase" /><br />
+                    <EditableText cfgKey="hero_street_title" value={cfgEdit.hero_street_title || ''} setCfg={setCfg} fallback="STREETWEAR" className="text-[10px] font-mono text-[var(--accent)] uppercase" /><br />
                     <EditableText cfgKey="hero_street_sub" value={cfgEdit.hero_street_sub || ''} setCfg={setCfg} fallback="Acid Tokyo 1988" className="text-xs font-bold text-white" />
                   </div>
                 </div>
                 <div className="relative group overflow-hidden rounded-2xl border border-white/10 aspect-[4/5] mt-6 bg-[#161814]">
                   <EditableImage cfgKey="hero_media_2_url" value={cfgEdit.hero_media_2_url || ''} setCfg={setCfg} handleFileUpload={handleFileUpload} uploading={uploading} uploadTarget={uploadTarget} className="w-full h-full" fallback="Media 2" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-3 flex flex-col justify-end pointer-events-none">
-                    <EditableText cfgKey="hero_subli_title" value={cfgEdit.hero_subli_title || ''} setCfg={setCfg} fallback="SUBLIMACIÓN" className="text-[10px] font-mono text-[#D2E8A3] uppercase" /><br />
+                    <EditableText cfgKey="hero_subli_title" value={cfgEdit.hero_subli_title || ''} setCfg={setCfg} fallback="SUBLIMACIÓN" className="text-[10px] font-mono text-[var(--accent)] uppercase" /><br />
                     <EditableText cfgKey="hero_subli_sub" value={cfgEdit.hero_subli_sub || ''} setCfg={setCfg} fallback="Frosted Glass 16oz" className="text-xs font-bold text-white" />
                   </div>
                 </div>
@@ -428,11 +429,11 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
       </MirrorSection>
 
       {/* ─── ABOUT SECTION ─── */}
-      <MirrorSection title="Sobre LUMIN SHOP" icon={<FileText className="w-3.5 h-3.5 text-[#D2E8A3]" />} badge="Descripción de marca" editCount={aboutEdits}>
+      <MirrorSection title="Sobre LUMIN SHOP" icon={<FileText className="w-3.5 h-3.5 text-[var(--accent)]" />} badge="Descripción de marca" editCount={aboutEdits}>
         <div className="p-4 sm:p-8 border border-white/10 rounded-3xl bg-[#0A0A0A] space-y-4 relative overflow-hidden m-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-[#D2E8A3]/20 text-[#D2E8A3]">
+              <span className="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-[var(--accent)]/20 text-[var(--accent)]">
                 <EditableText cfgKey="section_about_label" value={cfgEdit.section_about_label || ''} setCfg={setCfg} fallback="Sobre" />{' '}
                 <EditableText cfgKey="brand_name" value={cfgEdit.brand_name || ''} setCfg={setCfg} fallback="LUMIN SHOP" />
               </span>
@@ -446,12 +447,12 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
               fallback="LUMIN SHOP es una marca independiente peruana dedicada al diseño y confección de streetwear exclusivo y artículos gráficos." className="w-full block" />
           </div>
           <div className="flex flex-wrap items-center gap-3 pt-2">
-            <span className="px-5 py-2.5 rounded-full bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-lg">
+            <span className="px-5 py-2.5 rounded-full bg-[var(--accent)] text-[#0A0A0A] font-extrabold text-xs sm:text-sm flex items-center gap-2 shadow-lg">
               <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
               <EditableText cfgKey="section_about_cta_cat" value={cfgEdit.section_about_cta_cat || ''} setCfg={setCfg} fallback="Explorar Catálogo de Productos" />
             </span>
             <span className="px-5 py-2.5 rounded-full border bg-white/5 border-white/10 text-white font-extrabold text-xs sm:text-sm flex items-center gap-2">
-              <span className="text-[#D2E8A3]">✨</span>
+              <span className="text-[var(--accent)]">✨</span>
               <EditableText cfgKey="section_about_cta_idea" value={cfgEdit.section_about_cta_idea || ''} setCfg={setCfg} fallback="Cotizar Idea Personalizada" />
             </span>
           </div>
@@ -459,10 +460,10 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
       </MirrorSection>
 
       {/* ─── HOW IT WORKS / PRODUCTION BADGES ─── */}
-      <MirrorSection title="Cómo Funciona" icon={<RefreshCw className="w-3.5 h-3.5 text-[#D2E8A3]" />} badge="Proceso" editCount={badgeEdits}>
+      <MirrorSection title="Cómo Funciona" icon={<RefreshCw className="w-3.5 h-3.5 text-[var(--accent)]" />} badge="Proceso" editCount={badgeEdits}>
         <div className="p-4 sm:p-8 space-y-6">
           <div className="text-center max-w-2xl mx-auto space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-[#D2E8A3]/10 border border-[#D2E8A3]/20 text-[#D2E8A3]">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[var(--accent)]">
               <RefreshCw className="w-3.5 h-3.5 animate-spin" />
               <EditableText cfgKey="badge_model_title" value={cfgEdit.badge_model_title || ''} setCfg={setCfg} fallback="MODELO SUSTENTABLE BAJO DEMANDA" />
             </div>
@@ -471,10 +472,10 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {[1, 2, 3].map(i => (
-              <div key={i} className="p-6 rounded-2xl border border-white/10 bg-[#0A0A0A] relative overflow-hidden hover:border-[#D2E8A3]/40 transition-all">
+              <div key={i} className="p-6 rounded-2xl border border-white/10 bg-[#0A0A0A] relative overflow-hidden hover:border-[var(--accent)]/40 transition-all">
                 <div className="flex items-center justify-between mb-4">
-                  <span className="font-mono text-2xl font-black text-[#D2E8A3]/80">{String(i).padStart(2, '0')}</span>
-                  <div className="p-3 rounded-xl border bg-[#0A0A0A] border-white/10 text-[#D2E8A3]">
+                  <span className="font-mono text-2xl font-black text-[var(--accent)]/80">{String(i).padStart(2, '0')}</span>
+                  <div className="p-3 rounded-xl border bg-[#0A0A0A] border-white/10 text-[var(--accent)]">
                     {i === 1 ? <Tag className="w-5 h-5" /> : i === 2 ? <Clock className="w-5 h-5" /> : <Truck className="w-5 h-5" />}
                   </div>
                 </div>
@@ -484,22 +485,22 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
             ))}
           </div>
           <div className="p-4 rounded-2xl border border-white/5 bg-[#0A0A0A] flex flex-wrap items-center justify-around gap-4 text-xs text-gray-300">
-            <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-[#D2E8A3]" /><span>Fijación Térmica HD de Alta Durabilidad</span></div>
-            <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-[#D2E8A3]" /><span>Tiempo de fabricación: 24-48 hrs</span></div>
-            <div className="flex items-center gap-2"><Check className="w-4 h-4 text-[#D2E8A3]" /><span>Atención Directa por WhatsApp</span></div>
+            <div className="flex items-center gap-2"><ShieldCheck className="w-4 h-4 text-[var(--accent)]" /><span>Fijación Térmica HD de Alta Durabilidad</span></div>
+            <div className="flex items-center gap-2"><Clock className="w-4 h-4 text-[var(--accent)]" /><span>Tiempo de fabricación: 24-48 hrs</span></div>
+            <div className="flex items-center gap-2"><Check className="w-4 h-4 text-[var(--accent)]" /><span>Atención Directa por WhatsApp</span></div>
           </div>
         </div>
       </MirrorSection>
 
       {/* ─── FEATURED PRODUCTS ─── */}
-      <MirrorSection title="Productos Destacados" icon={<Tag className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+      <MirrorSection title="Productos Destacados" icon={<Tag className="w-3.5 h-3.5 text-[var(--accent)]" />}>
         <div className="p-4 sm:p-6 space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-1">
-              <EditableText cfgKey="section_featured_title" value={cfgEdit.section_featured_title || ''} setCfg={setCfg} fallback="🔥 SELECCIÓN DESTACADA DROP 04" className="text-xs font-mono uppercase tracking-widest text-[#D2E8A3] block" />
+              <EditableText cfgKey="section_featured_title" value={cfgEdit.section_featured_title || ''} setCfg={setCfg} fallback="🔥 SELECCIÓN DESTACADA DROP 04" className="text-xs font-mono uppercase tracking-widest text-[var(--accent)] block" />
               <EditableText cfgKey="section_featured_sub" value={cfgEdit.section_featured_sub || ''} setCfg={setCfg} fallback="Nuestros Más Pedidos" className="font-display text-xl sm:text-2xl font-extrabold uppercase text-white block" />
             </div>
-            <span className="text-xs font-bold text-[#D2E8A3] flex items-center gap-1">
+            <span className="text-xs font-bold text-[var(--accent)] flex items-center gap-1">
               <EditableText cfgKey="section_featured_view_all" value={cfgEdit.section_featured_view_all || ''} setCfg={setCfg} fallback="Ver Catálogo Completo" /> →
             </span>
           </div>
@@ -509,7 +510,7 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
                 <div className="aspect-video bg-[#161814] flex items-center justify-center text-gray-600 text-xs">Producto {i}</div>
                 <div className="p-3 space-y-1.5">
                   <p className="text-white text-xs font-extrabold">Producto destacado {i}</p>
-                  <p className="text-[#D2E8A3] text-sm font-black">S/ 0.00</p>
+                  <p className="text-[var(--accent)] text-sm font-black">S/ 0.00</p>
                 </div>
               </div>
             ))}
@@ -519,11 +520,11 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
       </MirrorSection>
 
       {/* ─── FAQ ─── */}
-      <MirrorSection title="Preguntas Frecuentes" icon={<HelpCircle className="w-3.5 h-3.5 text-[#D2E8A3]" />} editCount={faqEdits}>
+      <MirrorSection title="Preguntas Frecuentes" icon={<HelpCircle className="w-3.5 h-3.5 text-[var(--accent)]" />} editCount={faqEdits}>
         <div className="p-4 sm:p-8 max-w-3xl mx-auto space-y-4">
           <div className="text-center space-y-2 mb-6">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-white/20 bg-[#161814] text-gray-200 text-xs font-mono font-bold">
-              <HelpCircle className="w-3.5 h-3.5 text-[#D2E8A3]" />
+              <HelpCircle className="w-3.5 h-3.5 text-[var(--accent)]" />
               <EditableText cfgKey="faq_badge" value={cfgEdit.faq_badge || ''} setCfg={setCfg} fallback="RESOLVEMOS TUS DUDAS" />
             </div>
             <EditableText cfgKey="faq_heading" value={cfgEdit.faq_heading || ''} setCfg={setCfg} fallback="PREGUNTAS FRECUENTES" className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white block" />
@@ -532,7 +533,7 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
             <div key={i} className="rounded-2xl border border-white/10 overflow-hidden">
               <div className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-bold text-sm text-white">
                 <span>{q}</span>
-                <ChevronDown className="w-5 h-5 text-[#D2E8A3] flex-shrink-0" />
+                <ChevronDown className="w-5 h-5 text-[var(--accent)] flex-shrink-0" />
               </div>
             </div>
           ))}
@@ -541,18 +542,18 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
       </MirrorSection>
 
       {/* ─── FOOTER ─── */}
-      <MirrorSection title="Footer" icon={<FileText className="w-3.5 h-3.5 text-[#D2E8A3]" />} editCount={footerEdits}>
+      <MirrorSection title="Footer" icon={<FileText className="w-3.5 h-3.5 text-[var(--accent)]" />} editCount={footerEdits}>
         <div className="p-4 sm:p-8 bg-[#070806] space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-[#D2E8A3]"></span>
+                <span className="w-2.5 h-2.5 rounded-full bg-[var(--accent)]"></span>
                 <EditableText cfgKey="brand_name" value={cfgEdit.brand_name || ''} setCfg={setCfg} fallback="LUMIN SHOP" className="font-display text-xl font-black text-white uppercase tracking-tight" monospace />
               </div>
               <EditableText cfgKey="footer_description" value={cfgEdit.footer_description || ''} setCfg={setCfg} isTextarea rows={3}
                 fallback="Marca independiente de ropa urbana streetwear (polos gráficos de alta definición) y vasos/tazas sublimadas de alta temperatura."
                 className="text-gray-400 text-xs leading-relaxed block w-full" />
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#161814] border border-[#D2E8A3]/20 text-[#D2E8A3] text-[11px] font-mono">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#161814] border border-[var(--accent)]/20 text-[var(--accent)] text-[11px] font-mono">
                 <Tag className="w-3 h-3" />
                 <EditableText cfgKey="footer_production" value={cfgEdit.footer_production || ''} setCfg={setCfg} fallback="Producción Express 24-48 hrs" />
               </span>
@@ -562,8 +563,8 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
               <ul className="space-y-2">
                 {[{ key: 'footer_col_1', fallback: 'Polos Oversized & Boxy Fit', icon: '👕' }, { key: 'footer_col_2', fallback: 'Vasos Frosted Glass 16oz', icon: '☕' }, { key: 'footer_col_3', fallback: 'Tazas Térmicas 11oz', icon: '🔥' }, { key: 'footer_col_4', fallback: 'Edición Especial Drop 04', icon: '✨' }].map(item => (
                   <li key={item.key} className="flex items-center gap-2">
-                    <span className="text-[#D2E8A3] text-sm">{item.icon}</span>
-                    <EditableText cfgKey={item.key} value={cfgEdit[item.key] || ''} setCfg={setCfg} fallback={item.fallback} className="text-gray-400 text-xs hover:text-[#D2E8A3] transition-colors" />
+                    <span className="text-[var(--accent)] text-sm">{item.icon}</span>
+                    <EditableText cfgKey={item.key} value={cfgEdit[item.key] || ''} setCfg={setCfg} fallback={item.fallback} className="text-gray-400 text-xs hover:text-[var(--accent)] transition-colors" />
                   </li>
                 ))}
               </ul>
@@ -583,10 +584,10 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
               <EditableText cfgKey="footer_social_title" value={cfgEdit.footer_social_title || ''} setCfg={setCfg} fallback="Síguenos en Redes" className="font-bold text-white text-xs uppercase font-mono tracking-wider block" />
               <p className="text-gray-400 text-xs">
                 <EditableText cfgKey="footer_social_text" value={cfgEdit.footer_social_text || ''} setCfg={setCfg} fallback="Encuéntranos en TikTok, Facebook e Instagram como" />{' '}
-                <strong className="text-[#D2E8A3]"><EditableText cfgKey="brand_instagram" value={cfgEdit.brand_instagram || ''} setCfg={setCfg} fallback="@.lumin.shop" /></strong>
+                <strong className="text-[var(--accent)]"><EditableText cfgKey="brand_instagram" value={cfgEdit.brand_instagram || ''} setCfg={setCfg} fallback="@.lumin.shop" /></strong>
               </p>
               <div className="flex flex-wrap items-center gap-2 pt-1">
-                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white"><MessageCircle className="w-4 h-4 text-[#D2E8A3]" /><span className="font-bold text-[11px]">WhatsApp</span></span>
+                <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white"><MessageCircle className="w-4 h-4 text-[var(--accent)]" /><span className="font-bold text-[11px]">WhatsApp</span></span>
                 <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white"><svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-5.2-1.74 2.89 2.89 0 0 1 2.31-1.39V9.06a6.34 6.34 0 0 0-3.5 1.05 6.33 6.33 0 0 0-2.8 4.28 6.34 6.34 0 0 0 1.25 5.25A6.33 6.33 0 0 0 9.17 22a6.34 6.34 0 0 0 6.33-6.33V9a8.16 8.16 0 0 0 4.09 1.14V6.69z"/></svg><span className="font-bold text-[11px]">TikTok</span></span>
                 <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white"><svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg><span className="font-bold text-[11px]">Facebook</span></span>
                 <span className="p-2.5 rounded-full bg-[#161814] border border-white/10 flex items-center gap-1.5 px-3.5 text-white"><svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg><span className="font-bold text-[11px]">Instagram</span></span>
@@ -595,7 +596,7 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
           </div>
           <div className="pt-8 mt-8 border-t border-white/5 flex flex-col sm:flex-row items-center justify-between text-[11px] text-gray-500 gap-4">
             <EditableText cfgKey="footer_copyright" value={cfgEdit.footer_copyright || ''} setCfg={setCfg} fallback="© 2026 LUMIN SHOP. Todos los derechos reservados. Moda Urbana & Sublimación Bajo Pedido." />
-            <p className="font-mono">Acento: #D2E8A3 | Carbón: #0A0A0A</p>
+            <p className="font-mono">Acento: {paletteAccent(cfg('brand_palette', 'green'))} | Carbón: #0A0A0A</p>
           </div>
         </div>
       </MirrorSection>
@@ -611,7 +612,7 @@ TabInicio.displayName = 'TabInicio';
 const TabFavoritos = memo(({ cfgEdit, setCfg }: any) => (
   <div className="p-5 sm:p-8 space-y-6 max-w-[1200px] mx-auto">
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Section title="Página de Favoritos" icon={<Heart className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+      <Section title="Página de Favoritos" icon={<Heart className="w-3.5 h-3.5 text-[var(--accent)]" />}>
         <Field label="Título"><TextInput value={cfgEdit.favorites_title || ''} onChange={(v: string) => setCfg('favorites_title', v)} placeholder="Mis Favoritos" /></Field>
         <Field label="Descripción"><TextArea value={cfgEdit.favorites_desc || ''} onChange={(v: string) => setCfg('favorites_desc', v)} rows={2} /></Field>
         <Field label="Título (vacío)"><TextInput value={cfgEdit.favorites_empty_title || ''} onChange={(v: string) => setCfg('favorites_empty_title', v)} /></Field>
@@ -623,10 +624,10 @@ const TabFavoritos = memo(({ cfgEdit, setCfg }: any) => (
           <h3 className="text-white font-extrabold text-sm">{cfgEdit.favorites_title || 'Mis Favoritos'}</h3>
           <p className="text-gray-400 text-[10px]">{cfgEdit.favorites_desc || 'Descripción...'}</p>
           <div className="text-center space-y-3 py-6 border-t border-white/10">
-            <div className="w-16 h-16 mx-auto rounded-full bg-[#D2E8A3]/10 flex items-center justify-center"><Heart className="w-6 h-6 text-[#D2E8A3]" /></div>
+            <div className="w-16 h-16 mx-auto rounded-full bg-[var(--accent)]/10 flex items-center justify-center"><Heart className="w-6 h-6 text-[var(--accent)]" /></div>
             <p className="text-white font-extrabold text-xs">{cfgEdit.favorites_empty_title || 'Sin favoritos'}</p>
             <p className="text-gray-400 text-[10px]">{cfgEdit.favorites_empty_desc || 'Explora y agrega...'}</p>
-            <span className="inline-block px-4 py-2 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] text-[10px] font-extrabold">{cfgEdit.favorites_empty_cta || 'IR AL CATÁLOGO'}</span>
+            <span className="inline-block px-4 py-2 rounded-xl bg-[var(--accent)] text-[#0A0A0A] text-[10px] font-extrabold">{cfgEdit.favorites_empty_cta || 'IR AL CATÁLOGO'}</span>
           </div>
         </div>
       </PreviewBox>
@@ -642,21 +643,21 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
   <div className="p-5 sm:p-8 space-y-6 max-w-[1200px] mx-auto">
 
     {/* Brand */}
-    <Section title="Header & Marca" icon={<User className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+    <Section title="Header & Marca" icon={<User className="w-3.5 h-3.5 text-[var(--accent)]" />}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <Field label="Nombre"><TextInput value={cfgEdit.brand_name || ''} onChange={(v: string) => setCfg('brand_name', v)} /></Field>
             <Field label="Slogan"><TextInput value={cfgEdit.brand_slogan || ''} onChange={(v: string) => setCfg('brand_slogan', v)} /></Field>
           </div>
-          <p className="text-[10px] text-gray-500">Teléfono y redes sociales se configuran en la pestaña <strong className="text-[#D2E8A3]">Config</strong>.</p>
+          <p className="text-[10px] text-gray-500">Teléfono y redes sociales se configuran en la pestaña <strong className="text-[var(--accent)]">Config</strong>.</p>
         </div>
         <PreviewBox title="Vista Previa — Header">
           <div className="rounded-xl bg-[#070806] p-5 space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-[#D2E8A3] rounded-xl flex items-center justify-center shadow-lg"><span className="text-[#0A0A0A] font-extrabold text-xl">L</span></div>
+              <div className="w-10 h-10 bg-[var(--accent)] rounded-xl flex items-center justify-center shadow-lg"><span className="text-[#0A0A0A] font-extrabold text-xl">L</span></div>
               <div>
-                <p className="text-white font-display font-black text-lg uppercase">{cfgEdit.brand_name || 'LUMIN SHOP'}<span className="text-[#D2E8A3]">.</span></p>
+                <p className="text-white font-display font-black text-lg uppercase">{cfgEdit.brand_name || 'LUMIN SHOP'}<span className="text-[var(--accent)]">.</span></p>
                 <p className="text-gray-300 text-[9px] font-mono uppercase">{cfgEdit.brand_slogan || 'URBAN APPAREL & SUBLIMATION'}</p>
               </div>
             </div>
@@ -671,7 +672,7 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
     </Section>
 
     {/* Profile */}
-    <Section title="Mi Cuenta / Perfil" icon={<User className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+    <Section title="Mi Cuenta / Perfil" icon={<User className="w-3.5 h-3.5 text-[var(--accent)]" />}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-3">
           <Field label="Título"><TextInput value={cfgEdit.profile_title || ''} onChange={(v: string) => setCfg('profile_title', v)} /></Field>
@@ -701,7 +702,7 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
     </Section>
 
     {/* Cart */}
-    <Section title="Carrito & Checkout" icon={<ShoppingCart className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+    <Section title="Carrito & Checkout" icon={<ShoppingCart className="w-3.5 h-3.5 text-[var(--accent)]" />}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-3">
           <div className="grid grid-cols-2 gap-3">
@@ -716,10 +717,10 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
         <PreviewBox title="Vista Previa — Carrito">
           <div className="rounded-xl bg-[#0F110D] p-5 space-y-3">
             <div className="text-center space-y-3 py-4">
-              <div className="w-14 h-14 mx-auto rounded-full bg-[#D2E8A3]/10 flex items-center justify-center"><span className="text-xl">🛒</span></div>
+              <div className="w-14 h-14 mx-auto rounded-full bg-[var(--accent)]/10 flex items-center justify-center"><span className="text-xl">🛒</span></div>
               <p className="text-white font-extrabold text-xs">{cfgEdit.cart_empty_title || 'Vacío'}</p>
               <p className="text-gray-400 text-[10px]">{cfgEdit.cart_empty_desc || '...'}</p>
-              <span className="inline-block px-3 py-1.5 rounded-lg bg-[#D2E8A3] text-[#0A0A0A] text-[10px] font-extrabold">{cfgEdit.cart_empty_cta || 'IR AL CATÁLOGO'}</span>
+              <span className="inline-block px-3 py-1.5 rounded-lg bg-[var(--accent)] text-[#0A0A0A] text-[10px] font-extrabold">{cfgEdit.cart_empty_cta || 'IR AL CATÁLOGO'}</span>
             </div>
             <div className="border-t border-white/10 pt-3 space-y-2">
               <p className="text-white text-[10px] font-extrabold">{cfgEdit.cart_process_title || 'PROCESO:'}</p>
@@ -732,7 +733,7 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
     </Section>
 
     {/* Shipping */}
-    <Section title="Envíos & Zonas" icon={<Package className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+    <Section title="Envíos & Zonas" icon={<Package className="w-3.5 h-3.5 text-[var(--accent)]" />}>
       <p className="text-[10px] text-gray-500">Precios de envío por zona. Recojo en Tienda es GRATIS.</p>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="grid grid-cols-3 gap-3">
@@ -750,7 +751,7 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
               <div key={z.label} className="p-3 rounded-xl bg-white/5 border border-white/5 text-center space-y-1">
                 <span className="text-lg block">{z.icon}</span>
                 <span className="text-white text-[10px] font-bold block">{z.label}</span>
-                <span className="text-[#D2E8A3] text-[10px] font-bold block">{z.price}</span>
+                <span className="text-[var(--accent)] text-[10px] font-bold block">{z.price}</span>
               </div>
             ))}
           </div>
@@ -759,7 +760,7 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
     </Section>
 
     {/* Footer */}
-    <Section title="Footer" icon={<FileText className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+    <Section title="Footer" icon={<FileText className="w-3.5 h-3.5 text-[var(--accent)]" />}>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-3">
           <Field label="Descripción"><TextArea value={cfgEdit.footer_description || ''} onChange={(v: string) => setCfg('footer_description', v)} rows={2} /></Field>
@@ -787,7 +788,7 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
           <div className="rounded-xl bg-[#070806] p-5 space-y-4">
             <div className="grid grid-cols-4 gap-3">
               <div className="space-y-1.5">
-                <p className="font-display text-xs font-black text-white uppercase">{cfgEdit.brand_name || 'LUMIN SHOP'}<span className="text-[#D2E8A3]">.</span></p>
+                <p className="font-display text-xs font-black text-white uppercase">{cfgEdit.brand_name || 'LUMIN SHOP'}<span className="text-[var(--accent)]">.</span></p>
                 <p className="text-gray-400 text-[7px] leading-relaxed">{cfgEdit.footer_description || '...'}</p>
               </div>
               <div className="space-y-1.5">
@@ -812,7 +813,7 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
     </Section>
 
     {/* Navigation */}
-    <Section title="Navegación" icon={<Settings className="w-3.5 h-3.5 text-[#D2E8A3]" />}>
+    <Section title="Navegación" icon={<Settings className="w-3.5 h-3.5 text-[var(--accent)]" />}>
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         <Field label="Nav Inicio"><TextInput value={cfgEdit.nav_home || ''} onChange={(v: string) => setCfg('nav_home', v)} /></Field>
         <Field label="Nav Catálogo"><TextInput value={cfgEdit.nav_catalog || ''} onChange={(v: string) => setCfg('nav_catalog', v)} /></Field>
@@ -824,21 +825,21 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
     </Section>
 
     {/* Backup & Restore */}
-    <Section title="Backup & Restaurar Datos" icon={<RefreshCw className="w-3.5 h-3.5 text-[#D2E8A3]" />} badge="Seguridad">
+    <Section title="Backup & Restaurar Datos" icon={<RefreshCw className="w-3.5 h-3.5 text-[var(--accent)]" />} badge="Seguridad">
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <div className="space-y-4">
           <div className="p-4 rounded-xl bg-[#0A0B0A] border border-white/5 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase flex items-center gap-2"><Download className="w-3.5 h-3.5 text-[#D2E8A3]" /> Descargar Backup Completo</h4>
+            <h4 className="text-xs font-bold text-white uppercase flex items-center gap-2"><Download className="w-3.5 h-3.5 text-[var(--accent)]" /> Descargar Backup Completo</h4>
             <p className="text-[11px] text-gray-400">Exporta todos tus productos, configuración, pedidos y categorías como archivo JSON. Úsalo para restaurar tu tienda si algo sale mal.</p>
             <button onClick={handleBackup} disabled={backupStatus === 'backing_up'}
               className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-                backupStatus === 'done' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-[#D2E8A3]/10 text-[#D2E8A3] border border-[#D2E8A3]/30 hover:bg-[#D2E8A3]/20'
+                backupStatus === 'done' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-[var(--accent)]/10 text-[var(--accent)] border border-[var(--accent)]/30 hover:bg-[var(--accent)]/20'
               }`}>
               {backupStatus === 'backing_up' ? <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Generando backup...</> : backupStatus === 'done' ? <><Check className="w-3.5 h-3.5" /> Backup descargado</> : <><Download className="w-3.5 h-3.5" /> Descargar Backup JSON</>}
             </button>
           </div>
           <div className="p-4 rounded-xl bg-[#0A0B0A] border border-white/5 space-y-3">
-            <h4 className="text-xs font-bold text-white uppercase flex items-center gap-2"><Upload className="w-3.5 h-3.5 text-[#D2E8A3]" /> Restaurar desde Backup</h4>
+            <h4 className="text-xs font-bold text-white uppercase flex items-center gap-2"><Upload className="w-3.5 h-3.5 text-[var(--accent)]" /> Restaurar desde Backup</h4>
             <p className="text-[11px] text-gray-400">Sube un archivo de backup JSON para restaurar todos tus datos. Esto reemplazará la configuración actual.</p>
             <label className={`w-full py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer border ${
               backupStatus === 'restored' ? 'bg-green-500/20 text-green-400 border-green-500/30' : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10'
@@ -850,18 +851,18 @@ const TabCuenta = memo(({ cfgEdit, setCfg, handleFileUpload, uploading, uploadTa
         </div>
         <div className="space-y-3">
           {restorePreview ? (
-            <div className="p-4 rounded-xl bg-[#0A0B0A] border border-[#D2E8A3]/30 space-y-3">
-              <h4 className="text-xs font-bold text-[#D2E8A3] uppercase">Vista Previa del Backup</h4>
+            <div className="p-4 rounded-xl bg-[#0A0B0A] border border-[var(--accent)]/30 space-y-3">
+              <h4 className="text-xs font-bold text-[var(--accent)] uppercase">Vista Previa del Backup</h4>
               <div className="space-y-1.5 text-[11px]">
                 <p className="text-gray-400"><span className="text-white font-bold">Tienda:</span> {restorePreview.shop}</p>
                 <p className="text-gray-400"><span className="text-white font-bold">Fecha:</span> {new Date(restorePreview.created_at).toLocaleString('es-PE')}</p>
                 <p className="text-gray-400"><span className="text-white font-bold">Tablas:</span> {(restorePreview.tables || Object.keys(restorePreview.data)).length}</p>
                 {(restorePreview.tables || Object.keys(restorePreview.data)).map((t: string) => (
-                  <p key={t} className="text-gray-400 pl-3"><span className="text-[#D2E8A3] font-mono">{t}:</span> {restorePreview.data[t]?.length || 0} registros</p>
+                  <p key={t} className="text-gray-400 pl-3"><span className="text-[var(--accent)] font-mono">{t}:</span> {restorePreview.data[t]?.length || 0} registros</p>
                 ))}
               </div>
               <div className="flex gap-2 pt-2">
-                <button onClick={handleRestoreConfirm} disabled={backupStatus === 'restoring'} className="flex-1 py-2 rounded-xl bg-[#D2E8A3] text-[#0A0A0A] text-xs font-bold hover:bg-[#c2e088] transition-all">Confirmar Restauración</button>
+                <button onClick={handleRestoreConfirm} disabled={backupStatus === 'restoring'} className="flex-1 py-2 rounded-xl bg-[var(--accent)] text-[#0A0A0A] text-xs font-bold hover:bg-[var(--accent-hover)] transition-all">Confirmar Restauración</button>
                 <button onClick={() => setRestorePreview(null)} className="px-4 py-2 rounded-xl bg-white/5 text-gray-400 text-xs font-bold border border-white/10 hover:bg-white/10 transition-all">Cancelar</button>
               </div>
             </div>

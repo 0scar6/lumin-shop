@@ -185,7 +185,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     </div>
                   </div>
                 )}
-                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-[#D2E8A3]">
+                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-[var(--accent)]">
                   {product.technique}
                 </div>
               </div>
@@ -199,7 +199,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                       onClick={() => setActiveImage(imgUrl)}
                       className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all ${
                         activeImage === imgUrl
-                          ? 'border-[#D2E8A3] scale-105 shadow-sm'
+                          ? 'border-[var(--accent)] scale-105 shadow-sm'
                           : isLight ? 'border-slate-300 opacity-70 hover:opacity-100' : 'border-white/10 opacity-60 hover:opacity-100'
                       }`}
                     >
@@ -213,11 +213,11 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             {/* Production guarantee notes */}
             <div className={`mt-3 pt-2 border-t space-y-1 ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
               <div className={`flex items-center gap-1.5 text-[10px] sm:text-xs ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
-                <Clock className={`w-3 h-3 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
+                <Clock className={`w-3 h-3 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[var(--accent)]'}`} />
                 <span>{cfg('pm_production_time', 'Tiempo de confección: ')}<strong>24 a 48 hrs</strong></span>
               </div>
               <div className={`flex items-center gap-1.5 text-[10px] sm:text-xs ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
-                <ShieldCheck className={`w-3 h-3 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
+                <ShieldCheck className={`w-3 h-3 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[var(--accent)]'}`} />
                 <span>{cfg('pm_quality_guarantee', 'Calidad Garantizada LUMIN 100%')}</span>
               </div>
             </div>
@@ -231,7 +231,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] sm:text-[11px] font-mono mb-1 font-bold ${
                   isLight
                     ? 'bg-lime-100 border-lime-300 text-lime-900'
-                    : 'bg-[#D2E8A3]/10 border-[#D2E8A3]/20 text-[#D2E8A3]'
+                    : 'bg-[var(--accent)]/10 border-[var(--accent)]/20 text-[var(--accent)]'
                 }`}>
                   {isApparel ? <Shirt className="w-3 h-3" /> : <Coffee className="w-3 h-3" />}
                   <span className="uppercase">{isApparel ? cfg('pm_category_polo', 'Polo Sublimado Bajo Pedido') : cfg('pm_category_cup', 'Vaso / Taza Sublimada')}</span>
@@ -267,7 +267,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                             onClick={() => setSelectedSize(sizeName)}
                             className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all border ${
                               selectedSize === sizeName
-                                ? 'bg-[#D2E8A3] text-[#0A0A0A] border-[#D2E8A3] shadow-md'
+                                ? 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)] shadow-md'
                                 : isLight
                                 ? 'bg-slate-100 text-slate-800 border-slate-300 hover:border-slate-400'
                                 : 'bg-[#161814] text-gray-300 border-white/10 hover:border-white/30'
@@ -295,15 +295,15 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                           className={`p-2 rounded-xl text-xs font-bold text-left border flex items-center justify-between transition-all ${
                             selectedFit === fit
                               ? isLight
-                                ? 'bg-slate-900 text-[#D2E8A3] border-slate-900'
-                                : 'bg-[#1D2218] text-[#D2E8A3] border-[#D2E8A3]'
+                                ? 'bg-slate-900 text-[var(--accent)] border-slate-900'
+                                : 'bg-[#1D2218] text-[var(--accent)] border-[var(--accent)]'
                               : isLight
                               ? 'bg-slate-100 text-slate-800 border-slate-300 hover:border-slate-400'
                               : 'bg-[#161814] text-gray-300 border-white/10 hover:border-white/20'
                           }`}
                         >
                           <span>{fit}</span>
-                          {selectedFit === fit && <Check className="w-3.5 h-3.5 text-[#D2E8A3]" />}
+                          {selectedFit === fit && <Check className="w-3.5 h-3.5 text-[var(--accent)]" />}
                         </button>
                       ))}
                     </div>
@@ -314,7 +314,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                     <label className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1.5 ${
                       isLight ? 'text-slate-800' : 'text-gray-300'
                     }`}>
-                      {cfg('pm_color_label', '3. Color de Tela: ')}<span className={isLight ? 'text-lime-800 font-extrabold' : 'text-[#D2E8A3] font-mono'}>{selectedColor.name}</span>
+                      {cfg('pm_color_label', '3. Color de Tela: ')}<span className={isLight ? 'text-lime-800 font-extrabold' : 'text-[var(--accent)] font-mono'}>{selectedColor.name}</span>
                     </label>
                     <div className="flex items-center gap-2.5">
                       {product.apparelOptions.colors.map((c) => (
@@ -324,7 +324,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                           style={{ backgroundColor: c.hex }}
                           className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-all relative ${
                             selectedColor.name === c.name
-                              ? 'border-[#D2E8A3] scale-110 shadow-lg'
+                              ? 'border-[var(--accent)] scale-110 shadow-lg'
                               : isLight ? 'border-slate-400 hover:scale-105' : 'border-white/20 hover:scale-105'
                           }`}
                           title={c.name}
@@ -361,15 +361,15 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                           className={`w-full p-2.5 rounded-xl text-xs font-bold text-left border flex items-center justify-between transition-all ${
                             selectedCupTypeObj.name === typeObj.name
                               ? isLight
-                                ? 'bg-slate-900 text-[#D2E8A3] border-slate-900'
-                                : 'bg-[#1D2218] text-[#D2E8A3] border-[#D2E8A3]'
+                                ? 'bg-slate-900 text-[var(--accent)] border-slate-900'
+                                : 'bg-[#1D2218] text-[var(--accent)] border-[var(--accent)]'
                               : isLight
                               ? 'bg-slate-100 text-slate-800 border-slate-300 hover:border-slate-400'
                               : 'bg-[#161814] text-gray-300 border-white/10 hover:border-white/20'
                           }`}
                         >
                           <span>{typeObj.name}</span>
-                          <span className={`font-bold ${isLight && selectedCupTypeObj.name !== typeObj.name ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
+                          <span className={`font-bold ${isLight && selectedCupTypeObj.name !== typeObj.name ? 'text-lime-800' : 'text-[var(--accent)]'}`}>
                             {typeObj.extraPrice > 0 ? `+S/ ${typeObj.extraPrice}` : typeObj.extraPrice < 0 ? `-S/ ${Math.abs(typeObj.extraPrice)}` : cfg('pm_included', 'Incluido')}
                           </span>
                         </button>
@@ -391,7 +391,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                           onClick={() => setSelectedFinish(finish)}
                           className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
                             selectedFinish === finish
-                              ? 'bg-[#D2E8A3] text-[#0A0A0A] border-[#D2E8A3]'
+                              ? 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)]'
                               : isLight
                               ? 'bg-slate-100 text-slate-800 border-slate-300 hover:border-slate-400'
                               : 'bg-[#161814] text-gray-300 border-white/10 hover:border-white/20'
@@ -415,7 +415,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   <div className="flex items-center gap-2">
                     <span className={`text-[10px] font-bold ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>{cfg('pm_free', 'Gratis')}</span>
                     <span className={`text-[10px] font-mono font-bold ${
-                      customText.length >= 30 ? 'text-red-500' : isLight ? 'text-lime-800' : 'text-[#D2E8A3]'
+                      customText.length >= 30 ? 'text-red-500' : isLight ? 'text-lime-800' : 'text-[var(--accent)]'
                     }`}>
                       {customText.length}/30 {cfg('pm_characters', 'caracteres')}
                     </span>
@@ -430,7 +430,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   className={`w-full border rounded-xl px-3 py-2 text-xs focus:outline-none transition-colors ${
                     isLight
                       ? 'bg-slate-100 border-slate-300 text-slate-900 placeholder-slate-500 focus:border-slate-800'
-                      : 'bg-[#161814] border-white/10 text-white placeholder-gray-500 focus:border-[#D2E8A3]'
+                      : 'bg-[#161814] border-white/10 text-white placeholder-gray-500 focus:border-[var(--accent)]'
                   }`}
                 />
               </div>
@@ -476,7 +476,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
             <div className="text-right">
               <span className={`text-[8px] sm:text-[10px] font-mono block ${isLight ? 'text-slate-600 font-bold' : 'text-gray-400'}`}>{cfg('pm_total_label', 'TOTAL ESTIMADO')}</span>
-              <span className={`text-base sm:text-lg md:text-xl font-black ${isLight ? 'text-slate-900' : 'text-[#D2E8A3]'}`}>
+              <span className={`text-base sm:text-lg md:text-xl font-black ${isLight ? 'text-slate-900' : 'text-[var(--accent)]'}`}>
                 S/ {totalPrice.toFixed(2)}
               </span>
             </div>
@@ -491,7 +491,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
           ) : (
             <button
               onClick={handleAdd}
-              className="w-full sm:w-auto sm:px-8 py-2.5 sm:py-3.5 rounded-xl bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A] font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xl shadow-[#D2E8A3]/15 active:scale-98"
+              className="w-full sm:w-auto sm:px-8 py-2.5 sm:py-3.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover2)] text-[#0A0A0A] font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xl shadow-[var(--accent)]/15 active:scale-98"
             >
               <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
               <span>{cfg('pm_add_to_cart', 'AÑADIR A MI PEDIDO')}</span>

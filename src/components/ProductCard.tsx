@@ -28,7 +28,7 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
       className={`group relative rounded-xl sm:rounded-2xl overflow-hidden transition-all duration-300 flex flex-col animate-fade-in-up border ${
         isLight
           ? 'bg-white border-slate-200 text-slate-900 shadow-sm hover:border-lime-500'
-          : 'glass-card border-white/10 hover:border-[#D2E8A3]/40'
+          : 'glass-card border-white/10 hover:border-[var(--accent)]/40'
       }`}
     >
       
@@ -68,7 +68,7 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
           }}
           className={`absolute top-2 right-2 sm:top-3 sm:right-3 p-1.5 sm:p-2 rounded-full backdrop-blur-md transition-all z-20 ${
             isFavorite
-              ? 'bg-[#D2E8A3] text-[#0A0A0A]'
+              ? 'bg-[var(--accent)] text-[#0A0A0A]'
               : 'bg-black/50 text-white/80 hover:bg-black/70'
           }`}
           aria-label={cfg('pc_save_fav', 'Guardar en favoritos')}
@@ -84,7 +84,7 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
             </div>
           )}
           {product.tag && (
-            <div className="px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded bg-black/70 backdrop-blur-md text-[8px] sm:text-[10px] font-bold text-[#D2E8A3] uppercase tracking-wider">
+            <div className="px-1.5 py-0.5 sm:px-2 sm:py-0.5 rounded bg-black/70 backdrop-blur-md text-[8px] sm:text-[10px] font-bold text-[var(--accent)] uppercase tracking-wider">
               {product.tag}
             </div>
           )}
@@ -108,7 +108,7 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
         <div>
           {/* Category */}
           <div className={`flex items-center gap-1 text-[9px] sm:text-[10px] font-mono mb-0.5 ${
-            isLight ? 'text-lime-700 font-bold' : 'text-[#D2E8A3]'
+            isLight ? 'text-lime-700 font-bold' : 'text-[var(--accent)]'
           }`}>
             <Flame className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
             <span className="uppercase tracking-wider">
@@ -120,7 +120,7 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
           <h3
             onClick={() => onSelectProduct(product)}
             className={`font-extrabold text-[11px] sm:text-sm leading-tight cursor-pointer line-clamp-1 transition-colors ${
-              isLight ? 'text-slate-900 hover:text-lime-700' : 'text-white hover:text-[#D2E8A3]'
+              isLight ? 'text-slate-900 hover:text-lime-700' : 'text-white hover:text-[var(--accent)]'
             }`}
           >
             {product.name}
@@ -138,7 +138,7 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
         <div className={`flex items-center gap-1 text-[8px] sm:text-[10px] ${
           isLight ? 'text-slate-600' : 'text-gray-500'
         }`}>
-          <Clock className={`w-2.5 h-2.5 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
+          <Clock className={`w-2.5 h-2.5 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[var(--accent)]'}`} />
           <span>{product.productionTime}</span>
         </div>
 
@@ -174,7 +174,7 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
             className={`flex items-center gap-0.5 sm:gap-1 px-2 sm:px-2.5 py-1 sm:py-1.5 rounded-lg sm:rounded-xl font-extrabold text-[10px] sm:text-[11px] transition-all shadow-md active:scale-95 ${
               product.agotado
                 ? 'bg-orange-500/10 text-orange-400 border border-orange-500/30 cursor-not-allowed shadow-none'
-                : 'bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A]'
+                : 'bg-[var(--accent)] hover:bg-[var(--accent-hover2)] text-[#0A0A0A]'
             }`}
             aria-label={product.agotado ? 'Agotado' : cfg('pc_order_label', 'Configurar Pedido')}
           >

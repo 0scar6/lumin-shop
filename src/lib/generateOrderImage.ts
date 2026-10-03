@@ -1,4 +1,5 @@
 import { CartItem, UserProfileData } from '../types';
+import { currentAccentHex } from './palette';
 
 function loadImage(url: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
@@ -58,7 +59,7 @@ export async function generateOrderImage(
   ctx.fillRect(0, 0, W, y);
 
   // Header
-  ctx.fillStyle = '#D2E8A3';
+  ctx.fillStyle = currentAccentHex();
   ctx.font = 'bold 28px Arial';
   ctx.fillText('LUMIN SHOP', padding, padding + 28);
   ctx.fillStyle = '#888';
@@ -77,7 +78,7 @@ export async function generateOrderImage(
   y += 25;
 
   // Client info
-  ctx.fillStyle = '#D2E8A3';
+  ctx.fillStyle = currentAccentHex();
   ctx.font = 'bold 16px Arial';
   ctx.fillText('DATOS DEL CLIENTE', padding, y);
   y += 30;
@@ -112,7 +113,7 @@ export async function generateOrderImage(
   y += 25;
 
   // Order title
-  ctx.fillStyle = '#D2E8A3';
+  ctx.fillStyle = currentAccentHex();
   ctx.font = 'bold 16px Arial';
   ctx.fillText('DETALLE DEL PEDIDO', padding, y);
   y += 35;
@@ -174,7 +175,7 @@ export async function generateOrderImage(
     if (item.selectedFinish) details += ` | Acabado: ${item.selectedFinish}`;
     ctx.fillText(details, textX, y + 38);
 
-    ctx.fillStyle = '#D2E8A3';
+    ctx.fillStyle = currentAccentHex();
     ctx.font = 'bold 13px Arial';
     ctx.fillText(`S/ ${itemTotal.toFixed(2)}`, textX, y + 58);
 

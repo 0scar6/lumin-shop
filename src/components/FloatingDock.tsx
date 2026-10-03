@@ -49,7 +49,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = React.memo(({
       className={`fixed bottom-2.5 sm:bottom-5 left-1/2 -translate-x-1/2 z-50 w-[94vw] sm:w-auto max-w-md sm:max-w-xl px-1.5 sm:px-3 py-1.5 sm:py-2 rounded-2xl shadow-2xl transition-all duration-300 flex items-center justify-around sm:justify-center gap-1 sm:gap-2.5 ${
         isLight
           ? 'bg-white text-slate-900 border-2 border-slate-900 shadow-xl shadow-slate-900/20'
-          : 'bg-[#0F120D]/95 text-white border-2 border-[#D2E8A3]/80 shadow-2xl shadow-black backdrop-blur-xl'
+          : 'bg-[#0F120D]/95 text-white border-2 border-[var(--accent)]/80 shadow-2xl shadow-black backdrop-blur-xl'
       }`}
     >
       {tabs.map((tab) => {
@@ -63,8 +63,8 @@ export const FloatingDock: React.FC<FloatingDockProps> = React.memo(({
             className={`relative flex items-center justify-center gap-1 sm:gap-1.5 px-2 xs:px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs font-black transition-all duration-200 flex-1 sm:flex-initial whitespace-nowrap ${
               isActive
                 ? isLight
-                  ? 'bg-slate-900 text-[#D2E8A3] shadow-md scale-105 ring-1 ring-slate-900'
-                  : 'bg-[#D2E8A3] text-[#0A0A0A] shadow-lg shadow-[#D2E8A3]/30 scale-105'
+                  ? 'bg-slate-900 text-[var(--accent)] shadow-md scale-105 ring-1 ring-slate-900'
+                  : 'bg-[var(--accent)] text-[#0A0A0A] shadow-lg shadow-[var(--accent)]/30 scale-105'
                 : isLight
                 ? 'text-slate-800 hover:text-slate-950 hover:bg-slate-100'
                 : 'text-gray-200 hover:text-white hover:bg-white/10'
@@ -74,7 +74,7 @@ export const FloatingDock: React.FC<FloatingDockProps> = React.memo(({
               className={`w-4 h-4 sm:w-4 sm:h-4 flex-shrink-0 ${
                 isActive
                   ? isLight
-                    ? 'text-[#D2E8A3]'
+                    ? 'text-[var(--accent)]'
                     : 'text-[#0A0A0A]'
                   : isLight
                   ? 'text-slate-900'
@@ -94,11 +94,11 @@ export const FloatingDock: React.FC<FloatingDockProps> = React.memo(({
                 className={`flex items-center justify-center min-w-[16px] h-[16px] sm:min-w-4 sm:h-4 px-1 text-[9px] sm:text-[10px] font-black rounded-full flex-shrink-0 ${
                   isActive
                     ? isLight
-                      ? 'bg-[#D2E8A3] text-slate-950'
-                      : 'bg-[#0A0A0A] text-[#D2E8A3]'
+                      ? 'bg-[var(--accent)] text-slate-950'
+                      : 'bg-[#0A0A0A] text-[var(--accent)]'
                     : isLight
                     ? 'bg-slate-900 text-white'
-                    : 'bg-[#D2E8A3] text-[#0A0A0A]'
+                    : 'bg-[var(--accent)] text-[#0A0A0A]'
                 }`}
               >
                 {tab.badge}

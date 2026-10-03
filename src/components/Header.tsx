@@ -69,13 +69,13 @@ export const Header: React.FC<HeaderProps> = React.memo(({
             onClick={handleLogoClick}
             className="flex items-center gap-2 sm:gap-3 group text-left focus:outline-none flex-shrink-0"
           >
-            <div className="w-8 h-8 sm:w-11 sm:h-11 bg-[#D2E8A3] rounded-xl flex items-center justify-center shadow-lg shadow-[#D2E8A3]/20 ring-2 ring-[#D2E8A3]/30 transition-transform group-hover:scale-105 flex-shrink-0">
+            <div className="w-8 h-8 sm:w-11 sm:h-11 bg-[var(--accent)] rounded-xl flex items-center justify-center shadow-lg shadow-[var(--accent)]/20 ring-2 ring-[var(--accent)]/30 transition-transform group-hover:scale-105 flex-shrink-0">
               <span className="text-[#0A0A0A] font-extrabold text-lg sm:text-2xl font-display tracking-tight">L</span>
             </div>
             <div className="flex flex-col whitespace-nowrap min-w-max pr-1 sm:pr-4">
               <div className="flex items-center gap-1">
                 <h1 className={`font-display text-base sm:text-2xl font-black tracking-wider uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                  {cfg('brand_name', 'LUMIN SHOP')}<span className="text-[#65A30D] sm:text-[#D2E8A3]">.</span>
+                  {cfg('brand_name', 'LUMIN SHOP')}<span className="text-[#65A30D] sm:text-[var(--accent)]">.</span>
                 </h1>
               </div>
               <span className={`hidden sm:block text-[9px] sm:text-[10px] font-mono tracking-widest uppercase -mt-0.5 ${isLight ? 'text-slate-600 font-semibold' : 'text-gray-300'}`}>
@@ -86,7 +86,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({
 
           {/* Badge: Atención por pedido */}
           <div className={`hidden xl:flex items-center gap-1.5 px-3 py-1 rounded-full border text-[11px] font-bold uppercase tracking-wider ${
-            isLight ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-[#161814] border-white/10 text-[#D2E8A3]'
+            isLight ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-[#161814] border-white/10 text-[var(--accent)]'
           }`}>
             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></div>
             <span>Atención por Pedido</span>
@@ -107,7 +107,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({
               className={`w-full border rounded-full pl-9 pr-8 py-1.5 text-xs focus:outline-none transition-colors ${
                 isLight
                   ? 'bg-slate-100 border-slate-300 text-slate-900 placeholder-slate-500 focus:border-slate-800'
-                  : 'bg-[#161814] border-white/20 text-white placeholder-gray-400 focus:border-[#D2E8A3]'
+                  : 'bg-[#161814] border-white/20 text-white placeholder-gray-400 focus:border-[var(--accent)]'
               }`}
             />
             {searchQuery && (
@@ -138,7 +138,7 @@ export const Header: React.FC<HeaderProps> = React.memo(({
             }`}
             title="Mi Perfil / Tema"
           >
-            <User className="w-3.5 h-3.5 text-slate-900 dark:text-[#D2E8A3]" />
+            <User className="w-3.5 h-3.5 text-slate-900 dark:text-[var(--accent)]" />
             <span>Yo</span>
           </button>
 
@@ -177,12 +177,12 @@ export const Header: React.FC<HeaderProps> = React.memo(({
           {/* Cart Button - ALWAYS VISIBLE, perfectly sized */}
           <button
             onClick={onOpenCart}
-            className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-full bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs hover:bg-[#b8d682] transition-all shadow-md flex-shrink-0"
+            className="relative flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-full bg-[var(--accent)] text-[#0A0A0A] font-extrabold text-xs hover:bg-[var(--accent-hover2)] transition-all shadow-md flex-shrink-0"
             aria-label="Mi Pedido"
           >
             <ShoppingBag className="w-4 h-4 flex-shrink-0" />
             <span className="hidden xs:inline sm:inline">Mi Pedido</span>
-            <span className="px-1.5 py-0.5 rounded-full bg-[#0A0A0A] text-[#D2E8A3] text-[10px] font-extrabold flex-shrink-0">
+            <span className="px-1.5 py-0.5 rounded-full bg-[#0A0A0A] text-[var(--accent)] text-[10px] font-extrabold flex-shrink-0">
               {cartCount}
             </span>
           </button>

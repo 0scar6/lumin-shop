@@ -1,6 +1,7 @@
 import React from 'react';
 import { Tag, MessageCircle, Instagram, ShieldCheck, MapPin, Shirt, Coffee, Flame, FileText } from 'lucide-react';
 import { cfg } from '../lib/config';
+import { paletteAccent } from '../lib/palette';
 
 interface FooterProps {
   onOpenPrivacy?: () => void;
@@ -15,16 +16,16 @@ export const Footer: React.FC<FooterProps> = React.memo(({ onOpenPrivacy, onOpen
         {/* Col 1: Brand info */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-[#D2E8A3]"></span>
+            <span className="w-2.5 h-2.5 rounded-full bg-[var(--accent)]"></span>
             <span className="font-display text-xl font-black text-white uppercase tracking-tight">
-              {cfg('brand_name', 'LUMIN SHOP')}<span className="text-[#D2E8A3]">.</span>
+              {cfg('brand_name', 'LUMIN SHOP')}<span className="text-[var(--accent)]">.</span>
             </span>
           </div>
           <p className="text-gray-400 text-xs leading-relaxed">
             {cfg('footer_description', 'Marca independiente de ropa urbana streetwear (polos gráficos de alta definición) y vasos/tazas sublimadas de alta temperatura. Trabajamos 100% bajo pedido para garantizar máxima calidad.')}
           </p>
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#161814] border border-[#D2E8A3]/20 text-[#D2E8A3] text-[11px] font-mono">
-            <Tag className="w-3 h-3 text-[#D2E8A3]" />
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#161814] border border-[var(--accent)]/20 text-[var(--accent)] text-[11px] font-mono">
+            <Tag className="w-3 h-3 text-[var(--accent)]" />
             <span>{cfg('footer_production', 'Producción Express 24-48 hrs')}</span>
           </div>
         </div>
@@ -36,26 +37,26 @@ export const Footer: React.FC<FooterProps> = React.memo(({ onOpenPrivacy, onOpen
           </h4>
           <ul className="space-y-2">
             <li>
-              <a href="#catalog-section" className="hover:text-[#D2E8A3] transition-colors flex items-center gap-2">
-                <Shirt className="w-3.5 h-3.5 text-[#D2E8A3]" />
+              <a href="#catalog-section" className="hover:text-[var(--accent)] transition-colors flex items-center gap-2">
+                <Shirt className="w-3.5 h-3.5 text-[var(--accent)]" />
                 <span>{cfg('footer_col_1', 'Polos Oversized & Boxy Fit')}</span>
               </a>
             </li>
             <li>
-              <a href="#catalog-section" className="hover:text-[#D2E8A3] transition-colors flex items-center gap-2">
-                <Coffee className="w-3.5 h-3.5 text-[#D2E8A3]" />
+              <a href="#catalog-section" className="hover:text-[var(--accent)] transition-colors flex items-center gap-2">
+                <Coffee className="w-3.5 h-3.5 text-[var(--accent)]" />
                 <span>{cfg('footer_col_2', 'Vasos Frosted Glass 16oz')}</span>
               </a>
             </li>
             <li>
-              <a href="#catalog-section" className="hover:text-[#D2E8A3] transition-colors flex items-center gap-2">
-                <Flame className="w-3.5 h-3.5 text-[#D2E8A3]" />
+              <a href="#catalog-section" className="hover:text-[var(--accent)] transition-colors flex items-center gap-2">
+                <Flame className="w-3.5 h-3.5 text-[var(--accent)]" />
                 <span>{cfg('footer_col_3', 'Tazas Térmicas 11oz')}</span>
               </a>
             </li>
             <li>
-              <a href="#catalog-section" className="hover:text-[#D2E8A3] transition-colors flex items-center gap-2">
-                <Tag className="w-3.5 h-3.5 text-[#D2E8A3]" />
+              <a href="#catalog-section" className="hover:text-[var(--accent)] transition-colors flex items-center gap-2">
+                <Tag className="w-3.5 h-3.5 text-[var(--accent)]" />
                 <span>{cfg('footer_col_4', 'Edición Especial Drop 04')}</span>
               </a>
             </li>
@@ -69,11 +70,11 @@ export const Footer: React.FC<FooterProps> = React.memo(({ onOpenPrivacy, onOpen
           </h4>
           <ul className="space-y-2">
             <li className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#D2E8A3]" />
+              <ShieldCheck className="w-4 h-4 text-[var(--accent)]" />
               <span>{cfg('footer_guarantee_1', 'Estampados HD de alta resistencia')}</span>
             </li>
             <li className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-[#D2E8A3]" />
+              <MapPin className="w-4 h-4 text-[var(--accent)]" />
               <span>{cfg('footer_guarantee_2', 'Envíos directos a todo el país')}</span>
             </li>
             <li><span>{cfg('footer_guarantee_3', 'Pagos seguros: Yape, Plin, Transferencia o Tarjeta')}</span></li>
@@ -86,24 +87,24 @@ export const Footer: React.FC<FooterProps> = React.memo(({ onOpenPrivacy, onOpen
             {cfg('footer_social_title', 'Síguenos en Redes')}
           </h4>
           <p className="text-gray-400 text-xs">
-            {cfg('footer_social_text', 'Encuéntranos en TikTok, Facebook e Instagram como')} <strong className="text-[#D2E8A3]">{cfg('brand_instagram', '@.lumin.shop')}</strong>
+            {cfg('footer_social_text', 'Encuéntranos en TikTok, Facebook e Instagram como')} <strong className="text-[var(--accent)]">{cfg('brand_instagram', '@.lumin.shop')}</strong>
           </p>
           <div className="flex flex-wrap items-center gap-2 pt-1">
             <a
               href={`https://wa.me/${cfg('brand_phone_raw', '51993365099')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2.5 rounded-full bg-[#161814] hover:bg-[#D2E8A3] text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
+              className="p-2.5 rounded-full bg-[#161814] hover:bg-[var(--accent)] text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
               title="WhatsApp"
             >
-              <MessageCircle className="w-4 h-4 text-[#D2E8A3] group-hover:text-black" />
+              <MessageCircle className="w-4 h-4 text-[var(--accent)] group-hover:text-black" />
               <span className="font-bold text-[11px]">WhatsApp</span>
             </a>
             <a
               href={cfg('brand_tiktok', 'https://tiktok.com/@.lumin.shop').startsWith('http') ? cfg('brand_tiktok', 'https://tiktok.com/@.lumin.shop') : `https://tiktok.com/${cfg('brand_tiktok', '@.lumin.shop')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2.5 rounded-full bg-[#161814] hover:bg-[#D2E8A3] text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
+              className="p-2.5 rounded-full bg-[#161814] hover:bg-[var(--accent)] text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
               title={`TikTok ${cfg('brand_tiktok', '@.lumin.shop')}`}
             >
               <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24">
@@ -127,7 +128,7 @@ export const Footer: React.FC<FooterProps> = React.memo(({ onOpenPrivacy, onOpen
               href={cfg('brand_instagram', 'https://instagram.com/lumin.shop').startsWith('http') ? cfg('brand_instagram', 'https://instagram.com/lumin.shop') : `https://instagram.com/${cfg('brand_instagram', 'lumin.shop')}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2.5 rounded-full bg-[#161814] hover:bg-[#D2E8A3] text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
+              className="p-2.5 rounded-full bg-[#161814] hover:bg-[var(--accent)] text-white hover:text-black transition-all border border-white/10 flex items-center gap-1.5 px-3.5"
               title={`Instagram ${cfg('brand_instagram', '@.lumin.shop')}`}
             >
               <Instagram className="w-3.5 h-3.5" />
@@ -142,18 +143,18 @@ export const Footer: React.FC<FooterProps> = React.memo(({ onOpenPrivacy, onOpen
         <p>{cfg('footer_copyright', '© 2026 LUMIN SHOP. Todos los derechos reservados. Moda Urbana & Sublimación Bajo Pedido.')}</p>
         <div className="flex items-center gap-4">
           {onOpenPrivacy && (
-            <button onClick={onOpenPrivacy} className="hover:text-[#D2E8A3] transition-colors flex items-center gap-1">
+            <button onClick={onOpenPrivacy} className="hover:text-[var(--accent)] transition-colors flex items-center gap-1">
               <FileText className="w-3 h-3" />
               <span>Privacidad</span>
             </button>
           )}
           {onOpenTerms && (
-            <button onClick={onOpenTerms} className="hover:text-[#D2E8A3] transition-colors flex items-center gap-1">
+            <button onClick={onOpenTerms} className="hover:text-[var(--accent)] transition-colors flex items-center gap-1">
               <FileText className="w-3 h-3" />
               <span>Términos</span>
             </button>
           )}
-          <span className="font-mono">Acento: #D2E8A3 | Carbón: #0A0A0A</span>
+          <span className="font-mono">Acento: {paletteAccent(cfg('brand_palette', 'green'))} | Carbón: #0A0A0A</span>
         </div>
       </div>
     </footer>

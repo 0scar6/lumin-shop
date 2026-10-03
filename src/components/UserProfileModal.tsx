@@ -65,7 +65,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           }`}
         >
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#D2E8A3] flex items-center justify-center text-[#0A0A0A] font-extrabold text-sm">
+            <div className="w-8 h-8 rounded-full bg-[var(--accent)] flex items-center justify-center text-[#0A0A0A] font-extrabold text-sm">
               <User className="w-4 h-4" />
             </div>
             <div>
@@ -97,7 +97,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
             }`}>
               <div className="flex items-center justify-between">
                 <span className="text-[9px] font-mono font-bold uppercase text-gray-400">{cfg('up_activity', 'Actividad')}</span>
-                <Eye className="w-3.5 h-3.5 text-[#D2E8A3]" />
+                <Eye className="w-3.5 h-3.5 text-[var(--accent)]" />
               </div>
               <div>
                 <span className="text-xl font-black font-display">8</span>
@@ -134,7 +134,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           
           {/* SECTION 1: THEME CUSTOMIZATION */}
           <div className="space-y-3">
-            <label className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'} flex items-center gap-1.5`}>
+            <label className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-lime-800' : 'text-[var(--accent)]'} flex items-center gap-1.5`}>
               <Sun className="w-4 h-4" />
               <span>{cfg('up_theme_label', '1. Apariencia Visual de la Web:')}</span>
             </label>
@@ -146,13 +146,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 onClick={() => onSelectTheme('dark')}
                 className={`p-3 rounded-2xl border text-left flex flex-col justify-between gap-2 transition-all ${
                   themeMode === 'dark'
-                    ? 'border-[#D2E8A3] bg-[#161814] shadow-md shadow-[#D2E8A3]/10 ring-1 ring-[#D2E8A3]'
+                    ? 'border-[var(--accent)] bg-[#161814] shadow-md shadow-[var(--accent)]/10 ring-1 ring-[var(--accent)]'
                     : isLight
                     ? 'border-gray-300 bg-gray-100 hover:border-gray-400'
                     : 'border-white/10 bg-white/5 hover:bg-white/10'
                 }`}
               >
-                <Moon className={`w-5 h-5 ${themeMode === 'dark' ? 'text-[#D2E8A3]' : isLight ? 'text-slate-600' : 'text-gray-400'}`} />
+                <Moon className={`w-5 h-5 ${themeMode === 'dark' ? 'text-[var(--accent)]' : isLight ? 'text-slate-600' : 'text-gray-400'}`} />
                 <div>
                   <span className={`block font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     {cfg('up_theme_dark', 'Oscuro')}
@@ -167,13 +167,13 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 onClick={() => onSelectTheme('amoled')}
                 className={`p-3 rounded-2xl border text-left flex flex-col justify-between gap-2 transition-all ${
                   themeMode === 'amoled'
-                    ? 'border-[#D2E8A3] bg-black shadow-md shadow-[#D2E8A3]/10 ring-1 ring-[#D2E8A3]'
+                    ? 'border-[var(--accent)] bg-black shadow-md shadow-[var(--accent)]/10 ring-1 ring-[var(--accent)]'
                     : isLight
                     ? 'border-gray-300 bg-gray-100 hover:border-gray-400'
                     : 'border-white/10 bg-white/5 hover:bg-white/10'
                 }`}
               >
-                <Zap className={`w-5 h-5 ${themeMode === 'amoled' ? 'text-[#D2E8A3]' : isLight ? 'text-slate-600' : 'text-gray-400'}`} />
+                <Zap className={`w-5 h-5 ${themeMode === 'amoled' ? 'text-[var(--accent)]' : isLight ? 'text-slate-600' : 'text-gray-400'}`} />
                 <div>
                   <span className={`block font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     AMOLED
@@ -188,11 +188,11 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                 onClick={() => onSelectTheme('light')}
                 className={`p-3 rounded-2xl border text-left flex flex-col justify-between gap-2 transition-all ${
                   themeMode === 'light'
-                    ? 'border-[#8AB73B] bg-gray-100 text-gray-900 ring-2 ring-[#8AB73B]'
+                    ? 'border-[var(--accent-light)] bg-gray-100 text-gray-900 ring-2 ring-[var(--accent-light)]'
                     : 'border-white/10 bg-white/5 hover:bg-white/10'
                 }`}
               >
-                <Sun className={`w-5 h-5 ${themeMode === 'light' ? 'text-[#8AB73B]' : 'text-gray-400'}`} />
+                <Sun className={`w-5 h-5 ${themeMode === 'light' ? 'text-[var(--accent-light)]' : 'text-gray-400'}`} />
                 <div>
                   <span className={`block font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     {cfg('up_theme_light', 'Claro')}
@@ -206,7 +206,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           {/* SECTION 2: CUSTOMER DATA FOR AUTOFILL */}
           <form onSubmit={handleSubmit} className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
-              <label className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'} flex items-center gap-1.5`}>
+              <label className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-lime-800' : 'text-[var(--accent)]'} flex items-center gap-1.5`}>
                 <User className="w-4 h-4" />
                 <span>{cfg('up_data_label', '2. Mis Datos para Envíos Rápidos:')}</span>
               </label>
@@ -227,8 +227,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   placeholder={cfg('up_name_placeholder', 'Ej. Carlos Mendoza')}
                   className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none focus:ring-1 transition-colors ${
                     isLight
-                      ? 'bg-slate-100 text-slate-900 border border-slate-300 placeholder-slate-500 focus:ring-[#8AB73B]'
-                      : 'bg-[#161814] text-white border border-white/20 placeholder-gray-400 focus:border-[#D2E8A3]'
+                      ? 'bg-slate-100 text-slate-900 border border-slate-300 placeholder-slate-500 focus:ring-[var(--accent-light)]'
+                      : 'bg-[#161814] text-white border border-white/20 placeholder-gray-400 focus:border-[var(--accent)]'
                   }`}
                 />
               </div>
@@ -243,8 +243,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     placeholder={cfg('up_phone_placeholder', 'Ej. 987654321')}
                     className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none focus:ring-1 transition-colors ${
                       isLight
-                        ? 'bg-slate-100 text-slate-900 border border-slate-300 placeholder-slate-500 focus:ring-[#8AB73B]'
-                        : 'bg-[#161814] text-white border border-white/20 placeholder-gray-400 focus:border-[#D2E8A3]'
+                        ? 'bg-slate-100 text-slate-900 border border-slate-300 placeholder-slate-500 focus:ring-[var(--accent-light)]'
+                        : 'bg-[#161814] text-white border border-white/20 placeholder-gray-400 focus:border-[var(--accent)]'
                     }`}
                   />
                 </div>
@@ -258,8 +258,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                     placeholder={cfg('up_dni_placeholder', 'Para la guía de envío')}
                     className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none focus:ring-1 transition-colors ${
                       isLight
-                        ? 'bg-slate-100 text-slate-900 border border-slate-300 placeholder-slate-500 focus:ring-[#8AB73B]'
-                        : 'bg-[#161814] text-white border border-white/20 placeholder-gray-400 focus:border-[#D2E8A3]'
+                        ? 'bg-slate-100 text-slate-900 border border-slate-300 placeholder-slate-500 focus:ring-[var(--accent-light)]'
+                        : 'bg-[#161814] text-white border border-white/20 placeholder-gray-400 focus:border-[var(--accent)]'
                     }`}
                   />
                 </div>
@@ -274,8 +274,8 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
                   placeholder={cfg('up_address_placeholder', 'Ej. Av. Larco 456 Dpto 302, Miraflores (Ref: Frente a la iglesia)')}
                   className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none focus:ring-1 transition-colors ${
                     isLight
-                      ? 'bg-slate-100 text-slate-900 border border-slate-300 placeholder-slate-500 focus:ring-[#8AB73B]'
-                      : 'bg-[#161814] text-white border border-white/20 placeholder-gray-400 focus:border-[#D2E8A3]'
+                      ? 'bg-slate-100 text-slate-900 border border-slate-300 placeholder-slate-500 focus:ring-[var(--accent-light)]'
+                      : 'bg-[#161814] text-white border border-white/20 placeholder-gray-400 focus:border-[var(--accent)]'
                   }`}
                 />
               </div>
@@ -283,7 +283,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A] font-extrabold text-xs transition-all flex items-center justify-center gap-2 shadow-lg active:scale-98"
+              className="w-full py-3 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover2)] text-[#0A0A0A] font-extrabold text-xs transition-all flex items-center justify-center gap-2 shadow-lg active:scale-98"
             >
               {savedSuccess ? (
                 <>
@@ -302,7 +302,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
           {/* SECTION 3: CONCEPTOS CLAVE DEL SERVICIO LUMIN SHOP */}
           <div className="space-y-3 pt-2">
             <div className="flex items-center justify-between">
-              <label className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'} flex items-center gap-1.5`}>
+              <label className={`text-xs font-black uppercase tracking-wider ${isLight ? 'text-lime-800' : 'text-[var(--accent)]'} flex items-center gap-1.5`}>
                 <HelpCircle className="w-4 h-4" />
                 <span>{cfg('up_concepts_label', '3. Conceptos del Servicio LUMIN SHOP:')}</span>
               </label>
@@ -316,14 +316,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <div className={`p-3.5 rounded-2xl border space-y-1.5 transition-all ${
                 isLight ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-[#161814] border-white/10 text-gray-300'
               }`}>
-                <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
+                <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[var(--accent)]'}`}>
                   <Clock className="w-4 h-4 flex-shrink-0" />
                   <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     {cfg('up_concept1_title', '1. Tiempos de Elaboración:')}
                   </strong>
                 </div>
                 <p className="text-[11px] leading-relaxed">
-                  {cfg('up_concept1_desc', 'Confección y sublimación personalizada en ')}<strong className={isLight ? 'text-lime-800 font-extrabold' : 'text-[#D2E8A3]'}>24 a 48 hrs hábiles</strong>{cfg('up_concept1_desc_suffix', ' antes del despacho final.')}
+                  {cfg('up_concept1_desc', 'Confección y sublimación personalizada en ')}<strong className={isLight ? 'text-lime-800 font-extrabold' : 'text-[var(--accent)]'}>24 a 48 hrs hábiles</strong>{cfg('up_concept1_desc_suffix', ' antes del despacho final.')}
                 </p>
               </div>
 
@@ -331,14 +331,14 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <div className={`p-3.5 rounded-2xl border space-y-1.5 transition-all ${
                 isLight ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-[#161814] border-white/10 text-gray-300'
               }`}>
-                <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
+                <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[var(--accent)]'}`}>
                   <CreditCard className="w-4 h-4 flex-shrink-0" />
                   <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     {cfg('up_concept2_title', '2. Pagos Yape / Plin / BCP:')}
                   </strong>
                 </div>
                 <p className="text-[11px] leading-relaxed">
-                  {cfg('up_concept2_desc', 'Pago seguro al ')}<strong className={`font-mono ${isLight ? 'text-lime-800 font-bold' : 'text-[#D2E8A3]'}`}>{cfg('brand_phone', '993 365 099')}</strong>{cfg('up_concept2_desc_suffix', ' a nombre de LUMIN SHOP. Aceptamos BCP, BBVA e Interbank.')}
+                  {cfg('up_concept2_desc', 'Pago seguro al ')}<strong className={`font-mono ${isLight ? 'text-lime-800 font-bold' : 'text-[var(--accent)]'}`}>{cfg('brand_phone', '993 365 099')}</strong>{cfg('up_concept2_desc_suffix', ' a nombre de LUMIN SHOP. Aceptamos BCP, BBVA e Interbank.')}
                 </p>
               </div>
 
@@ -346,7 +346,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <div className={`p-3.5 rounded-2xl border space-y-1.5 transition-all ${
                 isLight ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-[#161814] border-white/10 text-gray-300'
               }`}>
-                <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
+                <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[var(--accent)]'}`}>
                   <Truck className="w-4 h-4 flex-shrink-0" />
                   <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     {cfg('up_concept3_title', '3. Envíos Gratis & Cobertura:')}
@@ -361,7 +361,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <div className={`p-3.5 rounded-2xl border space-y-1.5 transition-all ${
                 isLight ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-[#161814] border-white/10 text-gray-300'
               }`}>
-                <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
+                <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[var(--accent)]'}`}>
                   <Shirt className="w-4 h-4 flex-shrink-0" />
                   <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     {cfg('up_concept4_title', '4. Algodón 24/1 & Sublimación HD:')}
@@ -376,7 +376,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <div className={`p-3.5 rounded-2xl border space-y-1.5 transition-all ${
                 isLight ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-[#161814] border-white/10 text-gray-300'
               }`}>
-                <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
+                <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[var(--accent)]'}`}>
                   <MessageCircle className="w-4 h-4 flex-shrink-0" />
                   <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     {cfg('up_concept5_title', '5. Asesoría Directa WhatsApp:')}
@@ -391,7 +391,7 @@ export const UserProfileModal: React.FC<UserProfileModalProps> = ({
               <div className={`p-3.5 rounded-2xl border space-y-1.5 transition-all ${
                 isLight ? 'bg-slate-100 border-slate-300 text-slate-800' : 'bg-[#161814] border-white/10 text-gray-300'
               }`}>
-                <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[#D2E8A3]'}`}>
+                <div className={`flex items-center gap-2 ${isLight ? 'text-lime-800' : 'text-[var(--accent)]'}`}>
                   <Award className="w-4 h-4 flex-shrink-0" />
                   <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     {cfg('up_concept6_title', '6. Garantía de Calidad LUMIN:')}

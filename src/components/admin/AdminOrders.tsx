@@ -17,7 +17,7 @@ export const AdminOrders = memo(({ orders, handleOrderStatus }: { orders: Pedido
   return (
     <div className="p-5 sm:p-8 space-y-4 max-w-[1200px] mx-auto">
       <div className="flex items-center gap-3 mb-2">
-        <div className="w-8 h-8 rounded-xl bg-[#D2E8A3]/10 flex items-center justify-center"><ShoppingCart className="w-4 h-4 text-[#D2E8A3]" /></div>
+        <div className="w-8 h-8 rounded-xl bg-[var(--accent)]/10 flex items-center justify-center"><ShoppingCart className="w-4 h-4 text-[var(--accent)]" /></div>
         <div>
           <h3 className="text-sm font-extrabold uppercase text-white">{orders.length} Pedidos</h3>
           <p className="text-[9px] text-gray-500">Gestiona los estados de entrega</p>
@@ -25,7 +25,7 @@ export const AdminOrders = memo(({ orders, handleOrderStatus }: { orders: Pedido
       </div>
       {orders.length === 0 ? (
         <div className="text-center py-20 space-y-4">
-          <div className="w-24 h-24 mx-auto rounded-full bg-[#D2E8A3]/5 border border-[#D2E8A3]/10 flex items-center justify-center"><ShoppingCart className="w-10 h-10 text-[#D2E8A3]/30" /></div>
+          <div className="w-24 h-24 mx-auto rounded-full bg-[var(--accent)]/5 border border-[var(--accent)]/10 flex items-center justify-center"><ShoppingCart className="w-10 h-10 text-[var(--accent)]/30" /></div>
           <div>
             <p className="text-sm text-gray-400 font-bold">No hay pedidos aún</p>
             <p className="text-[10px] text-gray-600 mt-1">Los pedidos de WhatsApp aparecerán aquí</p>
@@ -48,9 +48,9 @@ export const AdminOrders = memo(({ orders, handleOrderStatus }: { orders: Pedido
                   <p className="text-[10px] text-gray-600">{order.created_at ? new Date(order.created_at).toLocaleString('es-PE') : ''}</p>
                 </div>
                 <div className="text-right space-y-2 flex-shrink-0">
-                  <p className="text-base font-black text-[#D2E8A3]">S/ {order.total?.toFixed(2)}</p>
+                  <p className="text-base font-black text-[var(--accent)]">S/ {order.total?.toFixed(2)}</p>
                   <select value={order.estado || 'pendiente'} onChange={e => handleOrderStatus(order.id, e.target.value)}
-                    className="text-[11px] font-bold px-3 py-1.5 rounded-xl border bg-[#161814] text-gray-300 border-white/10 focus:outline-none focus:border-[#D2E8A3]/50 transition-all cursor-pointer">
+                    className="text-[11px] font-bold px-3 py-1.5 rounded-xl border bg-[#161814] text-gray-300 border-white/10 focus:outline-none focus:border-[var(--accent)]/50 transition-all cursor-pointer">
                     <option value="pendiente">⏳ Pendiente</option>
                     <option value="produccion">🔨 Producción</option>
                     <option value="enviado">📦 Enviado</option>

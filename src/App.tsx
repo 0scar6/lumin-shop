@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { Header } from './components/Header';
 import { FloatingDock } from './components/FloatingDock';
 import { HeroBanner } from './components/HeroBanner';
+import { CampaignStrip } from './components/CampaignStrip';
 import { ProductCard } from './components/ProductCard';
 import { ProductModal } from './components/ProductModal';
 import { ProductionBadgeBar } from './components/ProductionBadgeBar';
@@ -22,6 +23,7 @@ import {
   loadCategoriesFromSupabase,
 } from './lib/supabase-data';
 import { loadConfig, reloadConfig, cfg } from './lib/config';
+import { applyPalette } from './lib/palette';
 import { supabase } from './lib/supabase';
 import { generateOrderImage } from './lib/generateOrderImage';
 import { sanitize } from './lib/sanitize';
@@ -78,6 +80,11 @@ export default function App() {
   // Config state
   const [configLoaded, setConfigLoaded] = useState(false);
   const [configVersion, setConfigVersion] = useState(0);
+
+  // Aplica la paleta de color elegida en el admin (variables CSS --accent*)
+  useEffect(() => {
+    applyPalette(cfg('brand_palette', 'green'));
+  }, [configLoaded, configVersion]);
 
   useEffect(() => {
     Promise.all([
@@ -502,9 +509,9 @@ export default function App() {
   // Theme Wrapper CSS Classes
   const isLight = themeMode === 'light';
   const getThemeWrapperClass = () => {
-    if (themeMode === 'amoled') return 'bg-[#000000] text-white selection:bg-[#D2E8A3] selection:text-[#0A0A0A]';
-    if (themeMode === 'light') return 'bg-[#F4F5F0] text-slate-900 selection:bg-[#8AB73B] selection:text-white';
-    return 'bg-[#0A0A0A] text-white selection:bg-[#D2E8A3] selection:text-[#0A0A0A]';
+    if (themeMode === 'amoled') return 'bg-[#000000] text-white selection:bg-[var(--accent)] selection:text-[#0A0A0A]';
+    if (themeMode === 'light') return 'bg-[#F4F5F0] text-slate-900 selection:bg-[var(--accent-light)] selection:text-white';
+    return 'bg-[#0A0A0A] text-white selection:bg-[var(--accent)] selection:text-[#0A0A0A]';
   };
 
   const allLoaded = configLoaded && productsLoaded;
@@ -514,39 +521,39 @@ export default function App() {
       <div className="min-h-screen w-full flex flex-col items-center justify-center bg-[#0A0A0A] font-sans overflow-hidden relative select-none">
         {/* Subtle grid background */}
         <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: 'linear-gradient(#D2E8A3 1px, transparent 1px), linear-gradient(90deg, #D2E8A3 1px, transparent 1px)',
+          backgroundImage: 'linear-gradient(var(--accent) 1px, transparent 1px), linear-gradient(90deg, var(--accent) 1px, transparent 1px)',
           backgroundSize: '60px 60px'
         }} />
 
         {/* Central animation */}
         <div className="relative mb-10">
           {/* Outer rotating square */}
-          <div className="w-24 h-24 border border-[#D2E8A3]/20 rotate-45 animate-[spin_8s_linear_infinite]" />
+          <div className="w-24 h-24 border border-[var(--accent)]/20 rotate-45 animate-[spin_8s_linear_infinite]" />
           {/* Middle rotating square (opposite) */}
-          <div className="absolute inset-2 border border-[#D2E8A3]/30 rotate-12 animate-[spin_5s_linear_infinite_reverse]" />
+          <div className="absolute inset-2 border border-[var(--accent)]/30 rotate-12 animate-[spin_5s_linear_infinite_reverse]" />
           {/* Inner glowing square */}
-          <div className="absolute inset-4 bg-[#D2E8A3]/5 border border-[#D2E8A3]/40 rotate-[30deg] animate-pulse" style={{ animationDuration: '2s' }} />
+          <div className="absolute inset-4 bg-[var(--accent)]/5 border border-[var(--accent)]/40 rotate-[30deg] animate-pulse" style={{ animationDuration: '2s' }} />
           {/* Center dot */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-3 h-3 bg-[#D2E8A3] rounded-full shadow-[0_0_20px_#D2E8A3,0_0_40px_#D2E8A3,0_0_60px_rgba(210,232,163,0.3)] animate-pulse" style={{ animationDuration: '1.5s' }} />
+            <div className="w-3 h-3 bg-[var(--accent)] rounded-full shadow-[0_0_20px_var(--accent),0_0_40px_var(--accent),0_0_60px_color-mix(in_oklab,var(--accent)_30%,transparent)] animate-pulse" style={{ animationDuration: '1.5s' }} />
           </div>
         </div>
 
         {/* Brand */}
         <div className="text-center space-y-3">
-          <h1 className="text-[#D2E8A3] font-black text-xl sm:text-2xl tracking-[0.4em] uppercase">
+          <h1 className="text-[var(--accent)] font-black text-xl sm:text-2xl tracking-[0.4em] uppercase">
             LUMIN
           </h1>
           <div className="flex items-center justify-center gap-3">
-            <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-[#D2E8A3]/50" />
-            <span className="text-[#D2E8A3]/40 text-[10px] font-bold tracking-[0.3em] uppercase">SHOP</span>
-            <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-[#D2E8A3]/50" />
+            <div className="h-[1px] w-8 bg-gradient-to-r from-transparent to-[var(--accent)]/50" />
+            <span className="text-[var(--accent)]/40 text-[10px] font-bold tracking-[0.3em] uppercase">SHOP</span>
+            <div className="h-[1px] w-8 bg-gradient-to-l from-transparent to-[var(--accent)]/50" />
           </div>
         </div>
 
         {/* Loading bar */}
         <div className="mt-10 w-40 h-[1px] bg-white/5 rounded-full overflow-hidden">
-          <div className="h-full bg-[#D2E8A3]/60 rounded-full animate-loading-bar" />
+          <div className="h-full bg-[var(--accent)]/60 rounded-full animate-loading-bar" />
         </div>
 
         <style>{`
@@ -590,6 +597,9 @@ export default function App() {
         {/* SCREEN 1: INICIO (HOME) */}
         {activeTab === 'home' && (
           <div key="home-screen" className="space-y-8 animate-fade-in-up">
+            {/* Campaña de temporada activa (si la hay) */}
+            <CampaignStrip onExploreClick={() => handleTabChange('catalog')} themeMode={themeMode} />
+
             {/* Top Hero Banner */}
             <HeroBanner
               onExploreClick={() => handleTabChange('catalog')}
@@ -609,7 +619,7 @@ export default function App() {
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
                   <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider ${
-                    isLight ? 'bg-lime-100 text-lime-800 border border-lime-300' : 'bg-[#D2E8A3]/20 text-[#D2E8A3]'
+                    isLight ? 'bg-lime-100 text-lime-800 border border-lime-300' : 'bg-[var(--accent)]/20 text-[var(--accent)]'
                   }`}>
                     {cfg('section_about_label', 'Sobre')} {cfg('brand_name', 'LUMIN SHOP')}
                   </span>
@@ -629,7 +639,7 @@ export default function App() {
               <div className="flex flex-wrap items-center gap-3 pt-2">
                 <button
                   onClick={() => handleTabChange('catalog')}
-                  className="px-5 py-2.5 rounded-full bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs sm:text-sm hover:bg-[#b8d682] transition-all flex items-center gap-2 shadow-lg"
+                  className="px-5 py-2.5 rounded-full bg-[var(--accent)] text-[#0A0A0A] font-extrabold text-xs sm:text-sm hover:bg-[var(--accent-hover2)] transition-all flex items-center gap-2 shadow-lg"
                 >
                   <Grid className="w-4 h-4" />
                   <span>{cfg('section_about_cta_cat', 'Explorar Catálogo de Productos')}</span>
@@ -640,7 +650,7 @@ export default function App() {
                     isLight ? 'bg-slate-900 text-white border-slate-900 hover:bg-slate-800' : 'bg-white/10 text-white border-white/10 hover:bg-white/20'
                   }`}
                 >
-                  <Tag className="w-4 h-4 text-[#D2E8A3]" />
+                  <Tag className="w-4 h-4 text-[var(--accent)]" />
                   <span>{cfg('section_about_cta_idea', 'Cotizar Idea Personalizada')}</span>
                 </button>
               </div>
@@ -653,7 +663,7 @@ export default function App() {
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                  <span className={`text-xs font-mono uppercase tracking-widest ${isLight ? 'text-lime-700 font-bold' : 'text-[#D2E8A3]'}`}>
+                  <span className={`text-xs font-mono uppercase tracking-widest ${isLight ? 'text-lime-700 font-bold' : 'text-[var(--accent)]'}`}>
                     {cfg('section_featured_title', '🔥 SELECCIÓN DESTACADA DROP 04')}
                   </span>
                   <h3 className={`font-display text-xl sm:text-2xl font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
@@ -662,7 +672,7 @@ export default function App() {
                 </div>
                 <button
                   onClick={() => handleTabChange('catalog')}
-                  className={`text-xs font-bold hover:underline flex items-center gap-1 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`}
+                  className={`text-xs font-bold hover:underline flex items-center gap-1 ${isLight ? 'text-lime-700' : 'text-[var(--accent)]'}`}
                 >
                   {cfg('section_featured_view_all', 'Ver Catálogo Completo')} ({products.length}) →
                 </button>
@@ -681,7 +691,7 @@ export default function App() {
                   />
                 )) : (
                   <div className="col-span-full py-8 text-center">
-                    <div className="w-6 h-6 border-2 border-[#D2E8A3] border-t-transparent rounded-full animate-spin mx-auto" />
+                    <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto" />
                   </div>
                 )}
               </div>
@@ -699,8 +709,8 @@ export default function App() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#D2E8A3]"></span>
-                  <span className="text-xs font-mono text-[#D2E8A3] uppercase tracking-widest">
+                  <span className="w-2 h-2 rounded-full bg-[var(--accent)]"></span>
+                  <span className="text-xs font-mono text-[var(--accent)] uppercase tracking-widest">
                     {cfg('catalog_subtitle', 'PANTALLA DE CATÁLOGO & PRODUCTOS')}
                   </span>
                 </div>
@@ -728,13 +738,13 @@ export default function App() {
                       onClick={() => setSelectedCategory(cat.id as Category)}
                       className={`px-4 py-2 rounded-full text-xs font-extrabold flex items-center gap-2 flex-shrink-0 transition-all ${
                         isCatActive
-                          ? 'bg-[#D2E8A3] text-[#0A0A0A] shadow-lg shadow-[#D2E8A3]/20 scale-105'
+                          ? 'bg-[var(--accent)] text-[#0A0A0A] shadow-lg shadow-[var(--accent)]/20 scale-105'
                           : isLight
                           ? 'bg-white text-slate-800 border border-slate-300 hover:border-slate-400'
                           : 'bg-[#161814] text-gray-300 border border-white/10 hover:border-white/30'
                       }`}
                     >
-                      <IconComponent className="w-3.5 h-3.5 text-[#D2E8A3]" />
+                      <IconComponent className="w-3.5 h-3.5 text-[var(--accent)]" />
                       <span>{cat.label}</span>
                     </button>
                   );
@@ -752,14 +762,14 @@ export default function App() {
             >
               {/* Quick technique filter pills */}
               <div className="flex items-center gap-2">
-                <SlidersHorizontal className={`w-4 h-4 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
+                <SlidersHorizontal className={`w-4 h-4 ${isLight ? 'text-lime-700' : 'text-[var(--accent)]'}`} />
                 <span className={`${isLight ? 'text-slate-700' : 'text-gray-300'} font-bold hidden sm:inline`}>{cfg('catalog_filter_technique', 'Técnica:')}</span>
 
                 <button
                   onClick={() => setSelectedTechnique('all')}
                   className={`px-3 py-1 rounded-lg transition-colors font-bold ${
                     selectedTechnique === 'all'
-                      ? 'bg-[#D2E8A3] text-[#0A0A0A] shadow-sm'
+                      ? 'bg-[var(--accent)] text-[#0A0A0A] shadow-sm'
                       : isLight
                       ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'
                       : 'text-gray-300 hover:text-white hover:bg-white/5'
@@ -772,7 +782,7 @@ export default function App() {
                   onClick={() => setSelectedTechnique('textil')}
                   className={`px-3 py-1 rounded-lg transition-colors flex items-center gap-1 font-bold ${
                     selectedTechnique === 'textil'
-                      ? 'bg-[#D2E8A3] text-[#0A0A0A] shadow-sm'
+                      ? 'bg-[var(--accent)] text-[#0A0A0A] shadow-sm'
                       : isLight
                       ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'
                       : 'text-gray-300 hover:text-white hover:bg-white/5'
@@ -786,7 +796,7 @@ export default function App() {
                   onClick={() => setSelectedTechnique('sublimacion')}
                   className={`px-3 py-1 rounded-lg transition-colors flex items-center gap-1 font-bold ${
                     selectedTechnique === 'sublimacion'
-                      ? 'bg-[#D2E8A3] text-[#0A0A0A] shadow-sm'
+                      ? 'bg-[var(--accent)] text-[#0A0A0A] shadow-sm'
                       : isLight
                       ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'
                       : 'text-gray-300 hover:text-white hover:bg-white/5'
@@ -803,7 +813,7 @@ export default function App() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as any)}
-                  className={`border rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:border-[#D2E8A3] ${
+                  className={`border rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:border-[var(--accent)] ${
                     isLight ? 'bg-slate-100 text-slate-900 border-slate-300' : 'bg-[#0A0A0A] text-gray-300 border-white/10'
                   }`}
                 >
@@ -817,7 +827,7 @@ export default function App() {
             {/* Product Grid */}
             {!productsLoaded ? (
               <div className="py-16 text-center space-y-3 glass-card rounded-3xl p-8 border border-white/10">
-                <div className="w-8 h-8 border-2 border-[#D2E8A3] border-t-transparent rounded-full animate-spin mx-auto" />
+                <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto" />
                 <p className="text-gray-400 text-sm">Cargando productos...</p>
               </div>
             ) : filteredProducts.length === 0 ? (
@@ -832,7 +842,7 @@ export default function App() {
                     setSelectedTechnique('all');
                     setSearchQuery('');
                   }}
-                  className="px-4 py-2 rounded-full bg-[#D2E8A3] text-[#0A0A0A] font-bold text-xs"
+                  className="px-4 py-2 rounded-full bg-[var(--accent)] text-[#0A0A0A] font-bold text-xs"
                 >
                   {cfg('catalog_reset_filters', 'Restablecer Filtros')}
                 </button>
@@ -868,7 +878,7 @@ export default function App() {
                 <div className="flex items-center gap-2">
                   <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
                   <span className={`text-xs font-mono uppercase tracking-widest ${
-                    isLight ? 'text-lime-700 font-bold' : 'text-[#D2E8A3]'
+                    isLight ? 'text-lime-700 font-bold' : 'text-[var(--accent)]'
                   }`}>
                     {cfg('favorites_subtitle', 'PANTALLA DE MIS FAVORITOS')}
                   </span>
@@ -905,7 +915,7 @@ export default function App() {
                 </p>
                 <button
                   onClick={() => handleTabChange('catalog')}
-                  className="px-6 py-3 rounded-full bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs shadow-lg inline-flex items-center gap-2 hover:bg-[#c2e088] transition-all"
+                  className="px-6 py-3 rounded-full bg-[var(--accent)] text-[#0A0A0A] font-extrabold text-xs shadow-lg inline-flex items-center gap-2 hover:bg-[var(--accent-hover)] transition-all"
                 >
                   <Grid className="w-4 h-4" />
                   <span>{cfg('favorites_empty_cta', 'EXPLORAR CATÁLOGO')}</span>
@@ -937,9 +947,9 @@ export default function App() {
             }`}>
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <ShoppingBag className={`w-4 h-4 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
+                  <ShoppingBag className={`w-4 h-4 ${isLight ? 'text-lime-700' : 'text-[var(--accent)]'}`} />
                   <span className={`text-xs font-mono uppercase tracking-widest ${
-                    isLight ? 'text-lime-700 font-bold' : 'text-[#D2E8A3]'
+                    isLight ? 'text-lime-700 font-bold' : 'text-[var(--accent)]'
                   }`}>
                     {cfg('cart_subtitle', 'PANTALLA DE PEDIDO & PROCESAMIENTO')}
                   </span>
@@ -976,7 +986,7 @@ export default function App() {
                 </p>
                 <button
                   onClick={() => handleTabChange('catalog')}
-                  className="px-6 py-3 rounded-full bg-[#D2E8A3] text-[#0A0A0A] font-extrabold text-xs shadow-lg inline-flex items-center gap-2 hover:bg-[#c2e088] transition-all"
+                  className="px-6 py-3 rounded-full bg-[var(--accent)] text-[#0A0A0A] font-extrabold text-xs shadow-lg inline-flex items-center gap-2 hover:bg-[var(--accent-hover)] transition-all"
                 >
                   <Grid className="w-4 h-4" />
                   <span>{cfg('cart_empty_cta', 'IR AL CATÁLOGO')}</span>
@@ -987,10 +997,10 @@ export default function App() {
                 {/* Left side: Cart Items List */}
                 <div className="lg:col-span-7 space-y-4">
                   <div className={`p-4 rounded-2xl border space-y-1.5 ${
-                    isLight ? 'bg-lime-50/80 border-lime-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-[#D2E8A3]/30 text-white'
+                    isLight ? 'bg-lime-50/80 border-lime-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-[var(--accent)]/30 text-white'
                   }`}>
                     <div className={`flex items-center gap-1.5 text-xs font-bold ${
-                      isLight ? 'text-lime-800' : 'text-[#D2E8A3]'
+                      isLight ? 'text-lime-800' : 'text-[var(--accent)]'
                     }`}>
                       <Tag className="w-4 h-4" />
                       <span>{cfg('cart_process_title', 'PROCESO DE FABRICACIÓN BAJO PEDIDO:')}</span>
@@ -1058,7 +1068,7 @@ export default function App() {
                             </div>
 
                             {item.customText && (
-                              <p className={`text-xs italic font-medium ${isLight ? 'text-lime-800 font-bold' : 'text-[#D2E8A3]'}`}>
+                              <p className={`text-xs italic font-medium ${isLight ? 'text-lime-800 font-bold' : 'text-[var(--accent)]'}`}>
                                 {cfg('cart_item_custom_text', 'Texto personalizado:')} "{item.customText}"
                               </p>
                             )}
@@ -1084,7 +1094,7 @@ export default function App() {
                                 </button>
                               </div>
 
-                              <span className={`font-black text-base ${isLight ? 'text-slate-900 font-black' : 'text-[#D2E8A3]'}`}>
+                              <span className={`font-black text-base ${isLight ? 'text-slate-900 font-black' : 'text-[var(--accent)]'}`}>
                                 S/ {itemTotal.toFixed(2)}
                               </span>
                             </div>
@@ -1153,7 +1163,7 @@ export default function App() {
                     isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10 text-white'
                   }`}>
                     <h4 className={`font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 ${
-                      isLight ? 'text-lime-800' : 'text-[#D2E8A3]'
+                      isLight ? 'text-lime-800' : 'text-[var(--accent)]'
                     }`}>
                       <Package className="w-3.5 h-3.5" />
                       {cfg('cart_shipping_title', 'Datos para el envío:')}
@@ -1198,7 +1208,7 @@ export default function App() {
                           onClick={() => { setDeliveryType('envio'); }}
                           className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 ${
                             deliveryType === 'envio'
-                              ? isLight ? 'bg-slate-900 text-white border-slate-900' : 'bg-[#D2E8A3] text-[#0A0A0A] border-[#D2E8A3]'
+                              ? isLight ? 'bg-slate-900 text-white border-slate-900' : 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)]'
                               : isLight ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' : 'bg-black/30 text-gray-400 border-white/10'
                           }`}
                         >
@@ -1209,7 +1219,7 @@ export default function App() {
                           onClick={() => setDeliveryType('recojo')}
                           className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 ${
                             deliveryType === 'recojo'
-                              ? isLight ? 'bg-slate-900 text-white border-slate-900' : 'bg-[#D2E8A3] text-[#0A0A0A] border-[#D2E8A3]'
+                              ? isLight ? 'bg-slate-900 text-white border-slate-900' : 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)]'
                               : isLight ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' : 'bg-black/30 text-gray-400 border-white/10'
                           }`}
                         >
@@ -1235,11 +1245,11 @@ export default function App() {
                                 onClick={() => setShippingZone(zone.key)}
                                 className={`py-2.5 px-2 rounded-xl text-[10px] font-bold border transition-all text-center flex flex-col items-center gap-1 ${
                                   shippingZone === zone.key
-                                    ? isLight ? 'bg-slate-900 text-white border-slate-900' : 'bg-[#D2E8A3]/20 text-[#D2E8A3] border-[#D2E8A3]/50'
+                                    ? isLight ? 'bg-slate-900 text-white border-slate-900' : 'bg-[var(--accent)]/20 text-[var(--accent)] border-[var(--accent)]/50'
                                     : isLight ? 'bg-slate-100 text-slate-700 border-slate-300' : 'bg-black/30 text-gray-400 border-white/10'
                                 }`}
                               >
-                                <zone.icon className={`w-4 h-4 ${shippingZone === zone.key ? 'text-[#D2E8A3]' : 'text-gray-400'}`} />
+                                <zone.icon className={`w-4 h-4 ${shippingZone === zone.key ? 'text-[var(--accent)]' : 'text-gray-400'}`} />
                                 <span>{zone.label}</span>
                                 <span className="text-[9px] opacity-70">{zone.price === '0' ? 'GRATIS' : `S/ ${zone.price}`}</span>
                               </button>
@@ -1271,7 +1281,7 @@ export default function App() {
                         <span className={`text-xs font-mono uppercase font-bold ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
                           {cfg('cart_total_label', 'Total a Pagar:')}
                         </span>
-                        <span className={`text-3xl font-black ${isLight ? 'text-slate-900' : 'text-[#D2E8A3]'}`}>
+                        <span className={`text-3xl font-black ${isLight ? 'text-slate-900' : 'text-[var(--accent)]'}`}>
                           S/ {grandTotal.toFixed(2)}
                         </span>
                       </div>
@@ -1281,21 +1291,21 @@ export default function App() {
                       {/* Terms consent checkbox */}
                       <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all ${
                         acceptedTerms
-                          ? isLight ? 'bg-lime-50 border-lime-300' : 'bg-[#D2E8A3]/5 border-[#D2E8A3]/30'
+                          ? isLight ? 'bg-lime-50 border-lime-300' : 'bg-[var(--accent)]/5 border-[var(--accent)]/30'
                           : isLight ? 'bg-slate-50 border-slate-200 hover:border-slate-300' : 'bg-white/5 border-white/10 hover:border-white/20'
                       }`}>
                         <input
                           type="checkbox"
                           checked={acceptedTerms}
                           onChange={(e) => setAcceptedTerms(e.target.checked)}
-                          className="mt-0.5 w-4 h-4 rounded border-2 accent-[#D2E8A3]"
+                          className="mt-0.5 w-4 h-4 rounded border-2 accent-[var(--accent)]"
                         />
                         <span className={`text-[11px] leading-tight ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
                           {cfg('checkout_consent_text', 'Acepto la Política de Privacidad y los Términos y Condiciones de LUMIN SHOP. Entiendo que mis datos personales serán utilizados únicamente para procesar mi pedido.')}{' '}
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); setTermsTab('privacy'); setIsTermsOpen(true); }}
-                            className={`font-bold underline ${isLight ? 'text-lime-700 hover:text-lime-900' : 'text-[#D2E8A3] hover:text-[#c2e088]'}`}
+                            className={`font-bold underline ${isLight ? 'text-lime-700 hover:text-lime-900' : 'text-[var(--accent)] hover:text-[var(--accent-hover)]'}`}
                           >
                             {cfg('checkout_consent_privacy_link', 'Política de Privacidad')}
                           </button>
@@ -1303,7 +1313,7 @@ export default function App() {
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); setTermsTab('terms'); setIsTermsOpen(true); }}
-                            className={`font-bold underline ${isLight ? 'text-lime-700 hover:text-lime-900' : 'text-[#D2E8A3] hover:text-[#c2e088]'}`}
+                            className={`font-bold underline ${isLight ? 'text-lime-700 hover:text-lime-900' : 'text-[var(--accent)] hover:text-[var(--accent-hover)]'}`}
                           >
                             {cfg('checkout_consent_terms_link', 'Términos y Condiciones')}
                           </button>
@@ -1361,8 +1371,8 @@ export default function App() {
             <div className="flex items-center justify-between border-b border-white/5 pb-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-[#D2E8A3]" />
-                  <span className="text-xs font-mono text-[#D2E8A3] uppercase tracking-widest">
+                  <User className="w-4 h-4 text-[var(--accent)]" />
+                  <span className="text-xs font-mono text-[var(--accent)] uppercase tracking-widest">
                     {cfg('profile_subtitle', 'PANTALLA DE PERFIL & CONFIGURACIÓN "YO"')}
                   </span>
                 </div>
@@ -1380,7 +1390,7 @@ export default function App() {
               }`}>
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-mono font-bold uppercase text-gray-400">{cfg('profile_stat_activity', 'Actividad')}</span>
-                  <div className="p-1.5 rounded-lg bg-[#D2E8A3]/10 text-[#D2E8A3]">
+                  <div className="p-1.5 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)]">
                     <Eye className="w-4 h-4" />
                   </div>
                 </div>
@@ -1425,7 +1435,7 @@ export default function App() {
 
             {/* Order Status Notification */}
             {orderUpdateMsg && (
-              <div className="p-3 rounded-2xl bg-[#D2E8A3]/10 border border-[#D2E8A3]/30 text-[#D2E8A3] text-xs font-bold text-center animate-pulse">
+              <div className="p-3 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/30 text-[var(--accent)] text-xs font-bold text-center animate-pulse">
                 {orderUpdateMsg}
               </div>
             )}
@@ -1436,7 +1446,7 @@ export default function App() {
                 isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10'
               }`}>
                 <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-[#D2E8A3]" />
+                  <ShoppingBag className="w-5 h-5 text-[var(--accent)]" />
                   <h3 className="font-display text-lg font-bold uppercase">
                     {cfg('profile_my_orders_title', 'Mis Pedidos')}
                   </h3>
@@ -1474,7 +1484,7 @@ export default function App() {
                             </div>
                             <p className="text-xs text-gray-500">{order.created_at ? new Date(order.created_at).toLocaleDateString('es-PE') : ''}</p>
                           </div>
-                          <p className="text-sm font-extrabold text-[#D2E8A3]">S/ {order.total?.toFixed(2)}</p>
+                          <p className="text-sm font-extrabold text-[var(--accent)]">S/ {order.total?.toFixed(2)}</p>
                         </div>
                       </div>
                     );
@@ -1488,7 +1498,7 @@ export default function App() {
               isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10'
             }`}>
               <div className="flex items-center gap-2">
-                <Sun className="w-5 h-5 text-[#D2E8A3]" />
+                <Sun className="w-5 h-5 text-[var(--accent)]" />
                 <h3 className="font-display text-lg font-bold uppercase">
                   {cfg('profile_section_appearance_title', '1. Apariencia Visual del Sitio Web')}
                 </h3>
@@ -1501,11 +1511,11 @@ export default function App() {
                   onClick={() => handleSelectTheme('dark')}
                   className={`p-4 rounded-2xl border text-left flex flex-col justify-between gap-3 transition-all ${
                     themeMode === 'dark'
-                      ? 'border-[#D2E8A3] bg-[#0A0A0A] shadow-lg ring-2 ring-[#D2E8A3]'
+                      ? 'border-[var(--accent)] bg-[#0A0A0A] shadow-lg ring-2 ring-[var(--accent)]'
                       : 'border-white/10 bg-black/20 hover:bg-black/40'
                   }`}
                 >
-                  <Moon className={`w-6 h-6 ${themeMode === 'dark' ? 'text-[#D2E8A3]' : 'text-gray-400'}`} />
+                  <Moon className={`w-6 h-6 ${themeMode === 'dark' ? 'text-[var(--accent)]' : 'text-gray-400'}`} />
                   <div>
                     <span className="block font-bold text-sm text-white">{cfg('profile_theme_dark', 'Oscuro (Clásico)')}</span>
                     <span className="text-[11px] text-gray-400 font-mono">{cfg('profile_theme_dark_desc', 'Verde Neón & Negro')}</span>
@@ -1518,11 +1528,11 @@ export default function App() {
                   onClick={() => handleSelectTheme('amoled')}
                   className={`p-4 rounded-2xl border text-left flex flex-col justify-between gap-3 transition-all ${
                     themeMode === 'amoled'
-                      ? 'border-[#D2E8A3] bg-black shadow-lg ring-2 ring-[#D2E8A3]'
+                      ? 'border-[var(--accent)] bg-black shadow-lg ring-2 ring-[var(--accent)]'
                       : 'border-white/10 bg-black/20 hover:bg-black/40'
                   }`}
                 >
-                  <Zap className={`w-6 h-6 ${themeMode === 'amoled' ? 'text-[#D2E8A3]' : 'text-gray-400'}`} />
+                  <Zap className={`w-6 h-6 ${themeMode === 'amoled' ? 'text-[var(--accent)]' : 'text-gray-400'}`} />
                   <div>
                     <span className="block font-bold text-sm text-white">{cfg('profile_theme_amoled', 'AMOLED')}</span>
                     <span className="text-[11px] text-gray-400 font-mono">{cfg('profile_theme_amoled_desc', 'Negro Absoluto #000')}</span>
@@ -1535,11 +1545,11 @@ export default function App() {
                   onClick={() => handleSelectTheme('light')}
                   className={`p-4 rounded-2xl border text-left flex flex-col justify-between gap-3 transition-all ${
                     themeMode === 'light'
-                      ? 'border-[#8AB73B] bg-slate-100 ring-2 ring-[#8AB73B]'
+                      ? 'border-[var(--accent-light)] bg-slate-100 ring-2 ring-[var(--accent-light)]'
                       : 'border-slate-300 bg-slate-50 hover:bg-slate-100'
                   }`}
                 >
-                  <Sun className={`w-6 h-6 ${themeMode === 'light' ? 'text-[#8AB73B]' : 'text-gray-400'}`} />
+                  <Sun className={`w-6 h-6 ${themeMode === 'light' ? 'text-[var(--accent-light)]' : 'text-gray-400'}`} />
                   <div>
                     <span className="block font-bold text-sm text-slate-900">{cfg('profile_theme_light', 'Modo Claro')}</span>
                     <span className="text-[11px] text-slate-600 font-mono">{cfg('profile_theme_light_desc', 'Fondo Claro Limpio')}</span>
@@ -1553,7 +1563,7 @@ export default function App() {
               isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10'
             }`}>
               <div className="flex items-center gap-2">
-                <User className="w-5 h-5 text-[#D2E8A3]" />
+                <User className="w-5 h-5 text-[var(--accent)]" />
                 <h3 className="font-display text-lg font-bold uppercase">
                   {cfg('profile_section_data_title', '2. Mis Datos para Autocompletar Pedidos')}
                 </h3>
@@ -1618,7 +1628,7 @@ export default function App() {
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-2xl bg-[#D2E8A3] hover:bg-[#b8d682] text-[#0A0A0A] font-extrabold text-xs transition-all flex items-center justify-center gap-2 shadow-lg active:scale-98"
+                  className="w-full py-3.5 rounded-2xl bg-[var(--accent)] hover:bg-[var(--accent-hover2)] text-[#0A0A0A] font-extrabold text-xs transition-all flex items-center justify-center gap-2 shadow-lg active:scale-98"
                 >
                   {profileSaveSuccess ? (
                     <>
@@ -1640,7 +1650,7 @@ export default function App() {
               isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10 text-gray-300'
             }`}>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-[#D2E8A3]">
+                <div className="flex items-center gap-2 text-[var(--accent)]">
                   <HelpCircle className="w-5 h-5" />
                   <h3 className={`font-display text-lg font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
                     {cfg('profile_section_concepts_title', '3. Conceptos Clave del Servicio LUMIN SHOP')}
@@ -1656,7 +1666,7 @@ export default function App() {
                 <div className={`p-4 rounded-2xl border space-y-2 transition-all ${
                   isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0A0A0A] border-white/5 text-gray-300'
                 }`}>
-                  <div className="flex items-center gap-2 text-[#D2E8A3]">
+                  <div className="flex items-center gap-2 text-[var(--accent)]">
                     <Clock className="w-4 h-4 flex-shrink-0" />
                     <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                       {cfg('concept_1_title', '1. Elaboración Bajo Pedido')}
@@ -1671,7 +1681,7 @@ export default function App() {
                 <div className={`p-4 rounded-2xl border space-y-2 transition-all ${
                   isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0A0A0A] border-white/5 text-gray-300'
                 }`}>
-                  <div className="flex items-center gap-2 text-[#D2E8A3]">
+                  <div className="flex items-center gap-2 text-[var(--accent)]">
                     <CreditCard className="w-4 h-4 flex-shrink-0" />
                     <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                       {cfg('concept_2_title', '2. Pagos Yape / Plin / Bancos')}
@@ -1686,7 +1696,7 @@ export default function App() {
                 <div className={`p-4 rounded-2xl border space-y-2 transition-all ${
                   isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0A0A0A] border-white/5 text-gray-300'
                 }`}>
-                  <div className="flex items-center gap-2 text-[#D2E8A3]">
+                  <div className="flex items-center gap-2 text-[var(--accent)]">
                     <Truck className="w-4 h-4 flex-shrink-0" />
                     <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                       {cfg('concept_3_title', '3. Envíos Gratis (S/ 200+)')}
@@ -1701,7 +1711,7 @@ export default function App() {
                 <div className={`p-4 rounded-2xl border space-y-2 transition-all ${
                   isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0A0A0A] border-white/5 text-gray-300'
                 }`}>
-                  <div className="flex items-center gap-2 text-[#D2E8A3]">
+                  <div className="flex items-center gap-2 text-[var(--accent)]">
                     <Shirt className="w-4 h-4 flex-shrink-0" />
                     <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                       {cfg('concept_4_title', '4. Algodón Reactivo & Sublimado HD')}
@@ -1716,7 +1726,7 @@ export default function App() {
                 <div className={`p-4 rounded-2xl border space-y-2 transition-all ${
                   isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0A0A0A] border-white/5 text-gray-300'
                 }`}>
-                  <div className="flex items-center gap-2 text-[#D2E8A3]">
+                  <div className="flex items-center gap-2 text-[var(--accent)]">
                     <MessageCircle className="w-4 h-4 flex-shrink-0" />
                     <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                       {cfg('concept_5_title', '5. Verificación por WhatsApp')}
@@ -1731,7 +1741,7 @@ export default function App() {
                 <div className={`p-4 rounded-2xl border space-y-2 transition-all ${
                   isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0A0A0A] border-white/5 text-gray-300'
                 }`}>
-                  <div className="flex items-center gap-2 text-[#D2E8A3]">
+                  <div className="flex items-center gap-2 text-[var(--accent)]">
                     <Award className="w-4 h-4 flex-shrink-0" />
                     <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
                       {cfg('concept_6_title', '6. Garantía de Satisfacción')}
@@ -1794,7 +1804,7 @@ export default function App() {
             </button>
 
             <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#D2E8A3]/10 text-[#D2E8A3] text-xs font-mono">
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] text-xs font-mono">
                 <Tag className="w-3.5 h-3.5" />
                 <span>{cfg('custom_idea_subtitle', 'COTIZACIÓN DE PRODUCTO SUBLIMADO')}</span>
               </div>
@@ -1817,7 +1827,7 @@ export default function App() {
                     onClick={() => setCustomIdeaType('polo')}
                     className={`p-2 rounded-xl text-xs font-bold border ${
                       customIdeaType === 'polo'
-                        ? 'bg-[#D2E8A3] text-[#0A0A0A] border-[#D2E8A3]'
+                        ? 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)]'
                         : 'bg-[#161814] text-gray-300 border-white/10'
                     }`}
                   >
@@ -1828,7 +1838,7 @@ export default function App() {
                     onClick={() => setCustomIdeaType('vaso')}
                     className={`p-2 rounded-xl text-xs font-bold border ${
                       customIdeaType === 'vaso'
-                        ? 'bg-[#D2E8A3] text-[#0A0A0A] border-[#D2E8A3]'
+                        ? 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)]'
                         : 'bg-[#161814] text-gray-300 border-white/10'
                     }`}
                   >
@@ -1839,7 +1849,7 @@ export default function App() {
                     onClick={() => setCustomIdeaType('otro')}
                     className={`p-2 rounded-xl text-xs font-bold border ${
                       customIdeaType === 'otro'
-                        ? 'bg-[#D2E8A3] text-[#0A0A0A] border-[#D2E8A3]'
+                        ? 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)]'
                         : 'bg-[#161814] text-gray-300 border-white/10'
                     }`}
                   >
@@ -1858,7 +1868,7 @@ export default function App() {
                   value={customIdeaText}
                   onChange={(e) => setCustomIdeaText(e.target.value)}
                   placeholder={cfg('custom_idea_placeholder', "Ej: Quiero un polo oversized negro con la ilustración de una calavera en la espalda y mi apodo 'Vektor' en la manga derecha...")}
-                  className="w-full bg-[#161814] border border-white/10 rounded-2xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[#D2E8A3]"
+                  className="w-full bg-[#161814] border border-white/10 rounded-2xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[var(--accent)]"
                 ></textarea>
               </div>
 

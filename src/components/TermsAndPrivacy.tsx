@@ -40,7 +40,7 @@ export const TermsAndPrivacy: React.FC<TermsAndPrivacyProps> = ({
         {/* Header */}
         <div className={`p-4 sm:p-5 border-b flex items-center justify-between ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
           <div className="flex items-center gap-2">
-            <ShieldCheck className={`w-5 h-5 ${isLight ? 'text-lime-700' : 'text-[#D2E8A3]'}`} />
+            <ShieldCheck className={`w-5 h-5 ${isLight ? 'text-lime-700' : 'text-[var(--accent)]'}`} />
             <h2 className="font-display text-lg font-extrabold uppercase">
               {activeTab === 'privacy' ? 'Política de Privacidad' : 'Términos y Condiciones'}
             </h2>
@@ -61,7 +61,7 @@ export const TermsAndPrivacy: React.FC<TermsAndPrivacyProps> = ({
             onClick={() => setActiveTab('privacy')}
             className={`flex-1 py-3 text-xs font-extrabold uppercase tracking-wider transition-all border-b-2 ${
               activeTab === 'privacy'
-                ? isLight ? 'border-lime-700 text-lime-700' : 'border-[#D2E8A3] text-[#D2E8A3]'
+                ? isLight ? 'border-lime-700 text-lime-700' : 'border-[var(--accent)] text-[var(--accent)]'
                 : isLight ? 'border-transparent text-slate-500 hover:text-slate-700' : 'border-transparent text-gray-500 hover:text-gray-300'
             }`}
           >
@@ -72,7 +72,7 @@ export const TermsAndPrivacy: React.FC<TermsAndPrivacyProps> = ({
             onClick={() => setActiveTab('terms')}
             className={`flex-1 py-3 text-xs font-extrabold uppercase tracking-wider transition-all border-b-2 ${
               activeTab === 'terms'
-                ? isLight ? 'border-lime-700 text-lime-700' : 'border-[#D2E8A3] text-[#D2E8A3]'
+                ? isLight ? 'border-lime-700 text-lime-700' : 'border-[var(--accent)] text-[var(--accent)]'
                 : isLight ? 'border-transparent text-slate-500 hover:text-slate-700' : 'border-transparent text-gray-500 hover:text-gray-300'
             }`}
           >
@@ -316,7 +316,7 @@ export const TermsAndPrivacy: React.FC<TermsAndPrivacyProps> = ({
             className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
               isLight
                 ? 'bg-slate-900 text-white hover:bg-slate-800'
-                : 'bg-[#D2E8A3] text-[#0A0A0A] hover:bg-[#c2e088]'
+                : 'bg-[var(--accent)] text-[#0A0A0A] hover:bg-[var(--accent-hover)]'
             }`}
           >
             <ArrowLeft className="w-3.5 h-3.5" />

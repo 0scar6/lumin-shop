@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Paleta de color de marca (aplicada/ajustada en runtime por src/lib/palette.ts) */
+:root {
+  --accent: #D2E8A3;
+  --accent-hover: #c2e088;
+  --accent-hover2: #b8d682;
+  --accent-light: #8AB73B;
+  --accent-ink: #4D7C0F;
+}
+
 @layer base {
   body {
     font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -29,7 +38,7 @@
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #D2E8A3;
+  background: var(--accent);
 }
 
 /* Light mode theme overrides */
@@ -74,8 +83,8 @@ html.light h6 {
   color: #0F172A;
 }
 
-html.light .text-[#D2E8A3] {
-  color: #4D7C0F !important; /* Rich readable olive green in light mode */
+html.light .text-\[var\(--accent\)\] {
+  color: var(--accent-ink) !important; /* Texto de acento legible en modo claro */
 }
 
 /* Preserve white text inside dark backgrounds (e.g. dark buttons, dark badges, dark image overlays) */
