@@ -130,20 +130,64 @@ export const EditableImage = memo(({ cfgKey, value, setCfg, handleFileUpload, up
   handleFileUpload: (e: React.ChangeEvent<HTMLInputElement>, key: string) => void;
   uploading: boolean; uploadTarget: string; className?: string; fallback?: string;
 }) => {
-  const isVideo = /\.(mp4|webm)$/i.test(value || '');
+  const isVideo = /\.(mp4|webm|ogg|m4v|mov)(\?[^#]*)?(#.*)?$/i.test(value || '');
   const hasMedia = !!value;
+  const [videoBroken, setVideoBroken] = useState(false);
+
+  // Si el dueño cambia la media, se reintenta (por si el video anterior falló)
+  useEffect(() => { setVideoBroken(false); }, [value]);
+
+  // Pegar una URL externa (imagen o video MP4/WebM)
+  const handleUrl = () => {
+    const url = window.prompt('Pega la URL de una imagen o de un video (MP4/WebM):', value || '');
+    if (url === null) return;
+    setCfg(cfgKey, url.trim());
+  };
+
   return (
     <div className={`relative group ${className || ''}`}>
-      {hasMedia ? (
-        isVideo ? <video src={value} className="w-full h-full object-cover" autoPlay muted loop playsInline preload="auto" crossOrigin="anonymous" onError={(e) => { (e.target as HTMLVideoElement).style.display = 'none'; }} /> : <img src={value} alt="" className="w-full h-full object-cover" />
+      {hasMedia && isVideo && !videoBroken ? (
+        <video
+          src={value}
+          className="w-full h-full object-cover"
+          autoPlay muted loop playsInline preload="auto" crossOrigin="anonymous"
+          onError={() => setVideoBroken(true)}
+        />
+      ) : hasMedia && !videoBroken ? (
+        <img src={value} alt="" className="w-full h-full object-cover" onError={isVideo ? () => setVideoBroken(true) : undefined} />
       ) : (
-        <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs bg-[#161814]">{fallback || 'Sin media'}</div>
+        <div className="w-full h-full flex items-center justify-center text-gray-600 text-xs bg-[#161814] text-center px-3">
+          {videoBroken ? 'No se pudo cargar la media' : (fallback || 'Sin media')}
+        </div>
       )}
-      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+      {hasMedia && isVideo && !videoBroken && (
+        <span className="absolute top-2 left-2 z-10 text-[9px] font-extrabold uppercase tracking-wider bg-black/70 border border-[var(--accent)]/40 text-[var(--accent)] px-1.5 py-0.5 rounded-md pointer-events-none">
+          ▶ Video
+        </span>
+      )}
+      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity flex items-center justify-center gap-2 flex-wrap p-2">
         <label className={`px-3 py-1.5 rounded-xl text-[10px] font-bold cursor-pointer border border-[var(--accent)]/30 text-[var(--accent)] bg-black/80 hover:bg-[var(--accent)]/10 transition-all flex items-center gap-1 ${uploading && uploadTarget === cfgKey ? 'animate-pulse' : ''}`}>
           <Upload className="w-3 h-3" />{uploading && uploadTarget === cfgKey ? 'Subiendo...' : 'Subir'}
-          <input type="file" accept="image/*,video/mp4,video/webm" className="hidden" onChange={e => handleFileUpload(e, cfgKey)} disabled={uploading} />
+          <input type="file" accept="image/*,video/mp4,video/webm,video/ogg" className="hidden" onChange={e => { handleFileUpload(e, cfgKey); e.target.value = ''; }} disabled={uploading} />
         </label>
+        <button
+          type="button"
+          onClick={handleUrl}
+          className="px-3 py-1.5 rounded-xl text-[10px] font-bold border border-[var(--accent)]/30 text-[var(--accent)] bg-black/80 hover:bg-[var(--accent)]/10 transition-all flex items-center gap-1"
+          title="Pegar URL de imagen o video"
+        >
+          URL
+        </button>
+        {hasMedia && (
+          <button
+            type="button"
+            onClick={() => setCfg(cfgKey, '')}
+            className="px-3 py-1.5 rounded-xl text-[10px] font-bold border border-red-500/30 text-red-400 bg-black/80 hover:bg-red-500/10 transition-all flex items-center gap-1"
+            title="Quitar la imagen o video"
+          >
+            Quitar
+          </button>
+        )}
       </div>
     </div>
   );

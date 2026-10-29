@@ -173,11 +173,27 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     } catch { setBackupStatus('error'); setTimeout(() => setBackupStatus('idle'), 3000); }
   };
 
+  // Extensiones de video que los navegadores pueden reproducir en la portada
+  const VIDEO_EXTS = ['mp4', 'webm', 'ogg', 'ogv', 'm4v', 'mov'];
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
     const file = e.target.files?.[0]; if (!file || !supabase) return;
+    // Extensión desde el nombre; si no tiene (o es rara), se deriva del MIME
+    let ext = (file.name.split('.').pop() || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (!/^[a-z0-9]{2,5}$/.test(ext)) {
+      const mimeExt = (file.type.split('/')[1] || '').replace('x-', '');
+      ext = mimeExt === 'quicktime' ? 'mov' : mimeExt;
+    }
+    if (!ext) ext = 'jpg';
+    // Avisar si el video no se podrá reproducir (ej. avi, mkv, wmv)
+    if (file.type.startsWith('video/') && !VIDEO_EXTS.includes(ext)) {
+      alert(`Formato de video no soportado (.${ext}). Sube un video en MP4 o WebM.`);
+      e.target.value = '';
+      return;
+    }
     setUploading(true); setUploadTarget(key);
     try {
-      const ext = file.name.split('.').pop() || 'jpg'; const path = `uploads/${key}_${Date.now()}.${ext}`;
+      const path = `uploads/${key}_${Date.now()}.${ext}`;
       const { error } = await supabase.storage.from('media').upload(path, file, { cacheControl: '3600', upsert: false });
       if (error) throw error;
       const { data: urlData } = supabase.storage.from('media').getPublicUrl(path);
@@ -361,7 +377,7 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
           <p className="text-[11px] text-gray-400 leading-relaxed">
             Haz <strong className="text-white">doble clic</strong> en cualquier texto verde o blanco para editarlo directamente.
             Los cambios se guardan localmente — presiona <strong className="text-[var(--accent)]">"Guardar"</strong> arriba para subirlos a Supabase.
-            Las imágenes se cambian pasando el cursor encima.
+            Las imágenes y videos se cambian pasando el cursor encima (acepta fotos y videos MP4/WebM).
           </p>
         </div>
       </div>
@@ -423,6 +439,10 @@ const TabInicio = memo(({ cfgEdit, setCfg, configRows, handleFileUpload, uploadi
                   </div>
                 </div>
               </div>
+              <p className="mt-3 text-[10px] leading-relaxed text-gray-500">
+                Pasa el cursor sobre cada recuadro para <strong className="text-gray-400">Subir</strong> una imagen o un <strong className="text-gray-400">video (MP4/WebM)</strong>,
+                pegar una <strong className="text-gray-400">URL</strong> o <strong className="text-gray-400">Quitar</strong> la media. El video se reproduce solo en la portada (sin sonido, en bucle).
+              </p>
             </div>
           </div>
         </div>

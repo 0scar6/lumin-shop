@@ -1,8 +1,12 @@
-import React, { memo, useState, useCallback } from 'react';
+import React, { memo, useState, useCallback, useEffect } from 'react';
 import { Tag, ArrowRight, Clock, ShieldCheck, Flame } from 'lucide-react';
 import { cfg } from '../lib/config';
 
 const DEFAULT_FALLBACK = 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80';
+
+// Videos aceptados en los bloques del inicio (subidos desde el admin o por URL).
+// Se ignora query string / fragmento (?download=1, #t=2) al detectar la extensión.
+const VIDEO_URL_RE = /\.(mp4|webm|ogg|m4v|mov)(\?[^#]*)?(#.*)?$/i;
 
 interface HeroMediaProps {
   url: string;
@@ -14,7 +18,7 @@ interface HeroMediaProps {
 
 const HeroMedia: React.FC<HeroMediaProps> = memo(({ url, alt, className, scale = 100, opacity = 100 }) => {
   const [videoFailed, setVideoFailed] = useState(false);
-  const isVideo = /\.(mp4|webm|ogg)$/i.test(url) && !videoFailed;
+  const isVideo = VIDEO_URL_RE.test(url) && !videoFailed;
   const isTikTok = /tiktok\.com/i.test(url);
   const scaleVal = Math.max(50, Math.min(200, scale)) / 100;
   const opacityVal = Math.max(0, Math.min(100, opacity)) / 100;
@@ -25,6 +29,11 @@ const HeroMedia: React.FC<HeroMediaProps> = memo(({ url, alt, className, scale =
   const handleVideoError = useCallback(() => {
     setVideoFailed(true);
   }, []);
+
+  // Si cambia la media (admin sube otro archivo), se reintenta desde cero
+  useEffect(() => {
+    setVideoFailed(false);
+  }, [url]);
 
   if (isTikTok) {
     const videoId = url.match(/\/video\/(\d+)/)?.[1];
@@ -53,7 +62,9 @@ const HeroMedia: React.FC<HeroMediaProps> = memo(({ url, alt, className, scale =
     );
   }
 
-  return <img src={url} alt={alt} className={className} loading="eager" style={{ ...wrapperStyle, ...mediaStyle }} />;
+  // Si el video no se puede reproducir (formato/CORS), se muestra la imagen de respaldo
+  const imgSrc = videoFailed ? DEFAULT_FALLBACK : url;
+  return <img src={imgSrc} alt={alt} className={className} loading="eager" style={{ ...wrapperStyle, ...mediaStyle }} />;
 });
 HeroMedia.displayName = 'HeroMedia';
 
