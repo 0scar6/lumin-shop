@@ -49,39 +49,23 @@ interface CampaignStripProps {
   themeMode?: 'dark' | 'light' | 'amoled';
 }
 
-/** Franja de campaña de temporada — solo visible si hay una temporada activa en la config. */
-export const CampaignStrip = memo(({ onExploreClick, themeMode = 'dark' }: CampaignStripProps) => {
+/** Franja de campaña de temporada (`.campaign-strip`) — solo visible con temporada activa. */
+export const CampaignStrip = memo(({ onExploreClick }: CampaignStripProps) => {
   const seasonKey = cfg('season_active', 'none');
   const season = SEASONS[seasonKey];
   if (!season) return null;
 
   const message = cfg('season_message', '').trim() || season.message;
-  const isLight = themeMode === 'light';
 
   return (
-    <div
-      className="flex flex-wrap items-center gap-x-4 gap-y-2 px-4 sm:px-5 py-3 rounded-2xl border transition-colors"
-      style={{ borderColor: `${season.accent}55`, backgroundColor: `${season.accent}12` }}
-    >
-      <span
-        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-[0.15em] border flex-shrink-0"
-        style={{ color: season.accent, borderColor: `${season.accent}66`, backgroundColor: `${season.accent}1a` }}
-      >
-        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ backgroundColor: season.accent }} />
+    <div className="campaign-strip">
+      <strong>
         {season.emoji} {season.label}
-      </span>
-
-      <span className={`flex-1 min-w-[160px] text-xs sm:text-sm leading-snug ${isLight ? 'text-slate-700' : 'text-gray-300'}`}>
-        {message}
-      </span>
-
-      <button
-        onClick={onExploreClick}
-        className="group inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider flex-shrink-0 min-h-[32px] transition-opacity hover:opacity-80"
-        style={{ color: season.accent }}
-      >
+      </strong>
+      <span>{message}</span>
+      <button type="button" className="textbtn" onClick={onExploreClick}>
         Ver diseños
-        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+        <ArrowRight />
       </button>
     </div>
   );

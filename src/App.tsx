@@ -29,38 +29,20 @@ import { generateOrderImage } from './lib/generateOrderImage';
 import { sanitize } from './lib/sanitize';
 import { Product, CartItem, NavigationTab, Category, ThemeMode, UserProfileData, GoogleUser } from './types';
 import {
-  Filter,
   Tag,
   MessageCircle,
-  SlidersHorizontal,
-  Shirt,
-  Coffee,
-  ArrowUpDown,
-  Grid,
+  ArrowRight,
+  Search,
   Heart,
   ShoppingBag,
-  Eye,
-  User,
   Trash2,
   CheckCircle2,
   Copy,
   Smartphone,
-  Sun,
-  Moon,
-  Zap,
   Save,
-  MapPin,
-  ShieldCheck,
-  CreditCard,
   Truck,
-  HelpCircle,
-  Clock,
-  Award,
-  Flame,
   Plus,
   Minus,
-  Globe,
-  Package,
   Store,
 } from 'lucide-react';
 
@@ -81,9 +63,13 @@ export default function App() {
   const [configLoaded, setConfigLoaded] = useState(false);
   const [configVersion, setConfigVersion] = useState(0);
 
-  // Aplica la paleta de color elegida en el admin (variables CSS --accent*)
+  // Aplica paleta + campaña de temporada + espaciado (variables CSS --accent*, --on y clases de la maqueta)
   useEffect(() => {
-    applyPalette(cfg('brand_palette', 'green'));
+    applyPalette(
+      cfg('brand_palette', 'green'),
+      cfg('season_active', 'none'),
+      cfg('site_layout', 'compact'),
+    );
   }, [configLoaded, configVersion]);
 
   useEffect(() => {
@@ -260,6 +246,11 @@ export default function App() {
     setThemeMode(mode);
     localStorage.setItem('lumin_theme_mode', mode);
   }, []);
+
+  // Cambio rápido de tema desde el topbar (sol/luna de la maqueta)
+  const toggleQuickTheme = useCallback(() => {
+    handleSelectTheme(themeMode === 'light' ? 'dark' : 'light');
+  }, [themeMode, handleSelectTheme]);
 
   // Save user profile to localStorage
   const handleSaveProfile = useCallback((profile: UserProfileData) => {
@@ -508,11 +499,6 @@ export default function App() {
 
   // Theme Wrapper CSS Classes
   const isLight = themeMode === 'light';
-  const getThemeWrapperClass = () => {
-    if (themeMode === 'amoled') return 'bg-[#000000] text-white selection:bg-[var(--accent)] selection:text-[#0A0A0A]';
-    if (themeMode === 'light') return 'bg-[#F4F5F0] text-slate-900 selection:bg-[var(--accent-light)] selection:text-white';
-    return 'bg-[#0A0A0A] text-white selection:bg-[var(--accent)] selection:text-[#0A0A0A]';
-  };
 
   const allLoaded = configLoaded && productsLoaded;
 
@@ -571,7 +557,7 @@ export default function App() {
   }
 
   return (
-    <div className={`min-h-screen w-full overflow-x-hidden flex flex-col font-sans transition-colors duration-300 pb-32 sm:pb-36 ${getThemeWrapperClass()}`}>
+    <div className="min-h-screen w-full overflow-x-hidden flex flex-col transition-colors duration-300">
       
       {/* Header Bar */}
       <Header
@@ -589,14 +575,15 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={handleTabChange}
         onAdminActivate={() => setIsAdminOpen(true)}
+        onToggleTheme={toggleQuickTheme}
       />
 
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 lg:px-8 space-y-8 pt-4">
-        
-        {/* SCREEN 1: INICIO (HOME) */}
+      {/* Main Content Area (`.wrap` de la maqueta: max-width + padding lateral) */}
+      <main className="wrap flex-1 w-full space-y-8 pt-4">
+
+        {/* SCREEN 1: INICIO (HOME) — sin space-y: el espaciado lo dan las reglas de la maqueta */}
         {activeTab === 'home' && (
-          <div key="home-screen" className="space-y-8 animate-fade-in-up">
+          <div key="home-screen" className="animate-fade-in-up">
             {/* Campaña de temporada activa (si la hay) */}
             <CampaignStrip onExploreClick={() => handleTabChange('catalog')} themeMode={themeMode} />
 
@@ -609,250 +596,240 @@ export default function App() {
               heroMedia2Url={cfg('hero_media_2_url', '') || undefined}
             />
 
-            {/* Direct WhatsApp & Social Media Quick Access Bar */}
-            <SocialQuickBar themeMode={themeMode} />
-
-            {/* Brand Description Section - LUMIN SHOP */}
-            <section className={`p-6 sm:p-8 rounded-3xl border space-y-4 relative overflow-hidden ${
-              isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'glass-card border-white/10 text-white'
-            }`}>
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className={`px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider ${
-                    isLight ? 'bg-lime-100 text-lime-800 border border-lime-300' : 'bg-[var(--accent)]/20 text-[var(--accent)]'
-                  }`}>
-                    {cfg('section_about_label', 'Sobre')} {cfg('brand_name', 'LUMIN SHOP')}
-                  </span>
-                  <span className={`text-xs font-mono ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>{cfg('brand_instagram', '@.lumin.shop')}</span>
-                </div>
-                <span className={`text-xs font-mono ${isLight ? 'text-slate-500' : 'text-gray-400'}`}>{cfg('brand_location', '📍 Ayacucho, Perú • Envíos a Nivel Nacional')}</span>
-              </div>
-
-              <h2 className={`font-display text-2xl sm:text-3xl font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                {cfg('section_about_subtitle', 'Ropa Urbana Streetwear & Sublimación de Alta Temperatura')}
-              </h2>
-
-              <p className={`text-sm sm:text-base leading-relaxed ${isLight ? 'text-slate-700' : 'text-gray-300'}`}
-                dangerouslySetInnerHTML={{ __html: sanitize(cfg('section_about_text', 'LUMIN SHOP es una marca independiente peruana dedicada al diseño y confección de streetwear exclusivo y artículos gráficos. Nos especializamos en polos <strong>Oversized & Boxy Fit</strong> producidos en algodón reactivo de 240g (Heavyweight) de máxima durabilidad, además de <strong>Vasos Frosted Glass de 16oz</strong> y <strong>Tazas Térmicas de 11oz</strong> sublimadas térmicamente a 200°C. Cada prenda y producto se elabora 100% bajo pedido con acabado profesional.')) }}
-              />
-
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <button
-                  onClick={() => handleTabChange('catalog')}
-                  className="px-5 py-2.5 rounded-full bg-[var(--accent)] text-[#0A0A0A] font-extrabold text-xs sm:text-sm hover:bg-[var(--accent-hover2)] transition-all flex items-center gap-2 shadow-lg"
-                >
-                  <Grid className="w-4 h-4" />
-                  <span>{cfg('section_about_cta_cat', 'Explorar Catálogo de Productos')}</span>
-                </button>
-                <button
-                  onClick={() => setIsCustomIdeaOpen(true)}
-                  className={`px-5 py-2.5 rounded-full font-extrabold text-xs sm:text-sm transition-all border flex items-center gap-2 ${
-                    isLight ? 'bg-slate-900 text-white border-slate-900 hover:bg-slate-800' : 'bg-white/10 text-white border-white/10 hover:bg-white/20'
-                  }`}
-                >
-                  <Tag className="w-4 h-4 text-[var(--accent)]" />
-                  <span>{cfg('section_about_cta_idea', 'Cotizar Idea Personalizada')}</span>
-                </button>
-              </div>
-            </section>
-
-            {/* How It Works & Production Badges */}
+            {/* Barra de confianza `.trust` (producción · calidad · envíos) */}
             <ProductionBadgeBar themeMode={themeMode} />
 
-            {/* Bestseller Preview Drops */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                  <span className={`text-xs font-mono uppercase tracking-widest ${isLight ? 'text-lime-700 font-bold' : 'text-[var(--accent)]'}`}>
-                    {cfg('section_featured_title', '🔥 SELECCIÓN DESTACADA DROP 04')}
-                  </span>
-                  <h3 className={`font-display text-xl sm:text-2xl font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                    {cfg('section_featured_sub', 'Nuestros Más Pedidos')}
-                  </h3>
-                </div>
-                <button
-                  onClick={() => handleTabChange('catalog')}
-                  className={`text-xs font-bold hover:underline flex items-center gap-1 ${isLight ? 'text-lime-700' : 'text-[var(--accent)]'}`}
-                >
-                  {cfg('section_featured_view_all', 'Ver Catálogo Completo')} ({products.length}) →
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-                {productsLoaded ? products.slice(0, 4).map((product, idx) => (
-                  <ProductCard
-                    key={product.id}
-                    index={idx}
-                    product={product}
-                    isFavorite={favoriteIds.has(product.id)}
-                    onToggleFavorite={toggleFavorite}
-                    onSelectProduct={(p) => setSelectedProduct(p)}
-                    themeMode={themeMode}
-                  />
-                )) : (
-                  <div className="col-span-full py-8 text-center">
-                    <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto" />
+            {/* Destacados - `.sectionhead` + `.grid` de la maqueta */}
+            {(products.length > 0 || !productsLoaded) && (
+              <section>
+                <div className="sectionhead">
+                  <div>
+                    <p className="eyebrow">
+                      {cfg('section_featured_title', 'ENCUENTRA TU PRÓXIMO FAVORITO')}
+                    </p>
+                    <h2>{cfg('section_featured_sub', 'Diseños que hablan de ti.')}</h2>
                   </div>
-                )}
+                  <button
+                    type="button"
+                    className="textbtn"
+                    onClick={() => handleTabChange('catalog')}
+                  >
+                    {cfg('section_featured_view_all', 'Ver todos')}
+                    <ArrowRight />
+                  </button>
+                </div>
+
+                <div className="grid">
+                  {productsLoaded ? (
+                    products.slice(0, 4).map((product, idx) => (
+                      <ProductCard
+                        key={product.id}
+                        index={idx}
+                        product={product}
+                        isFavorite={favoriteIds.has(product.id)}
+                        onToggleFavorite={toggleFavorite}
+                        onSelectProduct={(p) => setSelectedProduct(p)}
+                        themeMode={themeMode}
+                      />
+                    ))
+                  ) : (
+                    <div className="col-span-full py-8 text-center">
+                      <div className="w-6 h-6 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto" />
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
+            {/* Personalización — `.custom-banner` de la maqueta */}
+            <SocialQuickBar themeMode={themeMode} />
+
+            {/* Proceso — `.steps` de la maqueta */}
+            <section>
+              <p className="eyebrow">{cfg('badge_model_title', 'ASÍ DE SIMPLE')}</p>
+              <h2 style={{ marginTop: 10 }}>
+                {cfg('badge_model_subtitle', 'De tu idea a tus manos.')}
+              </h2>
+              <div className="steps">
+                {[1, 2, 3].map((n) => {
+                  const titles = ['Elige y personaliza', 'Confirmamos y creamos', 'Recibe y disfrútalo'];
+                  const bodies = [
+                    'Selecciona tu producto, talla o texto. También puedes enviar tu propio diseño.',
+                    'Coordinamos los detalles contigo y elaboramos tu pedido en 24 a 48 horas.',
+                    'Empacamos con cuidado y coordinamos el envío a tu domicilio.',
+                  ];
+                  return (
+                    <div className="step" key={n}>
+                      <p className="step-num">0{n} /</p>
+                      <h3>{cfg(`badge_step${n}_title`, titles[n - 1])}</h3>
+                      <p>{cfg(`badge_step${n}_desc`, bodies[n - 1])}</p>
+                    </div>
+                  );
+                })}
               </div>
             </section>
 
-            {/* FAQs */}
-            <FaqSection themeMode={themeMode} />
+            {/* Marca + preguntas frecuentes — `.aboutfaq` de la maqueta */}
+            <section className="aboutfaq">
+              <div>
+                <p className="eyebrow">
+                  {cfg('section_about_label', 'DESDE AYACUCHO, CON IDENTIDAD')}
+                </p>
+                <h2>{cfg('section_about_subtitle', 'Diseños con algo de ti.')}</h2>
+                <p
+                  dangerouslySetInnerHTML={{
+                    __html: sanitize(
+                      cfg(
+                        'section_about_text',
+                        'Somos LUMIN SHOP. Creamos productos personalizados por pedido: polos, vasos, tazas y placas de aluminio. Cada pieza se elabora especialmente para quien la elige.',
+                      ),
+                    ),
+                  }}
+                />
+                <a
+                  className="textbtn"
+                  href={`https://wa.me/${cfg('brand_phone_raw', '51993365099')}?text=${encodeURIComponent(
+                    cfg('brand_whatsapp_help', 'Hola LUMIN, quisiera consultar sobre un pedido.'),
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {cfg('section_about_cta_idea', 'Conversemos sobre tu pedido')}
+                  <ArrowRight />
+                </a>
+              </div>
+
+              <FaqSection themeMode={themeMode} />
+            </section>
           </div>
         )}
 
         {/* SCREEN 2: CATÁLOGO */}
         {activeTab === 'catalog' && (
-          <div key="catalog-screen" className="space-y-6 animate-fade-in-up">
-            {/* Section Heading & Category Pills */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/5 pb-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[var(--accent)]"></span>
-                  <span className="text-xs font-mono text-[var(--accent)] uppercase tracking-widest">
-                    {cfg('catalog_subtitle', 'PANTALLA DE CATÁLOGO & PRODUCTOS')}
-                  </span>
-                </div>
-                <h2 className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white">
-                  {cfg('catalog_title', 'COLECCIÓN DISPONIBLE')}
-                </h2>
-              </div>
-
-              {/* Category Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-none">
-                {categories.map((cat) => {
-                  const isCatActive = selectedCategory === cat.id;
-                  const IconComponent =
-                    cat.id === 'streetwear'
-                      ? Shirt
-                      : cat.id === 'cups'
-                      ? Coffee
-                      : cat.id === 'drops'
-                      ? Flame
-                      : Filter;
-
-                  return (
-                    <button
-                      key={cat.id}
-                      onClick={() => setSelectedCategory(cat.id as Category)}
-                      className={`px-4 py-2 rounded-full text-xs font-extrabold flex items-center gap-2 flex-shrink-0 transition-all ${
-                        isCatActive
-                          ? 'bg-[var(--accent)] text-[#0A0A0A] shadow-lg shadow-[var(--accent)]/20 scale-105'
-                          : isLight
-                          ? 'bg-white text-slate-800 border border-slate-300 hover:border-slate-400'
-                          : 'bg-[#161814] text-gray-300 border border-white/10 hover:border-white/30'
-                      }`}
-                    >
-                      <IconComponent className="w-3.5 h-3.5 text-[var(--accent)]" />
-                      <span>{cat.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+          <div key="catalog-screen" className="animate-fade-in-up">
+            {/* Título de página (`.page-title`) */}
+            <div className="page-title">
+              <p className="eyebrow">
+                {cfg('brand_name', 'LUMIN SHOP')} / {cfg('catalog_subtitle', 'CATÁLOGO')}
+              </p>
+              <h1>{cfg('catalog_title', 'Elige. Personaliza. Hazlo tuyo.')}</h1>
+              <p>
+                {cfg(
+                  'catalog_description',
+                  'Encuentra tu diseño y configura tu pedido. Lo elaboramos después de confirmar contigo.',
+                )}
+              </p>
             </div>
 
-            {/* Sub-Filters & Sort Bar */}
-            <div
-              className={`flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-2xl border text-xs ${
-                isLight
-                  ? 'bg-white border-slate-300 text-slate-800 shadow-sm'
-                  : 'bg-[#161814] border-white/10 text-gray-300'
-              }`}
-            >
-              {/* Quick technique filter pills */}
-              <div className="flex items-center gap-2">
-                <SlidersHorizontal className={`w-4 h-4 ${isLight ? 'text-lime-700' : 'text-[var(--accent)]'}`} />
-                <span className={`${isLight ? 'text-slate-700' : 'text-gray-300'} font-bold hidden sm:inline`}>{cfg('catalog_filter_technique', 'Técnica:')}</span>
+            {/* Barra de categorías + buscador (`.catalogbar`) */}
+            <div className="catalogbar">
+              <div className="chips">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    className={`chip ${selectedCategory === cat.id ? 'active' : ''}`}
+                    aria-pressed={selectedCategory === cat.id}
+                    onClick={() => setSelectedCategory(cat.id as Category)}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
 
+              <label className="search">
+                <Search />
+                <span className="visuallyhidden">Buscar productos</span>
+                <input
+                  type="search"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={cfg('search_placeholder', 'Busca un diseño, polo o taza…')}
+                  aria-label="Buscar productos"
+                />
+              </label>
+            </div>
+
+            {/* Conteo + filtro de técnica + orden (`.labelrow`) */}
+            <div className="labelrow">
+              <p className="subtle" style={{ marginTop: 0 }}>
+                {filteredProducts.length} diseños
+              </p>
+
+              <div className="chips" role="group" aria-label="Filtrar por técnica">
                 <button
+                  type="button"
+                  className={`chip ${selectedTechnique === 'all' ? 'active' : ''}`}
+                  aria-pressed={selectedTechnique === 'all'}
                   onClick={() => setSelectedTechnique('all')}
-                  className={`px-3 py-1 rounded-lg transition-colors font-bold ${
-                    selectedTechnique === 'all'
-                      ? 'bg-[var(--accent)] text-[#0A0A0A] shadow-sm'
-                      : isLight
-                      ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'
-                      : 'text-gray-300 hover:text-white hover:bg-white/5'
-                  }`}
                 >
-                  {cfg('catalog_filter_all', 'Todas')}
+                  {cfg('catalog_filter_technique', 'Técnica')}: {cfg('catalog_filter_all', 'Todas')}
                 </button>
-
                 <button
+                  type="button"
+                  className={`chip ${selectedTechnique === 'textil' ? 'active' : ''}`}
+                  aria-pressed={selectedTechnique === 'textil'}
                   onClick={() => setSelectedTechnique('textil')}
-                  className={`px-3 py-1 rounded-lg transition-colors flex items-center gap-1 font-bold ${
-                    selectedTechnique === 'textil'
-                      ? 'bg-[var(--accent)] text-[#0A0A0A] shadow-sm'
-                      : isLight
-                      ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'
-                      : 'text-gray-300 hover:text-white hover:bg-white/5'
-                  }`}
                 >
-                  <Shirt className="w-3 h-3" />
-                  <span>{cfg('catalog_filter_textile', 'Textil HD')}</span>
+                  {cfg('catalog_filter_textile', 'Textil HD')}
                 </button>
-
                 <button
+                  type="button"
+                  className={`chip ${selectedTechnique === 'sublimacion' ? 'active' : ''}`}
+                  aria-pressed={selectedTechnique === 'sublimacion'}
                   onClick={() => setSelectedTechnique('sublimacion')}
-                  className={`px-3 py-1 rounded-lg transition-colors flex items-center gap-1 font-bold ${
-                    selectedTechnique === 'sublimacion'
-                      ? 'bg-[var(--accent)] text-[#0A0A0A] shadow-sm'
-                      : isLight
-                      ? 'text-slate-700 hover:text-slate-950 hover:bg-slate-100'
-                      : 'text-gray-300 hover:text-white hover:bg-white/5'
-                  }`}
                 >
-                  <Coffee className="w-3 h-3" />
-                  <span>{cfg('catalog_filter_sublimation', 'Sublimado 200°C')}</span>
+                  {cfg('catalog_filter_sublimation', 'Sublimado 200°C')}
                 </button>
               </div>
 
-              {/* Sorting dropdown */}
-              <div className="flex items-center gap-2">
-                <ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />
+              <label className="field" style={{ margin: 0 }}>
+                <span className="visuallyhidden">Ordenar productos</span>
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
-                  className={`border rounded-lg px-2.5 py-1 text-xs focus:outline-none focus:border-[var(--accent)] ${
-                    isLight ? 'bg-slate-100 text-slate-900 border-slate-300' : 'bg-[#0A0A0A] text-gray-300 border-white/10'
-                  }`}
+                  onChange={(e) => setSortBy(e.target.value as 'featured' | 'price-asc' | 'price-desc')}
                 >
-                  <option value="featured">{cfg('catalog_sort_featured', 'Destacados Drop')}</option>
-                  <option value="price-asc">{cfg('catalog_sort_price_asc', 'Precio: Menor a Mayor')}</option>
-                  <option value="price-desc">{cfg('catalog_sort_price_desc', 'Precio: Mayor a Menor')}</option>
+                  <option value="featured">{cfg('catalog_sort_featured', 'Destacados')}</option>
+                  <option value="price-asc">{cfg('catalog_sort_price_asc', 'Menor precio')}</option>
+                  <option value="price-desc">{cfg('catalog_sort_price_desc', 'Mayor precio')}</option>
                 </select>
-              </div>
+              </label>
             </div>
 
-            {/* Product Grid */}
-            {!productsLoaded ? (
-              <div className="py-16 text-center space-y-3 glass-card rounded-3xl p-8 border border-white/10">
-                <div className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto" />
-                <p className="text-gray-400 text-sm">Cargando productos...</p>
-              </div>
-            ) : filteredProducts.length === 0 ? (
-              <div className="py-16 text-center space-y-3 glass-card rounded-3xl p-8 border border-white/10">
-                <Tag className="w-12 h-12 text-gray-600 mx-auto" />
-                <p className="text-gray-400 text-sm">
-                  {cfg('catalog_empty', 'No se encontraron productos con los filtros seleccionados.')}
-                </p>
-                <button
-                  onClick={() => {
-                    setSelectedCategory('all');
-                    setSelectedTechnique('all');
-                    setSearchQuery('');
-                  }}
-                  className="px-4 py-2 rounded-full bg-[var(--accent)] text-[#0A0A0A] font-bold text-xs"
-                >
-                  {cfg('catalog_reset_filters', 'Restablecer Filtros')}
-                </button>
-              </div>
-            ) : (
-              <div
-                key={`${selectedCategory}-${selectedTechnique}-${searchQuery}-${sortBy}`}
-                className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5 animate-fade-in"
-              >
-                {filteredProducts.map((product, idx) => (
+            {/* Grilla de productos (`.grid`) */}
+            <div
+              key={`${selectedCategory}-${selectedTechnique}-${searchQuery}-${sortBy}`}
+              className="grid animate-fade-in"
+              style={{ margin: '22px 0 40px' }}
+            >
+              {!productsLoaded ? (
+                <div className="empty">
+                  <div
+                    className="w-8 h-8 border-2 border-[var(--accent)] border-t-transparent rounded-full animate-spin mx-auto"
+                    style={{ marginBottom: 15 }}
+                  />
+                  <p style={{ marginBottom: 0 }}>Cargando productos…</p>
+                </div>
+              ) : filteredProducts.length === 0 ? (
+                <div className="empty">
+                  <Tag />
+                  <h3>{cfg('catalog_empty', 'No encontramos ese diseño.')}</h3>
+                  <p>Prueba otra palabra o categoría.</p>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => {
+                      setSelectedCategory('all');
+                      setSelectedTechnique('all');
+                      setSearchQuery('');
+                    }}
+                  >
+                    {cfg('catalog_reset_filters', 'Restablecer filtros')}
+                    <ArrowRight />
+                  </button>
+                </div>
+              ) : (
+                filteredProducts.map((product, idx) => (
                   <ProductCard
                     key={product.id}
                     index={idx}
@@ -862,68 +839,50 @@ export default function App() {
                     onSelectProduct={(p) => setSelectedProduct(p)}
                     themeMode={themeMode}
                   />
-                ))}
-              </div>
-            )}
+                ))
+              )}
+            </div>
           </div>
         )}
 
         {/* SCREEN 3: FAVORITOS (FAVORITES) */}
         {activeTab === 'favorites' && (
-          <div key="favorites-screen" className="space-y-6 animate-fade-in-up">
-            <div className={`flex items-center justify-between border-b pb-4 ${
-              isLight ? 'border-slate-200' : 'border-white/5'
-            }`}>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-                  <span className={`text-xs font-mono uppercase tracking-widest ${
-                    isLight ? 'text-lime-700 font-bold' : 'text-[var(--accent)]'
-                  }`}>
-                    {cfg('favorites_subtitle', 'PANTALLA DE MIS FAVORITOS')}
-                  </span>
-                </div>
-                <h2 className={`font-display text-2xl sm:text-3xl font-extrabold uppercase ${
-                  isLight ? 'text-slate-900' : 'text-white'
-                }`}>
-                  {cfg('favorites_title', 'PRODUCTOS GUARDADOS')} ({favorites.length})
-                </h2>
-              </div>
-
-              {favorites.length > 0 && (
-                <button
-                  onClick={() => setFavorites([])}
-                  className={`text-xs underline ${
-                    isLight ? 'text-slate-500 hover:text-rose-600' : 'text-gray-400 hover:text-rose-400'
-                  }`}
-                >
-                  {cfg('favorites_clear', 'Vaciar Favoritos')}
-                </button>
-              )}
+          <div key="favorites-screen" className="animate-fade-in-up">
+            {/* Título de página (`.page-title`) */}
+            <div className="page-title">
+              <p className="eyebrow">{cfg('favorites_eyebrow', 'TU SELECCIÓN')}</p>
+              <h1>{cfg('favorites_title', 'Los que te gustaron.')}</h1>
+              <p>
+                {cfg(
+                  'favorites_description',
+                  'Guarda tus diseños favoritos para volver a ellos.',
+                )}
+              </p>
             </div>
 
-            {favorites.length === 0 ? (
-              <div className={`py-16 text-center space-y-4 rounded-3xl p-8 border max-w-xl mx-auto ${
-                isLight ? 'bg-white border-slate-300 text-slate-900 shadow-md' : 'glass-card border-white/10 text-white'
-              }`}>
-                <Heart className={`w-16 h-16 stroke-1 mx-auto ${isLight ? 'text-slate-300' : 'text-gray-600'}`} />
-                <h3 className={`font-display text-xl font-extrabold ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                  {cfg('favorites_empty_title', 'Aún no tienes productos guardados')}
-                </h3>
-                <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
-                  {cfg('favorites_empty_desc', 'Explora el catálogo y presiona el corazón en los polos o vasos que más te gusten para guardarlos aquí.')}
-                </p>
-                <button
-                  onClick={() => handleTabChange('catalog')}
-                  className="px-6 py-3 rounded-full bg-[var(--accent)] text-[#0A0A0A] font-extrabold text-xs shadow-lg inline-flex items-center gap-2 hover:bg-[var(--accent-hover)] transition-all"
-                >
-                  <Grid className="w-4 h-4" />
-                  <span>{cfg('favorites_empty_cta', 'EXPLORAR CATÁLOGO')}</span>
-                </button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-4 md:gap-5">
-                {favorites.map((product, idx) => (
+            {/* Grilla de favoritos (`.grid`) */}
+            <div className="grid" style={{ margin: '30px 0 40px' }}>
+              {favorites.length === 0 ? (
+                <div className="empty">
+                  <Heart />
+                  <h3>{cfg('favorites_empty_title', 'Aún no tienes favoritos.')}</h3>
+                  <p>
+                    {cfg(
+                      'favorites_empty_desc',
+                      'Toca el corazón de un diseño para guardarlo.',
+                    )}
+                  </p>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => handleTabChange('catalog')}
+                  >
+                    {cfg('favorites_empty_cta', 'Explorar catálogo')}
+                    <ArrowRight />
+                  </button>
+                </div>
+              ) : (
+                favorites.map((product, idx) => (
                   <ProductCard
                     key={product.id}
                     index={idx}
@@ -933,7 +892,16 @@ export default function App() {
                     onSelectProduct={(p) => setSelectedProduct(p)}
                     themeMode={themeMode}
                   />
-                ))}
+                ))
+              )}
+            </div>
+
+            {favorites.length > 0 && (
+              <div style={{ margin: '-20px 0 40px' }}>
+                <button type="button" className="textbtn" onClick={() => setFavorites([])}>
+                  <Trash2 />
+                  {cfg('favorites_clear', 'Vaciar favoritos')}
+                </button>
               </div>
             )}
           </div>
@@ -941,550 +909,580 @@ export default function App() {
 
         {/* SCREEN 4: MI PEDIDO / CARRITO (CART) */}
         {activeTab === 'cart' && (
-          <div key="cart-screen" className="space-y-6 animate-fade-in-up">
-            <div className={`flex items-center justify-between border-b pb-4 ${
-              isLight ? 'border-slate-200' : 'border-white/5'
-            }`}>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className={`w-4 h-4 ${isLight ? 'text-lime-700' : 'text-[var(--accent)]'}`} />
-                  <span className={`text-xs font-mono uppercase tracking-widest ${
-                    isLight ? 'text-lime-700 font-bold' : 'text-[var(--accent)]'
-                  }`}>
-                    {cfg('cart_subtitle', 'PANTALLA DE PEDIDO & PROCESAMIENTO')}
-                  </span>
-                </div>
-                <h2 className={`font-display text-2xl sm:text-3xl font-extrabold uppercase ${
-                  isLight ? 'text-slate-900' : 'text-white'
-                }`}>
-                  {cfg('cart_title', 'MI PEDIDO LUMIN')} ({cart.length})
-                </h2>
-              </div>
-
-              {cart.length > 0 && (
-                <button
-                  onClick={handleClearCart}
-                  className={`text-xs underline ${
-                    isLight ? 'text-slate-500 hover:text-red-600' : 'text-gray-400 hover:text-red-400'
-                  }`}
-                >
-                  {cfg('cart_clear', 'Vaciar Carrito')}
-                </button>
-              )}
+          <div key="cart-screen" className="animate-fade-in-up">
+            {/* Título de página (`.page-title`) */}
+            <div className="page-title">
+              <p className="eyebrow">
+                {cfg('cart_eyebrow', 'TU SELECCIÓN')} / {cartItemCount}{' '}
+                {cartItemCount === 1
+                  ? cfg('cart_item_one', 'PRODUCTO')
+                  : cfg('cart_item_many', 'PRODUCTOS')}
+              </p>
+              <h1>{cfg('order_title', 'Tu pedido, a tu manera.')}</h1>
+              <p>
+                {cfg(
+                  'order_description',
+                  'Revisa los detalles y envíanos tu selección para confirmar disponibilidad y entrega.',
+                )}
+              </p>
             </div>
 
             {cart.length === 0 ? (
-              <div className={`py-16 text-center space-y-4 rounded-3xl p-8 border max-w-xl mx-auto ${
-                isLight ? 'bg-white border-slate-300 text-slate-900 shadow-md' : 'glass-card border-white/10 text-white'
-              }`}>
-                <ShoppingBag className={`w-16 h-16 stroke-1 mx-auto ${isLight ? 'text-slate-300' : 'text-gray-600'}`} />
-                <h3 className={`font-display text-xl font-extrabold ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                  {cfg('cart_empty_title', 'Tu pedido está vacío por el momento')}
-                </h3>
-                <p className={`text-xs ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
-                  {cfg('cart_empty_desc', 'Agrega polos streetwear o vasos/tazas con tu personalización preferida para generar tu orden.')}
+              <div className="empty">
+                <ShoppingBag />
+                <h3>{cfg('cart_empty_title', 'Tu pedido empieza con una idea.')}</h3>
+                <p>
+                  {cfg(
+                    'cart_empty_desc',
+                    'Explora el catálogo y personaliza un diseño.',
+                  )}
                 </p>
                 <button
+                  type="button"
+                  className="btn"
                   onClick={() => handleTabChange('catalog')}
-                  className="px-6 py-3 rounded-full bg-[var(--accent)] text-[#0A0A0A] font-extrabold text-xs shadow-lg inline-flex items-center gap-2 hover:bg-[var(--accent-hover)] transition-all"
                 >
-                  <Grid className="w-4 h-4" />
-                  <span>{cfg('cart_empty_cta', 'IR AL CATÁLOGO')}</span>
+                  {cfg('cart_empty_cta', 'Explorar catálogo')}
+                  <ArrowRight />
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                {/* Left side: Cart Items List */}
-                <div className="lg:col-span-7 space-y-4">
-                  <div className={`p-4 rounded-2xl border space-y-1.5 ${
-                    isLight ? 'bg-lime-50/80 border-lime-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-[var(--accent)]/30 text-white'
-                  }`}>
-                    <div className={`flex items-center gap-1.5 text-xs font-bold ${
-                      isLight ? 'text-lime-800' : 'text-[var(--accent)]'
-                    }`}>
-                      <Tag className="w-4 h-4" />
-                      <span>{cfg('cart_process_title', 'PROCESO DE FABRICACIÓN BAJO PEDIDO:')}</span>
-                    </div>
-                    <p className={`text-xs ${isLight ? 'text-slate-700' : 'text-gray-300'}`}>
-                      {cfg('cart_process_desc', 'Envías la orden a WhatsApp, iniciamos producción digital/artesanal (24-48h) y despachamos a tu domicilio.')}
-                    </p>
+              <div className="ordergrid">
+                {/* Líneas del pedido */}
+                <div>
+                  <div className="notice">
+                    {cfg(
+                      'cart_process_desc',
+                      'Envías la orden a WhatsApp, iniciamos producción digital/artesanal (24-48h) y despachamos a tu domicilio.',
+                    )}
                   </div>
 
-                  <div className="space-y-3">
-                    {cart.map((item) => {
-                      const itemUnitPrice = getUnitPrice(item);
-                      const itemTotal = itemUnitPrice * item.quantity;
+                  {cart.map((item) => {
+                    const itemUnitPrice = getUnitPrice(item);
+                    const itemTotal = itemUnitPrice * item.quantity;
 
-  return (
-                        <div
-                          key={item.cartItemId}
-                          className={`p-4 rounded-2xl border flex gap-3 sm:gap-4 relative group ${
-                            isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'glass-card border-white/10 text-white'
-                          }`}
-                        >
-                          <img
-                            src={item.product.image}
-                            alt={item.product.name}
-                            className="w-20 h-20 rounded-xl object-cover border border-slate-200 dark:border-white/10 flex-shrink-0"
-                          />
+                    return (
+                      <div className="orderline" key={item.cartItemId}>
+                        <img src={item.product.image} alt={item.product.name} />
 
-                          <div className="flex-1 space-y-1.5">
-                            <div className="flex justify-between items-start pr-6">
-                              <h4 className={`font-bold text-sm ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                                {item.product.name}
-                              </h4>
-                            </div>
+                        <div className="info">
+                          <h3>{item.product.name}</h3>
 
-                            <div className="flex flex-wrap gap-1.5 text-[11px]">
-                              {item.selectedSize && (
-                                <span className={`px-2 py-0.5 rounded border font-semibold ${
-                                  isLight ? 'bg-slate-100 border-slate-300 text-slate-700' : 'bg-white/10 border-white/10 text-gray-300'
-                                }`}>
-                                  {cfg('cart_item_size', 'Talla:')} {item.selectedSize}
-                                </span>
-                              )}
-                              {item.selectedFit && (
-                                <span className={`px-2 py-0.5 rounded border font-semibold ${
-                                  isLight ? 'bg-slate-100 border-slate-300 text-slate-700' : 'bg-white/10 border-white/10 text-gray-300'
-                                }`}>
-                                  {cfg('cart_item_fit', 'Fit:')} {item.selectedFit}
-                                </span>
-                              )}
-                              {item.selectedColor && (
-                                <span className={`px-2 py-0.5 rounded border font-semibold flex items-center gap-1 ${
-                                  isLight ? 'bg-slate-100 border-slate-300 text-slate-700' : 'bg-white/10 border-white/10 text-gray-300'
-                                }`}>
-                                  <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ backgroundColor: item.selectedColor.hex }}></span>
-                                  {item.selectedColor.name}
-                                </span>
-                              )}
-                              {item.selectedCupType && (
-                                <span className={`px-2 py-0.5 rounded border font-semibold ${
-                                  isLight ? 'bg-slate-100 border-slate-300 text-slate-700' : 'bg-white/10 border-white/10 text-gray-300'
-                                }`}>
-                                  {item.selectedCupType}
-                                </span>
-                              )}
-                            </div>
+                          <p>
+                            {item.selectedSize &&
+                              `${cfg('cart_item_size', 'Talla:')} ${item.selectedSize} · `}
+                            {item.selectedFit &&
+                              `${cfg('cart_item_fit', 'Fit:')} ${item.selectedFit} · `}
+                            {item.selectedCupType && `${item.selectedCupType} · `}
+                            {item.selectedColor && `${item.selectedColor.name} · `}
+                            {item.customText
+                              ? `${cfg('cart_item_custom_text', 'Texto personalizado:')} ${item.customText}`
+                              : cfg('cart_item_no_text', 'Sin texto adicional')}
+                          </p>
 
-                            {item.customText && (
-                              <p className={`text-xs italic font-medium ${isLight ? 'text-lime-800 font-bold' : 'text-[var(--accent)]'}`}>
-                                {cfg('cart_item_custom_text', 'Texto personalizado:')} "{item.customText}"
-                              </p>
-                            )}
+                          {item.product.agotado && (
+                            <p className="danger">
+                              {cfg('cart_item_sold', 'Agotado · retíralo para continuar')}
+                            </p>
+                          )}
 
-                            <div className="flex items-center justify-between pt-2">
-                              <div className={`flex items-center gap-2 border rounded-xl px-2.5 py-1 text-xs ${
-                                isLight ? 'bg-slate-100 border-slate-300 text-slate-900' : 'bg-[#0A0A0A] border-white/10 text-white'
-                              }`}>
-                                <button
-                                  onClick={() => handleUpdateQuantity(item.cartItemId, -1)}
-                                  className={`${isLight ? 'text-slate-500 hover:text-slate-900' : 'text-gray-400 hover:text-white'} p-0.5`}
-                                >
-                                  <Minus className="w-3.5 h-3.5" />
-                                </button>
-                                <span className={`font-extrabold px-2 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                                  {item.quantity}
-                                </span>
-                                <button
-                                  onClick={() => handleUpdateQuantity(item.cartItemId, 1)}
-                                  className={`${isLight ? 'text-slate-500 hover:text-slate-900' : 'text-gray-400 hover:text-white'} p-0.5`}
-                                >
-                                  <Plus className="w-3.5 h-3.5" />
-                                </button>
-                              </div>
-
-                              <span className={`font-black text-base ${isLight ? 'text-slate-900 font-black' : 'text-[var(--accent)]'}`}>
-                                S/ {itemTotal.toFixed(2)}
-                              </span>
-                            </div>
+                          <div className="qty">
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateQuantity(item.cartItemId, -1)}
+                              aria-label="Disminuir cantidad"
+                            >
+                              <Minus />
+                            </button>
+                            <input
+                              type="number"
+                              min={1}
+                              max={99}
+                              step={1}
+                              value={item.quantity}
+                              aria-label={`Cantidad de ${item.product.name}`}
+                              onChange={(e) => {
+                                const next = Math.max(
+                                  1,
+                                  Math.min(99, Number(e.target.value) || 1),
+                                );
+                                handleUpdateQuantity(
+                                  item.cartItemId,
+                                  next - item.quantity,
+                                );
+                              }}
+                            />
+                            <button
+                              type="button"
+                              onClick={() => handleUpdateQuantity(item.cartItemId, 1)}
+                              aria-label="Aumentar cantidad"
+                            >
+                              <Plus />
+                            </button>
                           </div>
+                        </div>
 
+                        <div className="pricecol">
+                          <strong>S/ {itemTotal.toFixed(2)}</strong>
                           <button
+                            type="button"
+                            className="textbtn danger"
                             onClick={() => handleRemoveItem(item.cartItemId)}
-                            className={`absolute top-4 right-4 transition-colors ${
-                              isLight ? 'text-slate-400 hover:text-red-600' : 'text-gray-400 hover:text-red-400'
-                            }`}
-                            title="Eliminar ítem"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            {cfg('cart_item_remove', 'Quitar')}
                           </button>
                         </div>
-                      );
-                    })}
+                      </div>
+                    );
+                  })}
+
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: 18,
+                      flexWrap: 'wrap',
+                      marginTop: 18,
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="textbtn"
+                      onClick={handleCopyOrderSummary}
+                    >
+                      {copiedOrder ? <CheckCircle2 /> : <Copy />}
+                      {copiedOrder
+                        ? cfg('cart_order_copied', '¡Texto de pedido copiado!')
+                        : cfg('cart_copy_order', 'Copiar pedido')}
+                    </button>
+                    <button
+                      type="button"
+                      className="textbtn danger"
+                      onClick={handleClearCart}
+                    >
+                      <Trash2 />
+                      {cfg('cart_clear', 'Vaciar pedido')}
+                    </button>
                   </div>
                 </div>
 
-                {/* Right side: Summary & Direct WhatsApp Order */}
-                <div className="lg:col-span-5 space-y-4">
-                  {/* Yape / Plin Card */}
-                  <div className={`p-4 rounded-3xl border space-y-3 shadow-xl ${
-                    isLight
-                      ? 'bg-gradient-to-r from-purple-900 via-purple-950 to-slate-900 border-purple-700 text-white'
-                      : 'bg-gradient-to-r from-[#200B29] to-[#121610] border-[#742284]/50 text-white'
-                  }`}>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-xl bg-[#742284] flex items-center justify-center font-black text-white text-xs tracking-tighter shadow-lg">
-                          YAPE
-                        </div>
-                        <div>
-                          <h4 className="text-xs font-bold text-white">{cfg('cart_payment_title', 'Pago Yape / Plin Directo')}</h4>
-                          <p className="text-[10px] text-purple-200">{cfg('cart_payment_holder', 'Titular: Oscar Daniel (LUMIN SHOP)')}</p>
+                {/* Columna de resumen */}
+                <div style={{ display: 'grid', gap: 24, alignContent: 'start' }}>
+                  {/* Datos de entrega */}
+                  <section className="panel">
+                    <h3>{cfg('cart_shipping_title', 'Datos para el envío')}</h3>
+                    <p>
+                      {cfg(
+                        'cart_shipping_desc',
+                        'Los usamos solo para coordinar tu entrega por WhatsApp.',
+                      )}
+                    </p>
+
+                    <div className="chips" role="group" aria-label="Modalidad de entrega">
+                      <button
+                        type="button"
+                        className={`chip ${deliveryType === 'envio' ? 'active' : ''}`}
+                        onClick={() => setDeliveryType('envio')}
+                        aria-pressed={deliveryType === 'envio'}
+                      >
+                        <Truck className="w-4 h-4" />
+                        {cfg('cart_delivery_home', 'Envío a domicilio')}
+                      </button>
+                      <button
+                        type="button"
+                        className={`chip ${deliveryType === 'recojo' ? 'active' : ''}`}
+                        onClick={() => setDeliveryType('recojo')}
+                        aria-pressed={deliveryType === 'recojo'}
+                      >
+                        <Store className="w-4 h-4" />
+                        {cfg('cart_delivery_pickup', 'Recojo en tienda')}
+                      </button>
+                    </div>
+
+                    <label className="field">
+                      <span>{cfg('cart_form_name_label', 'Nombre completo')} *</span>
+                      <input
+                        type="text"
+                        value={userProfile.name}
+                        onChange={(e) =>
+                          setUserProfile({ ...userProfile, name: e.target.value })
+                        }
+                        placeholder={cfg('cart_form_name_placeholder', 'Tu nombre…')}
+                        autoComplete="name"
+                        required
+                      />
+                    </label>
+
+                    <label className="field">
+                      <span>
+                        {cfg('cart_form_address_label', 'Dirección de entrega')}
+                        {deliveryType === 'envio' ? ' *' : ''}
+                      </span>
+                      <input
+                        type="text"
+                        value={userProfile.address}
+                        onChange={(e) =>
+                          setUserProfile({ ...userProfile, address: e.target.value })
+                        }
+                        placeholder={cfg(
+                          'cart_form_address_placeholder',
+                          'Av., calle, dpto. y referencia…',
+                        )}
+                        autoComplete="street-address"
+                        required={deliveryType === 'envio'}
+                      />
+                    </label>
+
+                    {deliveryType === 'envio' && (
+                      <div style={{ marginTop: 18 }}>
+                        <span className="eyebrow">
+                          {cfg('cart_form_zone_label', 'Zona de envío')}
+                        </span>
+                        <div className="chips" style={{ flexWrap: 'wrap', marginTop: 10 }}>
+                          {[
+                            {
+                              key: 'huamanga' as const,
+                              label: cfg('cart_zone_local', 'Ayacucho'),
+                              price: cfg('shipping_price_huamanga', '0'),
+                            },
+                            {
+                              key: 'provincia' as const,
+                              label: cfg('cart_zone_province', 'Provincia'),
+                              price: cfg('shipping_price_provincia', '25'),
+                            },
+                            {
+                              key: 'internacional' as const,
+                              label: cfg('cart_zone_international', 'Internacional'),
+                              price: cfg('shipping_price_internacional', '80'),
+                            },
+                          ].map((zone) => (
+                            <button
+                              key={zone.key}
+                              type="button"
+                              className={`chip ${
+                                shippingZone === zone.key ? 'active' : ''
+                              }`}
+                              onClick={() => setShippingZone(zone.key)}
+                              aria-pressed={shippingZone === zone.key}
+                            >
+                              {zone.label} ·{' '}
+                              {zone.price === '0'
+                                ? cfg('cart_free', 'GRATIS')
+                                : `S/ ${zone.price}`}
+                            </button>
+                          ))}
                         </div>
                       </div>
+                    )}
 
-                      <div className="flex items-center gap-1.5 bg-black/60 px-3 py-1.5 rounded-xl border border-white/10">
-                        <Smartphone className="w-3.5 h-3.5 text-[#00D2B5]" />
-                        <span className="font-mono text-xs font-black text-white">{cfg('brand_phone', '993 365 099')}</span>
+                    <p className="subtle">
+                      {deliveryType === 'recojo'
+                        ? cfg(
+                            'cart_pickup_note',
+                            'Coordinamos el punto y horario de recojo por WhatsApp.',
+                          )
+                        : cfg(
+                            'cart_shipping_note',
+                            'El envío se cotiza aparte y se confirma por WhatsApp.',
+                          )}
+                    </p>
+                  </section>
+
+                  {/* Pago */}
+                  <section className="panel">
+                    <h3>{cfg('cart_payment_title', 'Pago Yape / Plin')}</h3>
+                    <p>
+                      {cfg(
+                        'cart_payment_holder',
+                        'Titular: Oscar Daniel (LUMIN SHOP)',
+                      )}
+                    </p>
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 12,
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <span
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          fontWeight: 700,
+                        }}
+                      >
+                        <Smartphone />
+                        {cfg('brand_phone', '993 365 099')}
+                      </span>
+                      <button
+                        type="button"
+                        className="btn outline small"
+                        onClick={handleCopyYapePhone}
+                      >
+                        {copiedPhone ? <CheckCircle2 /> : <Copy />}
+                        {copiedPhone
+                          ? cfg('cart_phone_copied', '¡Número copiado!')
+                          : cfg('cart_phone_copy', 'Copiar número')}
+                      </button>
+                    </div>
+                  </section>
+
+                  {/* Resumen */}
+                  <section className="panel">
+                    <h3>{cfg('cart_summary_title', 'Resumen')}</h3>
+                    <p>
+                      {cfg(
+                        'cart_summary_desc',
+                        'Producción bajo pedido. Confirmamos los detalles contigo por WhatsApp.',
+                      )}
+                    </p>
+
+                    <div style={{ display: 'grid', gap: 10, fontSize: 12 }}>
+                      <div
+                        style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}
+                      >
+                        <span style={{ color: 'var(--muted)' }}>
+                          {cfg('cart_subtotal_label', 'Subtotal')}
+                        </span>
+                        <span>S/ {totalCartAmount.toFixed(2)}</span>
+                      </div>
+                      <div
+                        style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}
+                      >
+                        <span style={{ color: 'var(--muted)' }}>
+                          {cfg('cart_shipping_label', 'Envío')} (
+                          {deliveryType === 'recojo'
+                            ? cfg('cart_delivery_pickup', 'Recojo en tienda')
+                            : shippingZone === 'huamanga'
+                            ? cfg('cart_zone_local', 'Ayacucho')
+                            : shippingZone === 'provincia'
+                            ? cfg('cart_zone_province', 'Provincia')
+                            : cfg('cart_zone_international', 'Internacional')}
+                          )
+                        </span>
+                        <span>
+                          {shippingCost === 0
+                            ? cfg('cart_free', 'GRATIS')
+                            : `S/ ${shippingCost.toFixed(2)}`}
+                        </span>
                       </div>
                     </div>
+
+                    <div className="total">
+                      <span>{cfg('cart_total_label', 'Total estimado')}</span>
+                      <span>S/ {grandTotal.toFixed(2)}</span>
+                    </div>
+
+                    <label className="check" style={{ alignItems: 'flex-start' }}>
+                      <input
+                        type="checkbox"
+                        checked={acceptedTerms}
+                        onChange={(e) => setAcceptedTerms(e.target.checked)}
+                      />
+                      <span
+                        style={{ fontSize: 11, color: 'var(--muted)', lineHeight: 1.45 }}
+                      >
+                        {cfg(
+                          'checkout_consent_text',
+                          'Acepto la Política de Privacidad y los Términos y Condiciones de LUMIN SHOP. Entiendo que mis datos personales serán utilizados únicamente para procesar mi pedido.',
+                        )}{' '}
+                        <button
+                          type="button"
+                          className="textbtn"
+                          style={{ display: 'inline', padding: 0, fontSize: 11 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTermsTab('privacy');
+                            setIsTermsOpen(true);
+                          }}
+                        >
+                          {cfg(
+                            'checkout_consent_privacy_link',
+                            'Política de Privacidad',
+                          )}
+                        </button>{' '}
+                        {cfg('checkout_consent_and', 'y')}{' '}
+                        <button
+                          type="button"
+                          className="textbtn"
+                          style={{ display: 'inline', padding: 0, fontSize: 11 }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setTermsTab('terms');
+                            setIsTermsOpen(true);
+                          }}
+                        >
+                          {cfg('checkout_consent_terms_link', 'Términos y Condiciones')}
+                        </button>
+                      </span>
+                    </label>
 
                     <button
-                      onClick={handleCopyYapePhone}
-                      className="w-full py-2 rounded-xl bg-[#742284] hover:bg-[#8A2B9C] text-white text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95"
+                      type="button"
+                      className="btn full"
+                      onClick={handleSendWhatsAppOrder}
+                      disabled={!acceptedTerms || !isCheckoutValid}
                     >
-                      {copiedPhone ? (
-                        <>
-                          <CheckCircle2 className="w-4 h-4 text-green-400" />
-                          <span>{cfg('cart_phone_copied', '¡Número 993365099 Copiado!')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="w-4 h-4 text-[#00D2B5]" />
-                          <span>{cfg('cart_phone_copy', 'Copiar Número Yape / Plin')}</span>
-                        </>
-                      )}
+                      <MessageCircle />
+                      {cfg('cart_checkout_whatsapp', 'Coordinar por WhatsApp')}
                     </button>
-                  </div>
 
-                  {/* Contact Info Overview */}
-                  <div className={`p-5 rounded-3xl border space-y-3 ${
-                    isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10 text-white'
-                  }`}>
-                    <h4 className={`font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 ${
-                      isLight ? 'text-lime-800' : 'text-[var(--accent)]'
-                    }`}>
-                      <Package className="w-3.5 h-3.5" />
-                      {cfg('cart_shipping_title', 'Datos para el envío:')}
-                      <span className="text-[9px] font-normal opacity-60 normal-case">(obligatorio)</span>
-                    </h4>
+                    {!isCheckoutValid && (
+                      <p className="error">
+                        {!userProfile.name.trim()
+                          ? cfg(
+                              'cart_error_name',
+                              'Ingresa tu nombre para continuar.',
+                            )
+                          : cfg(
+                              'cart_error_address',
+                              'Ingresa tu dirección de entrega.',
+                            )}
+                      </p>
+                    )}
 
-                    <div className="space-y-2 text-xs">
-                      <div>
-                        <label className={`text-[10px] uppercase block font-bold mb-1 ${
-                          isLight ? 'text-slate-600' : 'text-gray-400'
-                        }`}>{cfg('cart_form_name_label', 'Nombre Completo:')} <span className="text-red-400">*</span></label>
-                        <input
-                          type="text"
-                          value={userProfile.name}
-                          onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value })}
-                          placeholder={cfg('cart_form_name_placeholder', 'Tu nombre...')}
-                          required
-                          className={`w-full rounded-xl px-3 py-2 text-xs focus:outline-none border ${
-                            isLight ? 'bg-slate-100 border-slate-300 text-slate-900 placeholder-slate-400' : 'bg-[#0A0A0A] border-white/10 text-white placeholder-gray-500'
-                          }`}
-                        />
-                      </div>
-
-                      <div>
-                        <label className={`text-[10px] uppercase block font-bold mb-1 ${
-                          isLight ? 'text-slate-600' : 'text-gray-400'
-                        }`}>{cfg('cart_form_address_label', 'Dirección de Entrega:')} {deliveryType === 'envio' && <span className="text-red-400">*</span>}</label>
-                        <input
-                          type="text"
-                          value={userProfile.address}
-                          onChange={(e) => setUserProfile({ ...userProfile, address: e.target.value })}
-                          placeholder={cfg('cart_form_address_placeholder', 'Av, Calle, Dpto y Referencia...')}
-                          required={deliveryType === 'envio'}
-                          className={`w-full rounded-xl px-3 py-2 text-xs focus:outline-none border ${
-                            isLight ? 'bg-slate-100 border-slate-300 text-slate-900 placeholder-slate-400' : 'bg-[#0A0A0A] border-white/10 text-white placeholder-gray-500'
-                          }`}
-                        />
-                      </div>
-
-                      <div className="flex gap-2 pt-1">
-                        <button
-                          onClick={() => { setDeliveryType('envio'); }}
-                          className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 ${
-                            deliveryType === 'envio'
-                              ? isLight ? 'bg-slate-900 text-white border-slate-900' : 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)]'
-                              : isLight ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' : 'bg-black/30 text-gray-400 border-white/10'
-                          }`}
-                        >
-                          <Truck className="w-3.5 h-3.5" />
-                          <span>{cfg('cart_delivery_home', 'Envío a Domicilio')}</span>
-                        </button>
-                        <button
-                          onClick={() => setDeliveryType('recojo')}
-                          className={`flex-1 py-2.5 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-2 ${
-                            deliveryType === 'recojo'
-                              ? isLight ? 'bg-slate-900 text-white border-slate-900' : 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)]'
-                              : isLight ? 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200' : 'bg-black/30 text-gray-400 border-white/10'
-                          }`}
-                        >
-                          <Store className="w-3.5 h-3.5" />
-                          <span>{cfg('cart_delivery_pickup', 'Recojo en Tienda')}</span>
-                        </button>
-                      </div>
-
-                      {/* Shipping Zone Selector */}
-                      {deliveryType === 'envio' && (
-                        <div className="space-y-2 pt-2">
-                          <label className={`text-[10px] uppercase block font-bold ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
-                            Zona de Envío:
-                          </label>
-                          <div className="grid grid-cols-3 gap-2">
-                            {[
-                              { key: 'huamanga' as const, label: 'Ayacucho', icon: MapPin, price: cfg('shipping_price_huamanga', '0') },
-                              { key: 'provincia' as const, label: 'Provincia', icon: Truck, price: cfg('shipping_price_provincia', '25') },
-                              { key: 'internacional' as const, label: 'Internacional', icon: Globe, price: cfg('shipping_price_internacional', '80') },
-                            ].map(zone => (
-                              <button
-                                key={zone.key}
-                                onClick={() => setShippingZone(zone.key)}
-                                className={`py-2.5 px-2 rounded-xl text-[10px] font-bold border transition-all text-center flex flex-col items-center gap-1 ${
-                                  shippingZone === zone.key
-                                    ? isLight ? 'bg-slate-900 text-white border-slate-900' : 'bg-[var(--accent)]/20 text-[var(--accent)] border-[var(--accent)]/50'
-                                    : isLight ? 'bg-slate-100 text-slate-700 border-slate-300' : 'bg-black/30 text-gray-400 border-white/10'
-                                }`}
-                              >
-                                <zone.icon className={`w-4 h-4 ${shippingZone === zone.key ? 'text-[var(--accent)]' : 'text-gray-400'}`} />
-                                <span>{zone.label}</span>
-                                <span className="text-[9px] opacity-70">{zone.price === '0' ? 'GRATIS' : `S/ ${zone.price}`}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Summary & Buttons */}
-                  <div className={`p-5 rounded-3xl border space-y-4 ${
-                    isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#0A0A0A] border-white/10 text-white'
-                  }`}>
-                    <div className="space-y-2">
-                      <div className="flex justify-between items-baseline text-xs">
-                        <span className={isLight ? 'text-slate-600 font-bold' : 'text-gray-400'}>Subtotal:</span>
-                        <span className={`font-bold ${isLight ? 'text-slate-900' : 'text-white'}`}>S/ {totalCartAmount.toFixed(2)}</span>
-                      </div>
-                      <div className="flex justify-between items-baseline text-xs">
-                        <span className={isLight ? 'text-slate-600 font-bold' : 'text-gray-400'}>
-                          Envío ({deliveryType === 'recojo' ? 'Recojo' : shippingZone === 'huamanga' ? 'Ayacucho' : shippingZone === 'provincia' ? 'Provincia' : 'Internacional'}):
-                        </span>
-                        <span className={`font-bold ${shippingCost === 0 ? 'text-green-500' : isLight ? 'text-slate-900' : 'text-white'}`}>
-                          {shippingCost === 0 ? 'GRATIS' : `S/ ${shippingCost.toFixed(2)}`}
-                        </span>
-                      </div>
-                      <div className={`border-t pt-2 flex justify-between items-baseline ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
-                        <span className={`text-xs font-mono uppercase font-bold ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
-                          {cfg('cart_total_label', 'Total a Pagar:')}
-                        </span>
-                        <span className={`text-3xl font-black ${isLight ? 'text-slate-900' : 'text-[var(--accent)]'}`}>
-                          S/ {grandTotal.toFixed(2)}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      {/* Terms consent checkbox */}
-                      <label className={`flex items-start gap-2.5 p-3 rounded-xl border cursor-pointer transition-all ${
-                        acceptedTerms
-                          ? isLight ? 'bg-lime-50 border-lime-300' : 'bg-[var(--accent)]/5 border-[var(--accent)]/30'
-                          : isLight ? 'bg-slate-50 border-slate-200 hover:border-slate-300' : 'bg-white/5 border-white/10 hover:border-white/20'
-                      }`}>
-                        <input
-                          type="checkbox"
-                          checked={acceptedTerms}
-                          onChange={(e) => setAcceptedTerms(e.target.checked)}
-                          className="mt-0.5 w-4 h-4 rounded border-2 accent-[var(--accent)]"
-                        />
-                        <span className={`text-[11px] leading-tight ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>
-                          {cfg('checkout_consent_text', 'Acepto la Política de Privacidad y los Términos y Condiciones de LUMIN SHOP. Entiendo que mis datos personales serán utilizados únicamente para procesar mi pedido.')}{' '}
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); setTermsTab('privacy'); setIsTermsOpen(true); }}
-                            className={`font-bold underline ${isLight ? 'text-lime-700 hover:text-lime-900' : 'text-[var(--accent)] hover:text-[var(--accent-hover)]'}`}
-                          >
-                            {cfg('checkout_consent_privacy_link', 'Política de Privacidad')}
-                          </button>
-                          {' y '}
-                          <button
-                            type="button"
-                            onClick={(e) => { e.stopPropagation(); setTermsTab('terms'); setIsTermsOpen(true); }}
-                            className={`font-bold underline ${isLight ? 'text-lime-700 hover:text-lime-900' : 'text-[var(--accent)] hover:text-[var(--accent-hover)]'}`}
-                          >
-                            {cfg('checkout_consent_terms_link', 'Términos y Condiciones')}
-                          </button>
-                        </span>
-                      </label>
-
-                      <button
-                        onClick={handleSendWhatsAppOrder}
-                        disabled={!acceptedTerms || !isCheckoutValid}
-                        className={`w-full py-4 rounded-2xl font-extrabold text-sm transition-all flex items-center justify-center gap-2 shadow-xl active:scale-98 ${
-                          acceptedTerms && isCheckoutValid
-                            ? 'bg-green-500 hover:bg-green-600 text-black shadow-green-500/20'
-                            : isLight ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' : 'bg-white/10 text-gray-600 cursor-not-allowed shadow-none'
-                        }`}
-                      >
-                        <MessageCircle className="w-5 h-5" />
-                        <span>{cfg('cart_checkout_whatsapp', 'ENVIAR PEDIDO POR WHATSAPP')}</span>
-                      </button>
-
-                      {!isCheckoutValid && cart.length > 0 && (
-                        <p className={`text-[10px] text-center ${isLight ? 'text-slate-500' : 'text-gray-500'}`}>
-                          {!userProfile.name.trim() ? 'Ingresa tu nombre para continuar' : 'Ingresa tu dirección de entrega'}
-                        </p>
-                      )}
-
-                      <button
-                        onClick={handleCopyOrderSummary}
-                        className={`w-full py-3 rounded-2xl border font-semibold text-xs transition-all flex items-center justify-center gap-2 ${
-                          isLight ? 'bg-slate-100 hover:bg-slate-200 border-slate-300 text-slate-800' : 'bg-white/5 hover:bg-white/10 border-white/10 text-gray-300'
-                        }`}
-                      >
-                        {copiedOrder ? (
-                          <>
-                            <CheckCircle2 className="w-4 h-4 text-green-500" />
-                            <span className="text-green-600 font-bold">{cfg('cart_order_copied', '¡Texto de Orden Copiado!')}</span>
-                          </>
-                        ) : (
-                          <>
-                            <Copy className="w-4 h-4" />
-                            <span>{cfg('cart_copy_order', 'Copiar Texto de Pedido Completo')}</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
+                    <button
+                      type="button"
+                      className="textbtn"
+                      onClick={() => handleTabChange('catalog')}
+                    >
+                      {cfg('cart_continue', 'Seguir explorando')}
+                      <ArrowRight />
+                    </button>
+                  </section>
                 </div>
               </div>
             )}
           </div>
         )}
-
         {/* SCREEN 5: MI CUENTA / "YO" / PERFIL & CONFIGURACIÓN */}
         {activeTab === 'profile' && (
-          <div key="profile-screen" className="space-y-6 animate-fade-in-up max-w-3xl mx-auto">
-            <div className="flex items-center justify-between border-b border-white/5 pb-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-[var(--accent)]" />
-                  <span className="text-xs font-mono text-[var(--accent)] uppercase tracking-widest">
-                    {cfg('profile_subtitle', 'PANTALLA DE PERFIL & CONFIGURACIÓN "YO"')}
-                  </span>
-                </div>
-                <h2 className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white">
-                  {cfg('profile_title', 'MI CUENTA & PREFERENCIAS')}
-                </h2>
-              </div>
+          <div key="profile-screen" className="animate-fade-in-up">
+            {/* Título de página (`.page-title`) */}
+            <div className="page-title">
+              <p className="eyebrow">{cfg('profile_eyebrow', 'A TU GUSTO')}</p>
+              <h1>{cfg('profile_title', 'Tu espacio LUMIN.')}</h1>
+              <p>
+                {cfg(
+                  'profile_description',
+                  'Elige cómo quieres ver la tienda y encuentra ayuda para tu pedido.',
+                )}
+              </p>
             </div>
 
-            {/* Profile Statistics Cards */}
-            <div className="grid grid-cols-3 gap-3">
-              {/* Stat 1: Productos Vistos */}
-              <div className={`p-4 rounded-2xl border flex flex-col justify-between gap-2 transition-all ${
-                isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10 text-white'
-              }`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold uppercase text-gray-400">{cfg('profile_stat_activity', 'Actividad')}</span>
-                  <div className="p-1.5 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)]">
-                    <Eye className="w-4 h-4" />
-                  </div>
-                </div>
-                <div>
-                  <span className={`text-2xl font-black font-display tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>8</span>
-                  <p className="text-[10px] text-gray-400 font-medium">{cfg('profile_stat_products_viewed', 'Productos vistos')}</p>
-                </div>
-              </div>
-
-              {/* Stat 2: Favoritos */}
-              <div className={`p-4 rounded-2xl border flex flex-col justify-between gap-2 transition-all ${
-                isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10 text-white'
-              }`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold uppercase text-gray-400">{cfg('profile_stat_collection', 'Colección')}</span>
-                  <div className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400">
-                    <Heart className="w-4 h-4 fill-rose-400/20" />
-                  </div>
-                </div>
-                <div>
-                  <span className={`text-2xl font-black font-display tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>{favorites.length}</span>
-                  <p className="text-[10px] text-gray-400 font-medium">{cfg('profile_stat_favorites', 'Favoritos')}</p>
-                </div>
-              </div>
-
-              {/* Stat 3: Pedidos */}
-              <div className={`p-4 rounded-2xl border flex flex-col justify-between gap-2 transition-all ${
-                isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10 text-white'
-              }`}>
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono font-bold uppercase text-gray-400">{cfg('profile_stat_history', 'Historial')}</span>
-                  <div className="p-1.5 rounded-lg bg-green-500/10 text-green-400">
-                    <ShoppingBag className="w-4 h-4" />
-                  </div>
-                </div>
-                <div>
-                  <span className={`text-2xl font-black font-display tracking-tight ${isLight ? 'text-slate-900' : 'text-white'}`}>{cart.length > 0 ? cart.length : 3}</span>
-                  <p className="text-[10px] text-gray-400 font-medium">{cfg('profile_stat_orders', 'Pedidos')}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Order Status Notification */}
             {orderUpdateMsg && (
-              <div className="p-3 rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/30 text-[var(--accent)] text-xs font-bold text-center animate-pulse">
+              <div className="notice" style={{ color: 'var(--accent)' }}>
                 {orderUpdateMsg}
               </div>
             )}
 
-            {/* My Orders */}
-            {myOrders.length > 0 && (
-              <section className={`p-6 rounded-3xl border space-y-4 ${
-                isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10'
-              }`}>
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-[var(--accent)]" />
-                  <h3 className="font-display text-lg font-bold uppercase">
-                    {cfg('profile_my_orders_title', 'Mis Pedidos')}
-                  </h3>
+            {/* Apariencia + ayuda (`.accountgrid`) */}
+            <div className="accountgrid">
+              <section className="panel">
+                <h3>{cfg('profile_appearance_title', 'Tu apariencia')}</h3>
+                <p>
+                  {cfg(
+                    'profile_appearance_desc',
+                    'Elige el tema que te resulte más cómodo. Se recuerda en este dispositivo.',
+                  )}
+                </p>
+                <div className="chips">
+                  {[
+                    { key: 'light' as ThemeMode, label: cfg('profile_theme_light', 'Claro') },
+                    { key: 'dark' as ThemeMode, label: cfg('profile_theme_dark', 'Oscuro') },
+                    { key: 'amoled' as ThemeMode, label: cfg('profile_theme_amoled', 'AMOLED') },
+                  ].map((option) => (
+                    <button
+                      key={option.key}
+                      type="button"
+                      className={`chip ${themeMode === option.key ? 'active' : ''}`}
+                      onClick={() => handleSelectTheme(option.key)}
+                      aria-pressed={themeMode === option.key}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
-                <div className="space-y-3">
+              </section>
+
+              <section className="panel">
+                <h3>{cfg('profile_help_title', '¿Te ayudamos a elegir?')}</h3>
+                <p>
+                  {cfg(
+                    'profile_help_desc',
+                    'Cuéntanos qué tienes en mente y coordinamos tu diseño.',
+                  )}
+                </p>
+                <a
+                  className="btn outline"
+                  href={`https://wa.me/${cfg(
+                    'brand_phone_raw',
+                    '51993365099',
+                  )}?text=${encodeURIComponent(
+                    cfg(
+                      'brand_whatsapp_help',
+                      'Hola LUMIN, quisiera consultar sobre un pedido.',
+                    ),
+                  )}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle />
+                  {cfg('profile_help_btn', 'Hablar con LUMIN')}
+                </a>
+              </section>
+            </div>
+
+            {/* Mis pedidos */}
+            {myOrders.length > 0 && (
+              <section className="panel" style={{ marginBottom: 24 }}>
+                <h3>{cfg('profile_my_orders_title', 'Mis pedidos')}</h3>
+                <div>
                   {myOrders.map((order: any) => {
-                    const statusColors: Record<string, string> = {
-                      pendiente: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-                      produccion: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-                      enviado: 'bg-purple-500/20 text-purple-400 border-purple-500/30',
-                      entregado: 'bg-green-500/20 text-green-400 border-green-500/30',
-                    };
                     const statusLabels: Record<string, string> = {
-                      pendiente: 'Pendiente', produccion: 'En Producción',
-                      enviado: 'Enviado', entregado: 'Entregado',
+                      pendiente: cfg('order_status_pending', 'Pendiente'),
+                      produccion: cfg('order_status_production', 'En producción'),
+                      enviado: cfg('order_status_sent', 'Enviado'),
+                      entregado: cfg('order_status_delivered', 'Entregado'),
                     };
                     const items = order.productos || [];
                     return (
-                      <div key={order.id} className={`p-4 rounded-2xl border ${isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#0F110D] border-white/10'}`}>
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="space-y-1 flex-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className="text-[10px] font-mono text-gray-500">#{order.id.slice(0, 8)}</span>
-                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusColors[order.estado] || 'bg-white/10 text-gray-400'}`}>
+                      <div
+                        key={order.id}
+                        style={{
+                          borderTop: '1px solid var(--line)',
+                          padding: '14px 0',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            gap: 12,
+                            flexWrap: 'wrap',
+                          }}
+                        >
+                          <div style={{ minWidth: 0 }}>
+                            <p style={{ color: 'var(--muted)', fontSize: 11 }}>
+                              #{order.id.slice(0, 8)} ·{' '}
+                              {order.created_at
+                                ? new Date(order.created_at).toLocaleDateString('es-PE')
+                                : ''}{' '}
+                              ·{' '}
+                              <strong style={{ color: 'var(--text)' }}>
                                 {statusLabels[order.estado] || order.estado}
-                              </span>
-                            </div>
-                            <div className="space-y-0.5">
-                              {items.map((item: any, i: number) => (
-                                <p key={i} className="text-[11px] text-gray-400">
-                                  {item.product_name} x{item.quantity}
-                                  {item.selected_size && ` • ${item.selected_size}`}
-                                </p>
-                              ))}
-                            </div>
-                            <p className="text-xs text-gray-500">{order.created_at ? new Date(order.created_at).toLocaleDateString('es-PE') : ''}</p>
+                              </strong>
+                            </p>
+                            {items.map((item: any, i: number) => (
+                              <p key={i} style={{ fontSize: 12, marginTop: 4 }}>
+                                {item.product_name} ×{item.quantity}
+                                {item.selected_size ? ` · ${item.selected_size}` : ''}
+                              </p>
+                            ))}
                           </div>
-                          <p className="text-sm font-extrabold text-[var(--accent)]">S/ {order.total?.toFixed(2)}</p>
+                          <strong>S/ {order.total?.toFixed(2)}</strong>
                         </div>
                       </div>
                     );
@@ -1493,264 +1491,153 @@ export default function App() {
               </section>
             )}
 
-            {/* Section 1: Appearance Selector */}
-            <section className={`p-6 rounded-3xl border space-y-4 ${
-              isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10'
-            }`}>
-              <div className="flex items-center gap-2">
-                <Sun className="w-5 h-5 text-[var(--accent)]" />
-                <h3 className="font-display text-lg font-bold uppercase">
-                  {cfg('profile_section_appearance_title', '1. Apariencia Visual del Sitio Web')}
-                </h3>
-              </div>
+            {/* Mis datos */}
+            <section className="panel" style={{ marginBottom: 24 }}>
+              <h3>{cfg('profile_section_data_title', 'Mis datos')}</h3>
+              <p>
+                {cfg(
+                  'profile_data_desc',
+                  'Se guardan en este dispositivo para completar tus pedidos más rápido.',
+                )}
+              </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                {/* Dark */}
-                <button
-                  type="button"
-                  onClick={() => handleSelectTheme('dark')}
-                  className={`p-4 rounded-2xl border text-left flex flex-col justify-between gap-3 transition-all ${
-                    themeMode === 'dark'
-                      ? 'border-[var(--accent)] bg-[#0A0A0A] shadow-lg ring-2 ring-[var(--accent)]'
-                      : 'border-white/10 bg-black/20 hover:bg-black/40'
-                  }`}
-                >
-                  <Moon className={`w-6 h-6 ${themeMode === 'dark' ? 'text-[var(--accent)]' : 'text-gray-400'}`} />
-                  <div>
-                    <span className="block font-bold text-sm text-white">{cfg('profile_theme_dark', 'Oscuro (Clásico)')}</span>
-                    <span className="text-[11px] text-gray-400 font-mono">{cfg('profile_theme_dark_desc', 'Verde Neón & Negro')}</span>
-                  </div>
-                </button>
-
-                {/* AMOLED */}
-                <button
-                  type="button"
-                  onClick={() => handleSelectTheme('amoled')}
-                  className={`p-4 rounded-2xl border text-left flex flex-col justify-between gap-3 transition-all ${
-                    themeMode === 'amoled'
-                      ? 'border-[var(--accent)] bg-black shadow-lg ring-2 ring-[var(--accent)]'
-                      : 'border-white/10 bg-black/20 hover:bg-black/40'
-                  }`}
-                >
-                  <Zap className={`w-6 h-6 ${themeMode === 'amoled' ? 'text-[var(--accent)]' : 'text-gray-400'}`} />
-                  <div>
-                    <span className="block font-bold text-sm text-white">{cfg('profile_theme_amoled', 'AMOLED')}</span>
-                    <span className="text-[11px] text-gray-400 font-mono">{cfg('profile_theme_amoled_desc', 'Negro Absoluto #000')}</span>
-                  </div>
-                </button>
-
-                {/* Light */}
-                <button
-                  type="button"
-                  onClick={() => handleSelectTheme('light')}
-                  className={`p-4 rounded-2xl border text-left flex flex-col justify-between gap-3 transition-all ${
-                    themeMode === 'light'
-                      ? 'border-[var(--accent-light)] bg-slate-100 ring-2 ring-[var(--accent-light)]'
-                      : 'border-slate-300 bg-slate-50 hover:bg-slate-100'
-                  }`}
-                >
-                  <Sun className={`w-6 h-6 ${themeMode === 'light' ? 'text-[var(--accent-light)]' : 'text-gray-400'}`} />
-                  <div>
-                    <span className="block font-bold text-sm text-slate-900">{cfg('profile_theme_light', 'Modo Claro')}</span>
-                    <span className="text-[11px] text-slate-600 font-mono">{cfg('profile_theme_light_desc', 'Fondo Claro Limpio')}</span>
-                  </div>
-                </button>
-              </div>
-            </section>
-
-            {/* Section 2: Contact Info */}
-            <section className={`p-6 rounded-3xl border space-y-4 ${
-              isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10'
-            }`}>
-              <div className="flex items-center gap-2">
-                <User className="w-5 h-5 text-[var(--accent)]" />
-                <h3 className="font-display text-lg font-bold uppercase">
-                  {cfg('profile_section_data_title', '2. Mis Datos para Autocompletar Pedidos')}
-                </h3>
-              </div>
-
-              <form onSubmit={handleProfileScreenSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-1">{cfg('profile_form_name_label', 'Nombre y Apellido')}</label>
+              <form className="editor" onSubmit={handleProfileScreenSubmit}>
+                <div className="two">
+                  <label className="field">
+                    <span>{cfg('profile_form_name_label', 'Nombre y apellido')}</span>
                     <input
                       type="text"
                       value={profileForm.name}
-                      onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
+                      onChange={(e) =>
+                        setProfileForm({ ...profileForm, name: e.target.value })
+                      }
                       placeholder={cfg('profile_form_name_placeholder', 'Ej. Carlos Mendoza')}
-                      className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none border ${
-                        isLight ? 'bg-slate-100 border-slate-300 text-slate-900' : 'bg-[#0A0A0A] border-white/10 text-white'
-                      }`}
+                      autoComplete="name"
                     />
-                  </div>
+                  </label>
 
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-1">{cfg('profile_form_phone_label', 'WhatsApp / Teléfono')}</label>
+                  <label className="field">
+                    <span>{cfg('profile_form_phone_label', 'WhatsApp / Teléfono')}</span>
                     <input
                       type="tel"
                       value={profileForm.phone}
-                      onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
+                      onChange={(e) =>
+                        setProfileForm({ ...profileForm, phone: e.target.value })
+                      }
                       placeholder={cfg('profile_form_phone_placeholder', 'Ej. 987654321')}
-                      className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none border ${
-                        isLight ? 'bg-slate-100 border-slate-300 text-slate-900' : 'bg-[#0A0A0A] border-white/10 text-white'
-                      }`}
+                      autoComplete="tel"
                     />
-                  </div>
+                  </label>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-1">{cfg('profile_form_dni_label', 'DNI / RUC (Comprobante)')}</label>
+                <div className="two">
+                  <label className="field">
+                    <span>{cfg('profile_form_dni_label', 'DNI / RUC')}</span>
                     <input
                       type="text"
                       value={profileForm.dni}
-                      onChange={(e) => setProfileForm({ ...profileForm, dni: e.target.value })}
+                      onChange={(e) =>
+                        setProfileForm({ ...profileForm, dni: e.target.value })
+                      }
                       placeholder={cfg('profile_form_dni_placeholder', 'Ej. 72839401')}
-                      className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none border ${
-                        isLight ? 'bg-slate-100 border-slate-300 text-slate-900' : 'bg-[#0A0A0A] border-white/10 text-white'
-                      }`}
                     />
-                  </div>
+                  </label>
 
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-gray-400 mb-1">{cfg('profile_form_address_label', 'Dirección de Entrega')}</label>
+                  <label className="field">
+                    <span>{cfg('profile_form_address_label', 'Dirección de entrega')}</span>
                     <input
                       type="text"
                       value={profileForm.address}
-                      onChange={(e) => setProfileForm({ ...profileForm, address: e.target.value })}
-                      placeholder={cfg('profile_form_address_placeholder', 'Av, Calle y Distrito...')}
-                      className={`w-full rounded-xl px-3.5 py-2.5 text-xs font-medium focus:outline-none border ${
-                        isLight ? 'bg-slate-100 border-slate-300 text-slate-900' : 'bg-[#0A0A0A] border-white/10 text-white'
-                      }`}
+                      onChange={(e) =>
+                        setProfileForm({ ...profileForm, address: e.target.value })
+                      }
+                      placeholder={cfg(
+                        'profile_form_address_placeholder',
+                        'Av., calle y distrito…',
+                      )}
+                      autoComplete="street-address"
                     />
-                  </div>
+                  </label>
                 </div>
 
-                <button
-                  type="submit"
-                  className="w-full py-3.5 rounded-2xl bg-[var(--accent)] hover:bg-[var(--accent-hover2)] text-[#0A0A0A] font-extrabold text-xs transition-all flex items-center justify-center gap-2 shadow-lg active:scale-98"
-                >
+                <button type="submit" className="btn">
                   {profileSaveSuccess ? (
                     <>
-                      <CheckCircle2 className="w-4 h-4 text-[#0A0A0A]" />
-                      <span>{cfg('profile_save_success', '¡INFORMACIÓN GUARDADA CON ÉXITO!')}</span>
+                      <CheckCircle2 />
+                      <span>{cfg('profile_save_success', '¡Información guardada!')}</span>
                     </>
                   ) : (
                     <>
-                      <Save className="w-4 h-4" />
-                      <span>{cfg('profile_save_button', 'GUARDAR MI INFORMACIÓN EN MI NAVEGADOR')}</span>
+                      <Save />
+                      <span>{cfg('profile_save_button', 'Guardar mis datos')}</span>
                     </>
                   )}
                 </button>
               </form>
             </section>
 
-            {/* Section 3: Conceptos Clave del Servicio LUMIN SHOP */}
-            <section className={`p-6 rounded-3xl border space-y-4 ${
-              isLight ? 'bg-white border-slate-300 text-slate-900 shadow-sm' : 'bg-[#161814] border-white/10 text-gray-300'
-            }`}>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-[var(--accent)]">
-                  <HelpCircle className="w-5 h-5" />
-                  <h3 className={`font-display text-lg font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                    {cfg('profile_section_concepts_title', '3. Conceptos Clave del Servicio LUMIN SHOP')}
-                  </h3>
-                </div>
-                <span className="text-xs font-mono font-bold text-green-400 bg-green-500/10 px-3 py-1 rounded-full border border-green-500/20">
-                  {cfg('profile_concepts_sub', 'Garantía & Calidad 100%')}
-                </span>
+            {/* Conceptos clave del servicio */}
+            <section className="panel">
+              <h3>{cfg('profile_section_concepts_title', 'Conceptos clave')}</h3>
+              <p>
+                {cfg(
+                  'profile_concepts_sub',
+                  'Todo lo que necesitas saber antes de pedir.',
+                )}
+              </p>
+
+              <div className="notice">
+                <strong>{cfg('concept_1_title', 'Elaboración bajo pedido')}</strong>
+                <br />
+                {cfg(
+                  'concept_1_desc',
+                  'Producción y sublimación personalizada en 24 a 48 hrs hábiles antes de despachar.',
+                )}
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 text-xs pt-1">
-                {/* 1. Tiempos de Entrega */}
-                <div className={`p-4 rounded-2xl border space-y-2 transition-all ${
-                  isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0A0A0A] border-white/5 text-gray-300'
-                }`}>
-                  <div className="flex items-center gap-2 text-[var(--accent)]">
-                    <Clock className="w-4 h-4 flex-shrink-0" />
-                    <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      {cfg('concept_1_title', '1. Elaboración Bajo Pedido')}
-                    </strong>
-                  </div>
-                  <p className="text-xs leading-relaxed text-gray-400">
-                    {cfg('concept_1_desc', 'Producción y sublimación personalizada en 24 a 48 hrs hábiles antes de despachar.')}
-                  </p>
-                </div>
+              <div className="notice">
+                <strong>{cfg('concept_2_title', 'Pagos Yape / Plin / Bancos')}</strong>
+                <br />
+                {cfg(
+                  'concept_2_desc',
+                  'Pago directo al 993 365 099 a nombre de Oscar Daniel (LUMIN SHOP) o BCP / Interbank.',
+                )}
+              </div>
 
-                {/* 2. Pagos Yape / Plin */}
-                <div className={`p-4 rounded-2xl border space-y-2 transition-all ${
-                  isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0A0A0A] border-white/5 text-gray-300'
-                }`}>
-                  <div className="flex items-center gap-2 text-[var(--accent)]">
-                    <CreditCard className="w-4 h-4 flex-shrink-0" />
-                    <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      {cfg('concept_2_title', '2. Pagos Yape / Plin / Bancos')}
-                    </strong>
-                  </div>
-                  <p className="text-xs leading-relaxed text-gray-400">
-                    {cfg('concept_2_desc', 'Pago directo al 993 365 099 a nombre de Oscar Daniel (LUMIN SHOP) o BCP / Interbank.')}
-                  </p>
-                </div>
+              <div className="notice">
+                <strong>{cfg('concept_3_title', 'Envíos gratis (S/ 200+)')}</strong>
+                <br />
+                {cfg(
+                  'concept_3_desc',
+                  'Envío sin costo en compras mayores a S/ 200 vía Olva Courier, Shalom o Express.',
+                )}
+              </div>
 
-                {/* 3. Envíos Gratis */}
-                <div className={`p-4 rounded-2xl border space-y-2 transition-all ${
-                  isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0A0A0A] border-white/5 text-gray-300'
-                }`}>
-                  <div className="flex items-center gap-2 text-[var(--accent)]">
-                    <Truck className="w-4 h-4 flex-shrink-0" />
-                    <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      {cfg('concept_3_title', '3. Envíos Gratis (S/ 200+)')}
-                    </strong>
-                  </div>
-                  <p className="text-xs leading-relaxed text-gray-400">
-                    {cfg('concept_3_desc', 'Envío sin costo en compras mayores a S/ 200 vía Olva Courier, Shalom o Express.')}
-                  </p>
-                </div>
+              <div className="notice">
+                <strong>{cfg('concept_4_title', 'Algodón reactivo & sublimado HD')}</strong>
+                <br />
+                {cfg(
+                  'concept_4_desc',
+                  'Telas 24/1 de alto gramaje y sublimación térmica 1200 DPI que no se despinta ni se agrieta.',
+                )}
+              </div>
 
-                {/* 4. Telas & Sublimación */}
-                <div className={`p-4 rounded-2xl border space-y-2 transition-all ${
-                  isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0A0A0A] border-white/5 text-gray-300'
-                }`}>
-                  <div className="flex items-center gap-2 text-[var(--accent)]">
-                    <Shirt className="w-4 h-4 flex-shrink-0" />
-                    <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      {cfg('concept_4_title', '4. Algodón Reactivo & Sublimado HD')}
-                    </strong>
-                  </div>
-                  <p className="text-xs leading-relaxed text-gray-400">
-                    {cfg('concept_4_desc', 'Telas 24/1 de alto gramaje y sublimación térmica 1200 DPI que no se despinta ni se agrieta.')}
-                  </p>
-                </div>
+              <div className="notice">
+                <strong>{cfg('concept_5_title', 'Verificación por WhatsApp')}</strong>
+                <br />
+                {cfg(
+                  'concept_5_desc',
+                  'Atención personalizada humana para revisar tu diseño, confirmación de talla y datos antes del envío.',
+                )}
+              </div>
 
-                {/* 5. Asesoría WhatsApp */}
-                <div className={`p-4 rounded-2xl border space-y-2 transition-all ${
-                  isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0A0A0A] border-white/5 text-gray-300'
-                }`}>
-                  <div className="flex items-center gap-2 text-[var(--accent)]">
-                    <MessageCircle className="w-4 h-4 flex-shrink-0" />
-                    <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      {cfg('concept_5_title', '5. Verificación por WhatsApp')}
-                    </strong>
-                  </div>
-                  <p className="text-xs leading-relaxed text-gray-400">
-                    {cfg('concept_5_desc', 'Atención personalizada humana para revisar tu diseño, confirmación de talla y datos antes del envío.')}
-                  </p>
-                </div>
-
-                {/* 6. Garantía Total */}
-                <div className={`p-4 rounded-2xl border space-y-2 transition-all ${
-                  isLight ? 'bg-slate-50 border-slate-200 text-slate-800' : 'bg-[#0A0A0A] border-white/5 text-gray-300'
-                }`}>
-                  <div className="flex items-center gap-2 text-[var(--accent)]">
-                    <Award className="w-4 h-4 flex-shrink-0" />
-                    <strong className={`font-bold text-xs ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                      {cfg('concept_6_title', '6. Garantía de Satisfacción')}
-                    </strong>
-                  </div>
-                  <p className="text-xs leading-relaxed text-gray-400">
-                    {cfg('concept_6_desc', 'Reemplazo o reembolso inmediato ante cualquier falla de fábrica o problemas en el estampado.')}
-                  </p>
-                </div>
+              <div className="notice">
+                <strong>{cfg('concept_6_title', 'Garantía de satisfacción')}</strong>
+                <br />
+                {cfg(
+                  'concept_6_desc',
+                  'Reemplazo o reembolso inmediato ante cualquier falla de fábrica o problemas en el estampado.',
+                )}
               </div>
             </section>
           </div>
@@ -1790,97 +1677,85 @@ export default function App() {
       {isCustomIdeaOpen && (
         <div
           onClick={() => setIsCustomIdeaOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-md animate-fadeIn"
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/85 backdrop-blur-md"
         >
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative w-full max-w-lg glass-card rounded-2xl sm:rounded-3xl border border-white/10 p-5 sm:p-8 bg-[#11130F] space-y-4 max-h-[90vh] overflow-y-auto"
+            className="modal animate-fade-in-up"
+            style={{ maxWidth: 560 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label={cfg('custom_idea_title', '¿Tienes un diseño en mente?')}
           >
-            <button
-              onClick={() => setIsCustomIdeaOpen(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10 transition-colors"
-            >
-              ✕
-            </button>
-
-            <div className="space-y-1">
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--accent)]/10 text-[var(--accent)] text-xs font-mono">
-                <Tag className="w-3.5 h-3.5" />
-                <span>{cfg('custom_idea_subtitle', 'COTIZACIÓN DE PRODUCTO SUBLIMADO')}</span>
-              </div>
-              <h3 className="font-display text-xl font-black text-white uppercase">
-                {cfg('custom_idea_title', '¿Tienes un diseño en mente?')}
-              </h3>
-              <p className="text-xs text-gray-400">
-                {cfg('custom_idea_desc', 'Escríbenos tu idea, logo o frase y te ayudaremos a sublimarlo en vasos, tazas, polos o placas de aluminio.')}
-              </p>
+            <div className="modal-head">
+              <h2>{cfg('custom_idea_title', '¿Tienes un diseño en mente?')}</h2>
+              <button
+                type="button"
+                className="close"
+                onClick={() => setIsCustomIdeaOpen(false)}
+                aria-label={cfg('pm_close_label', 'Cerrar')}
+              >
+                <span style={{ fontSize: 18, lineHeight: 1 }}>✕</span>
+              </button>
             </div>
 
-            <form onSubmit={handleSendCustomIdea} className="space-y-4 pt-2">
-              <div>
-                <label className="block text-xs font-bold uppercase text-gray-300 mb-1">
-                  {cfg('custom_idea_product_type', 'Tipo de Producto:')}
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setCustomIdeaType('polo')}
-                    className={`p-2 rounded-xl text-xs font-bold border ${
-                      customIdeaType === 'polo'
-                        ? 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)]'
-                        : 'bg-[#161814] text-gray-300 border-white/10'
-                    }`}
-                  >
-                    {cfg('custom_idea_type_polo', '👕 Polo Sublimado')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCustomIdeaType('vaso')}
-                    className={`p-2 rounded-xl text-xs font-bold border ${
-                      customIdeaType === 'vaso'
-                        ? 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)]'
-                        : 'bg-[#161814] text-gray-300 border-white/10'
-                    }`}
-                  >
-                    {cfg('custom_idea_type_cup', '☕ Vaso/Taza')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCustomIdeaType('otro')}
-                    className={`p-2 rounded-xl text-xs font-bold border ${
-                      customIdeaType === 'otro'
-                        ? 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)]'
-                        : 'bg-[#161814] text-gray-300 border-white/10'
-                    }`}
-                  >
-                    {cfg('custom_idea_type_other', '⚡ Otro')}
-                  </button>
+            <form onSubmit={handleSendCustomIdea}>
+              <div className="modal-body">
+                <p className="eyebrow">
+                  {cfg('custom_idea_subtitle', 'COTIZACIÓN DE PRODUCTO SUBLIMADO')}
+                </p>
+                <p style={{ margin: '10px 0 4px', color: 'var(--muted)', fontSize: 13 }}>
+                  {cfg(
+                    'custom_idea_desc',
+                    'Escríbenos tu idea, logo o frase y te ayudaremos a sublimarlo en vasos, tazas, polos o placas de aluminio.',
+                  )}
+                </p>
+
+                <div className="field">
+                  <span>{cfg('custom_idea_product_type', 'Tipo de producto')}</span>
+                  <div className="chips" style={{ flexWrap: 'wrap' }}>
+                    {[
+                      { key: 'polo' as const, label: cfg('custom_idea_type_polo', 'Polo') },
+                      { key: 'vaso' as const, label: cfg('custom_idea_type_cup', 'Vaso / taza') },
+                      { key: 'otro' as const, label: cfg('custom_idea_type_other', 'Otro') },
+                    ].map((option) => (
+                      <button
+                        key={option.key}
+                        type="button"
+                        className={`chip ${
+                          customIdeaType === option.key ? 'active' : ''
+                        }`}
+                        onClick={() => setCustomIdeaType(option.key)}
+                        aria-pressed={customIdeaType === option.key}
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              <div>
-                <label className="block text-xs font-bold uppercase text-gray-300 mb-1">
-                  {cfg('custom_idea_message_label', 'Describe tu idea o mensaje:')}
+                <label className="field">
+                  <span>{cfg('custom_idea_message_label', 'Describe tu idea o mensaje')}</span>
+                  <textarea
+                    required
+                    rows={4}
+                    value={customIdeaText}
+                    onChange={(e) => setCustomIdeaText(e.target.value)}
+                    placeholder={cfg(
+                      'custom_idea_placeholder',
+                      "Ej: Quiero un polo oversized negro con la ilustración de una calavera en la espalda y mi apodo 'Vektor' en la manga derecha...",
+                    )}
+                  />
                 </label>
-                <textarea
-                  required
-                  rows={4}
-                  value={customIdeaText}
-                  onChange={(e) => setCustomIdeaText(e.target.value)}
-                  placeholder={cfg('custom_idea_placeholder', "Ej: Quiero un polo oversized negro con la ilustración de una calavera en la espalda y mi apodo 'Vektor' en la manga derecha...")}
-                  className="w-full bg-[#161814] border border-white/10 rounded-2xl p-3 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-[var(--accent)]"
-                ></textarea>
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-3.5 rounded-xl bg-green-500 hover:bg-green-600 text-black font-extrabold text-xs flex items-center justify-center gap-2 shadow-lg shadow-green-500/20"
-              >
-                <MessageCircle className="w-4 h-4 fill-black" />
-                <span>{cfg('custom_idea_submit', 'COTIZAR IDEA POR WHATSAPP')}</span>
-              </button>
+              <div className="modalfoot" style={{ justifyContent: 'flex-end' }}>
+                <button type="submit" className="btn">
+                  <MessageCircle />
+                  {cfg('custom_idea_submit', 'Cotizar por WhatsApp')}
+                </button>
+              </div>
             </form>
-
           </div>
         </div>
       )}

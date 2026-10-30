@@ -1,4 +1,12 @@
 @import "tailwindcss";
+@import "./styles/lumin.css";
+
+/* Tipografía de la maqueta: Arial en toda la app (también para utilidades
+   Tailwind como font-sans / font-display y el preflight) */
+@theme {
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-display: Arial, Helvetica, sans-serif;
+}
 
 /* Paleta de color de marca (aplicada/ajustada en runtime por src/lib/palette.ts) */
 :root {
@@ -7,18 +15,22 @@
   --accent-hover2: #b8d682;
   --accent-light: #8AB73B;
   --accent-ink: #4D7C0F;
+  --on: #1e2911;
 }
 
 @layer base {
+  /* Tipografía de la maqueta: Arial / Helvetica en toda la interfaz */
   body {
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #0A0A0A;
-    color: #FFFFFF;
+    font-family: var(--font, Arial, Helvetica, sans-serif);
   }
 
   h1, h2, h3, h4, .font-display {
-    font-family: 'Space Grotesk', 'Syne', sans-serif;
-    letter-spacing: -0.025em;
+    font-family: var(--font, Arial, Helvetica, sans-serif);
+    letter-spacing: -0.045em;
+  }
+
+  .font-sans {
+    font-family: var(--font, Arial, Helvetica, sans-serif);
   }
 }
 
@@ -29,11 +41,11 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #0A0A0A;
+  background: var(--bg, #10120e);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #222520;
+  background: var(--line, #33392c);
   border-radius: 9999px;
 }
 
@@ -41,35 +53,29 @@
   background: var(--accent);
 }
 
-/* Light mode theme overrides */
-html.light body {
-  background-color: #F4F5F0;
-  color: #0F172A;
-}
-
 html.light ::-webkit-scrollbar-track {
-  background: #E2E8F0;
+  background: var(--raised, #eaeedf);
 }
 
 html.light ::-webkit-scrollbar-thumb {
-  background: #94A3B8;
+  background: var(--line, #d6ddcb);
 }
 
 html.light .glass-dock {
-  background: #FFFFFF;
-  border: 2px solid #64748B;
+  background: var(--surface, #fff);
+  border: 1px solid var(--line, #d6ddcb);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
 }
 
 html.light .glass-card {
-  background: #FFFFFF !important;
-  border: 1px solid #CBD5E1 !important;
-  color: #0F172A !important;
+  background: var(--surface, #fff) !important;
+  border: 1px solid var(--line, #d6ddcb) !important;
+  color: var(--text, #22291b) !important;
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
 }
 
 html.light .glass-card:hover {
-  border-color: #65A30D !important;
+  border-color: var(--accent, #d2e8a3) !important;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
 }
 
@@ -80,7 +86,7 @@ html.light h3,
 html.light h4,
 html.light h5,
 html.light h6 {
-  color: #0F172A;
+  color: var(--text, #22291b);
 }
 
 html.light .text-\[var\(--accent\)\] {
@@ -93,7 +99,7 @@ html.light button.bg-black,
 html.light button.bg-green-500,
 html.light button.bg-green-600,
 html.light button.bg-rose-500,
-html.light button.bg-[#742284],
+html.light button.bg-\[\#742284\],
 html.light .bg-black,
 html.light .bg-slate-900 {
   color: #FFFFFF !important;
@@ -134,4 +140,3 @@ html.light .bg-slate-900 .text-white {
 .animate-fade-in {
   animation: fadeIn 0.25s ease-out both;
 }
-

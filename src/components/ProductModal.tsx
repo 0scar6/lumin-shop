@@ -1,11 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { X, Check, ShieldCheck, Clock, Tag, Plus, Minus, ShoppingBag, Shirt, Coffee } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { X, Clock, ShieldCheck, Minus, Plus, ShoppingBag } from 'lucide-react';
 import { Product, CartItem, ThemeMode } from '../types';
 import { cfg } from '../lib/config';
 
 const isVideoUrl = (url: string) => /\.(mp4|webm|ogg)$/i.test(url);
 
-const MediaDisplay: React.FC<{ src: string; alt: string; className: string }> = ({ src, alt, className }) => {
+const MediaDisplay: React.FC<{ src: string; alt: string; className?: string }> = ({
+  src,
+  alt,
+  className,
+}) => {
   const [videoFailed, setVideoFailed] = useState(false);
   if (isVideoUrl(src) && !videoFailed) {
     return (
@@ -33,13 +37,15 @@ interface ProductModalProps {
   themeMode?: ThemeMode;
 }
 
+/**
+ * Detalle y personalización del producto con la estructura de la maqueta:
+ * `.modal` > `.modal-head` + `.productdetail` + `.modalfoot`.
+ */
 export const ProductModal: React.FC<ProductModalProps> = ({
   product,
   onClose,
   onAddToCart,
-  themeMode = 'dark',
 }) => {
-  const isLight = themeMode === 'light';
   const isApparel = product?.category === 'streetwear';
 
   // Push history state when modal opens so back button closes it
@@ -53,21 +59,26 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 
   // Apparel State
   const firstSize = product?.apparelOptions?.sizes[0];
-  const defaultSize = firstSize ? (typeof firstSize === 'string' ? firstSize : firstSize.name) : 'M';
+  const defaultSize = firstSize
+    ? typeof firstSize === 'string'
+      ? firstSize
+      : firstSize.name
+    : 'M';
   const [selectedSize, setSelectedSize] = useState<string>(defaultSize);
   const [selectedFit, setSelectedFit] = useState<string>(
-    product?.apparelOptions?.fits[0] || 'Oversized Streetwear'
+    product?.apparelOptions?.fits[0] || 'Oversized Streetwear',
   );
   const [selectedColor, setSelectedColor] = useState<{ name: string; hex: string }>(
-    product?.apparelOptions?.colors[0] || { name: 'Negro Carbón', hex: '#0A0A0A' }
+    product?.apparelOptions?.colors[0] || { name: 'Negro Carbón', hex: '#0A0A0A' },
   );
 
   // Cup State
-  const [selectedCupTypeObj, setSelectedCupTypeObj] = useState<{ name: string; extraPrice: number }>(
-    product?.cupOptions?.types[0] || { name: 'Vaso Frosted Glass 16oz', extraPrice: 0 }
-  );
+  const [selectedCupTypeObj, setSelectedCupTypeObj] = useState<{
+    name: string;
+    extraPrice: number;
+  }>(product?.cupOptions?.types[0] || { name: 'Vaso Frosted Glass 16oz', extraPrice: 0 });
   const [selectedFinish, setSelectedFinish] = useState<string>(
-    product?.cupOptions?.finishes[0] || 'Acabado Esmerilado Frosted'
+    product?.cupOptions?.finishes[0] || 'Acabado Esmerilado Frosted',
   );
 
   // General Customization State
@@ -80,13 +91,21 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     setActiveImage(product.image);
     if (product.apparelOptions) {
       const sizeAt1 = product.apparelOptions.sizes[1];
-      setSelectedSize(sizeAt1 ? (typeof sizeAt1 === 'string' ? sizeAt1 : sizeAt1.name) : 'M');
+      setSelectedSize(
+        sizeAt1 ? (typeof sizeAt1 === 'string' ? sizeAt1 : sizeAt1.name) : 'M',
+      );
       setSelectedFit(product.apparelOptions.fits[0] || 'Oversized Streetwear');
-      setSelectedColor(product.apparelOptions.colors[0] || { name: 'Negro Carbón', hex: '#0A0A0A' });
+      setSelectedColor(
+        product.apparelOptions.colors[0] || { name: 'Negro Carbón', hex: '#0A0A0A' },
+      );
     }
     if (product.cupOptions) {
-      setSelectedCupTypeObj(product.cupOptions.types[0] || { name: 'Vaso Frosted Glass 16oz', extraPrice: 0 });
-      setSelectedFinish(product.cupOptions.finishes[0] || 'Acabado Esmerilado Frosted');
+      setSelectedCupTypeObj(
+        product.cupOptions.types[0] || { name: 'Vaso Frosted Glass 16oz', extraPrice: 0 },
+      );
+      setSelectedFinish(
+        product.cupOptions.finishes[0] || 'Acabado Esmerilado Frosted',
+      );
     }
     setCustomText('');
     setQuantity(1);
@@ -95,19 +114,22 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   if (!product) return null;
 
   // Build gallery: always include main image first, then any extra gallery images
-  const allGalleryImages = React.useMemo(() => {
-    const main = product.image;
-    const extras = (product.galleryImages || []).filter(img => img && img !== main);
-    return [main, ...extras].filter(Boolean);
-  }, [product.image, product.galleryImages]);
+  const mainImage = product.image;
+  const allGalleryImages = [
+    mainImage,
+    ...(product.galleryImages || []).filter((img) => img && img !== mainImage),
+  ].filter(Boolean);
 
   // Calculate Total Unit Price
   const basePrice = product.price;
-  const selectedSizeObj = product.apparelOptions?.sizes.find(s => {
+  const selectedSizeObj = product.apparelOptions?.sizes.find((s) => {
     const name = typeof s === 'string' ? s : s.name;
     return name === selectedSize;
   });
-  const apparelSizeExtra = isApparel && selectedSizeObj && typeof selectedSizeObj !== 'string' ? selectedSizeObj.extraPrice : 0;
+  const apparelSizeExtra =
+    isApparel && selectedSizeObj && typeof selectedSizeObj !== 'string'
+      ? selectedSizeObj.extraPrice
+      : 0;
   const cupTypeExtra = !isApparel && selectedCupTypeObj ? selectedCupTypeObj.extraPrice : 0;
   const unitPrice = basePrice + apparelSizeExtra + cupTypeExtra;
   const totalPrice = unitPrice * quantity;
@@ -132,374 +154,292 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   return (
     <div
       onClick={onClose}
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/85 backdrop-blur-md animate-fadeIn"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4 bg-black/85 backdrop-blur-md"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className={`relative w-full max-w-3xl rounded-t-2xl sm:rounded-3xl border overflow-hidden shadow-2xl flex flex-col max-h-[95vh] sm:max-h-[88vh] ${
-          isLight ? 'bg-white border-slate-300 text-slate-900' : 'bg-[#11130F] border-white/10 text-white'
-        }`}
+        className="modal animate-fade-in-up"
+        role="dialog"
+        aria-modal="true"
+        aria-label={product.name}
       >
-        
-        {/* Close Button */}
-        <button
-          onClick={onClose}
-          className={`absolute top-3 right-3 z-30 p-2.5 rounded-full border transition-colors shadow-lg ${
-            isLight
-              ? 'bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-300'
-              : 'bg-black/70 hover:bg-black text-white border-white/10'
-          }`}
-          aria-label={cfg('pm_close_label', 'Cerrar modal')}
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        {/* Mobile drag indicator */}
-        <div className="flex justify-center pt-2 sm:hidden">
-          <div className={`w-10 h-1 rounded-full ${isLight ? 'bg-slate-300' : 'bg-white/20'}`} />
+        <div className="modal-head">
+          <h2>{cfg('pm_head_title', 'Hazlo tuyo')}</h2>
+          <button
+            type="button"
+            className="close"
+            onClick={onClose}
+            aria-label={cfg('pm_close_label', 'Cerrar')}
+          >
+            <X />
+          </button>
         </div>
 
-        {/* Scrollable Content Container */}
-        <div className="flex-1 overflow-y-auto grid grid-cols-1 md:grid-cols-12 gap-0">
-          
-          {/* Left Column: Image & Gallery Preview */}
-          <div className={`md:col-span-5 p-3 sm:p-4 md:p-6 flex flex-col justify-between border-b md:border-b-0 md:border-r ${
-            isLight ? 'bg-slate-50 border-slate-200' : 'bg-[#0A0A0A] border-white/10'
-          }`}>
-            <div className="space-y-2 sm:space-y-3">
-              <div className={`relative aspect-[4/3] md:aspect-square w-full rounded-xl sm:rounded-2xl overflow-hidden border ${
-                isLight ? 'bg-slate-200 border-slate-300' : 'bg-[#161814] border-white/10'
-              }`}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!product.agotado) handleAdd();
+          }}
+        >
+          <div className="modal-body productdetail">
+            {/* Media + galería */}
+            <div className="pd-media">
+              <div className="pd-frame">
                 <MediaDisplay
                   src={activeImage}
                   alt={product.name}
-                  className={`w-full h-full object-cover ${product.agotado ? 'opacity-30 grayscale-[60%] brightness-75' : ''}`}
+                  className={product.agotado ? 'opacity-40 grayscale' : undefined}
                 />
                 {product.agotado && (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/40" />
-                    <div className="relative z-20 flex flex-col items-center gap-1.5">
-                      <span className="text-orange-400 font-black text-xl sm:text-3xl uppercase tracking-[0.25em] drop-shadow-[0_0_20px_rgba(249,115,22,0.5)]">
-                        Agotado
-                      </span>
-                    </div>
-                  </div>
+                  <span
+                    className="tag sold"
+                    style={{ position: 'absolute', top: 12, left: 12 }}
+                  >
+                    {cfg('sold_out_label', 'Agotado')}
+                  </span>
                 )}
-                <div className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-[9px] sm:text-[10px] font-bold text-[var(--accent)]">
-                  {product.technique}
-                </div>
+                {product.technique && (
+                  <span
+                    className="tag"
+                    style={{ position: 'absolute', top: 12, right: 12, left: 'auto' }}
+                  >
+                    {product.technique}
+                  </span>
+                )}
               </div>
 
-              {/* Gallery Thumbnails */}
               {allGalleryImages.length > 1 && (
-                <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1">
+                <div className="pd-thumbs">
                   {allGalleryImages.map((imgUrl, idx) => (
                     <button
                       key={`${imgUrl}-${idx}`}
+                      type="button"
                       onClick={() => setActiveImage(imgUrl)}
-                      className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-lg sm:rounded-xl overflow-hidden border-2 flex-shrink-0 transition-all ${
-                        activeImage === imgUrl
-                          ? 'border-[var(--accent)] scale-105 shadow-sm'
-                          : isLight ? 'border-slate-300 opacity-70 hover:opacity-100' : 'border-white/10 opacity-60 hover:opacity-100'
-                      }`}
+                      className={activeImage === imgUrl ? 'active' : ''}
+                      aria-label={`${cfg('pm_view_prefix', 'Vista')} ${idx + 1}`}
                     >
-                      <MediaDisplay src={imgUrl} alt={`${cfg('pm_view_prefix', 'Vista')} ${idx + 1}`} className="w-full h-full object-cover" />
+                      <MediaDisplay src={imgUrl} alt={`Vista ${idx + 1}`} />
                     </button>
                   ))}
                 </div>
               )}
+
+              <p className="subtle" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <Clock style={{ width: 15, height: 15 }} />
+                {cfg('pm_production_time', 'Producción en ')}
+                <strong>{product.productionTime}</strong>
+              </p>
+              <p className="subtle" style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+                <ShieldCheck style={{ width: 15, height: 15 }} />
+                {cfg('pm_quality_guarantee', 'Calidad garantizada LUMIN 100%')}
+              </p>
             </div>
 
-            {/* Production guarantee notes */}
-            <div className={`mt-3 pt-2 border-t space-y-1 ${isLight ? 'border-slate-200' : 'border-white/10'}`}>
-              <div className={`flex items-center gap-1.5 text-[10px] sm:text-xs ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
-                <Clock className={`w-3 h-3 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[var(--accent)]'}`} />
-                <span>{cfg('pm_production_time', 'Tiempo de confección: ')}<strong>24 a 48 hrs</strong></span>
-              </div>
-              <div className={`flex items-center gap-1.5 text-[10px] sm:text-xs ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
-                <ShieldCheck className={`w-3 h-3 flex-shrink-0 ${isLight ? 'text-lime-700' : 'text-[var(--accent)]'}`} />
-                <span>{cfg('pm_quality_guarantee', 'Calidad Garantizada LUMIN 100%')}</span>
-              </div>
-            </div>
-          </div>
+            {/* Detalle y opciones */}
+            <div>
+              <p className="eyebrow">
+                {isApparel
+                  ? cfg('pm_category_polo', 'Polo sublimado')
+                  : cfg('pm_category_cup', 'Vaso / taza sublimada')}
+              </p>
+              <h2>{product.name}</h2>
+              <p>{product.description}</p>
 
-          {/* Right Column: Customization Form */}
-          <div className="md:col-span-7 p-3 sm:p-4 md:p-6 flex flex-col justify-between space-y-3 sm:space-y-4">
-            
-            <div className="space-y-3">
-              <div>
-                <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full border text-[10px] sm:text-[11px] font-mono mb-1 font-bold ${
-                  isLight
-                    ? 'bg-lime-100 border-lime-300 text-lime-900'
-                    : 'bg-[var(--accent)]/10 border-[var(--accent)]/20 text-[var(--accent)]'
-                }`}>
-                  {isApparel ? <Shirt className="w-3 h-3" /> : <Coffee className="w-3 h-3" />}
-                  <span className="uppercase">{isApparel ? cfg('pm_category_polo', 'Polo Sublimado Bajo Pedido') : cfg('pm_category_cup', 'Vaso / Taza Sublimada')}</span>
+              {product.agotado && (
+                <div className="notice">
+                  {cfg(
+                    'pm_sold_notice',
+                    'Este diseño está agotado. Consulta cuándo estará disponible.',
+                  )}
                 </div>
-                <h2 className={`font-display text-lg sm:text-xl md:text-2xl font-extrabold leading-tight ${
-                  isLight ? 'text-slate-900' : 'text-white'
-                }`}>
-                  {product.name}
-                </h2>
-                <p className={`text-[11px] sm:text-xs mt-1 ${isLight ? 'text-slate-700 font-medium' : 'text-gray-400'}`}>
-                  {product.description}
-                </p>
-              </div>
+              )}
 
-              {/* OPTION 1: APPAREL CUSTOMIZER (Size, Fit, Color) */}
+              {/* Polo: talla, corte y color */}
               {isApparel && product.apparelOptions && (
-                <div className="space-y-3 pt-1">
-                  
-                  {/* Selector de Talla */}
-                  <div>
-                    <label className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1.5 ${
-                      isLight ? 'text-slate-800' : 'text-gray-300'
-                    }`}>
-                      {cfg('pm_size_label', '1. Selecciona tu Talla:')}
-                    </label>
-                    <div className="flex flex-wrap gap-1.5">
+                <>
+                  <label className="field">
+                    <span>{cfg('pm_size_label', 'Talla')}</span>
+                    <select
+                      value={selectedSize}
+                      onChange={(e) => setSelectedSize(e.target.value)}
+                    >
                       {product.apparelOptions.sizes.map((size) => {
                         const sizeName = typeof size === 'string' ? size : size.name;
                         const sizeExtra = typeof size === 'string' ? 0 : size.extraPrice;
                         return (
-                          <button
-                            key={sizeName}
-                            onClick={() => setSelectedSize(sizeName)}
-                            className={`px-3.5 py-1.5 rounded-xl text-xs font-extrabold transition-all border ${
-                              selectedSize === sizeName
-                                ? 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)] shadow-md'
-                                : isLight
-                                ? 'bg-slate-100 text-slate-800 border-slate-300 hover:border-slate-400'
-                                : 'bg-[#161814] text-gray-300 border-white/10 hover:border-white/30'
-                            }`}
-                          >
-                            {sizeName}{sizeExtra > 0 ? ` +S/ ${sizeExtra}` : ''}
-                          </button>
+                          <option key={sizeName} value={sizeName}>
+                            {sizeName}
+                            {sizeExtra > 0 ? ` — + S/ ${sizeExtra}` : ''}
+                          </option>
                         );
                       })}
-                    </div>
-                  </div>
+                    </select>
+                  </label>
 
-                  {/* Selector de Corte / Fit */}
-                  <div>
-                    <label className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1.5 ${
-                      isLight ? 'text-slate-800' : 'text-gray-300'
-                    }`}>
-                      {cfg('pm_fit_label', '2. Tipo de Corte / Fit:')}
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                  <div className="field">
+                    <span>{cfg('pm_fit_label', 'Corte')}</span>
+                    <div className="chips" style={{ flexWrap: 'wrap' }}>
                       {product.apparelOptions.fits.map((fit) => (
                         <button
                           key={fit}
+                          type="button"
+                          className={`chip ${selectedFit === fit ? 'active' : ''}`}
                           onClick={() => setSelectedFit(fit)}
-                          className={`p-2 rounded-xl text-xs font-bold text-left border flex items-center justify-between transition-all ${
-                            selectedFit === fit
-                              ? isLight
-                                ? 'bg-slate-900 text-[var(--accent)] border-slate-900'
-                                : 'bg-[#1D2218] text-[var(--accent)] border-[var(--accent)]'
-                              : isLight
-                              ? 'bg-slate-100 text-slate-800 border-slate-300 hover:border-slate-400'
-                              : 'bg-[#161814] text-gray-300 border-white/10 hover:border-white/20'
-                          }`}
+                          aria-pressed={selectedFit === fit}
                         >
-                          <span>{fit}</span>
-                          {selectedFit === fit && <Check className="w-3.5 h-3.5 text-[var(--accent)]" />}
+                          {fit}
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Color de Prenda */}
-                  <div>
-                    <label className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1.5 ${
-                      isLight ? 'text-slate-800' : 'text-gray-300'
-                    }`}>
-                      {cfg('pm_color_label', '3. Color de Tela: ')}<span className={isLight ? 'text-lime-800 font-extrabold' : 'text-[var(--accent)] font-mono'}>{selectedColor.name}</span>
-                    </label>
-                    <div className="flex items-center gap-2.5">
+                  <div className="field">
+                    <span>
+                      {cfg('pm_color_label', 'Color')} · {selectedColor.name}
+                    </span>
+                    <div className="chips" style={{ flexWrap: 'wrap' }}>
                       {product.apparelOptions.colors.map((c) => (
                         <button
                           key={c.name}
+                          type="button"
+                          className={`chip ${selectedColor.name === c.name ? 'active' : ''}`}
                           onClick={() => setSelectedColor(c)}
-                          style={{ backgroundColor: c.hex }}
-                          className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border-2 transition-all relative ${
-                            selectedColor.name === c.name
-                              ? 'border-[var(--accent)] scale-110 shadow-lg'
-                              : isLight ? 'border-slate-400 hover:scale-105' : 'border-white/20 hover:scale-105'
-                          }`}
-                          title={c.name}
+                          aria-pressed={selectedColor.name === c.name}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
                         >
-                          {selectedColor.name === c.name && (
-                            <span className="absolute inset-0 flex items-center justify-center text-white text-[10px]">
-                              ✓
-                            </span>
-                          )}
+                          <span
+                            style={{
+                              width: 14,
+                              height: 14,
+                              borderRadius: '50%',
+                              background: c.hex,
+                              border: '1px solid var(--line)',
+                            }}
+                          />
+                          {c.name}
                         </button>
                       ))}
                     </div>
                   </div>
-
-                </div>
+                </>
               )}
 
-              {/* OPTION 2: CUP / SUBLIMATED CUSTOMIZER */}
+              {/* Vaso / taza: tipo y acabado */}
               {!isApparel && product.cupOptions && (
-                <div className="space-y-3 pt-1">
-                  
-                  {/* Selector de Tipo de Vaso */}
-                  <div>
-                    <label className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1.5 ${
-                      isLight ? 'text-slate-800' : 'text-gray-300'
-                    }`}>
-                      {cfg('pm_cup_type_label', '1. Tipo de Vaso / Taza:')}
-                    </label>
-                    <div className="space-y-1.5">
+                <>
+                  <div className="field">
+                    <span>{cfg('pm_cup_type_label', 'Tipo de vaso / taza')}</span>
+                    <div className="chips" style={{ flexWrap: 'wrap' }}>
                       {product.cupOptions.types.map((typeObj) => (
                         <button
                           key={typeObj.name}
-                          onClick={() => setSelectedCupTypeObj(typeObj)}
-                          className={`w-full p-2.5 rounded-xl text-xs font-bold text-left border flex items-center justify-between transition-all ${
-                            selectedCupTypeObj.name === typeObj.name
-                              ? isLight
-                                ? 'bg-slate-900 text-[var(--accent)] border-slate-900'
-                                : 'bg-[#1D2218] text-[var(--accent)] border-[var(--accent)]'
-                              : isLight
-                              ? 'bg-slate-100 text-slate-800 border-slate-300 hover:border-slate-400'
-                              : 'bg-[#161814] text-gray-300 border-white/10 hover:border-white/20'
+                          type="button"
+                          className={`chip ${
+                            selectedCupTypeObj.name === typeObj.name ? 'active' : ''
                           }`}
+                          onClick={() => setSelectedCupTypeObj(typeObj)}
+                          aria-pressed={selectedCupTypeObj.name === typeObj.name}
                         >
-                          <span>{typeObj.name}</span>
-                          <span className={`font-bold ${isLight && selectedCupTypeObj.name !== typeObj.name ? 'text-lime-800' : 'text-[var(--accent)]'}`}>
-                            {typeObj.extraPrice > 0 ? `+S/ ${typeObj.extraPrice}` : typeObj.extraPrice < 0 ? `-S/ ${Math.abs(typeObj.extraPrice)}` : cfg('pm_included', 'Incluido')}
-                          </span>
+                          {typeObj.name}
+                          {typeObj.extraPrice > 0
+                            ? ` · + S/ ${typeObj.extraPrice}`
+                            : typeObj.extraPrice < 0
+                            ? ` · - S/ ${Math.abs(typeObj.extraPrice)}`
+                            : ''}
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Acabado */}
-                  <div>
-                    <label className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1.5 ${
-                      isLight ? 'text-slate-800' : 'text-gray-300'
-                    }`}>
-                      {cfg('pm_finish_label', '2. Acabado de la Superficie:')}
-                    </label>
-                    <div className="flex flex-wrap gap-1.5">
+                  <div className="field">
+                    <span>{cfg('pm_finish_label', 'Acabado')}</span>
+                    <div className="chips" style={{ flexWrap: 'wrap' }}>
                       {product.cupOptions.finishes.map((finish) => (
                         <button
                           key={finish}
+                          type="button"
+                          className={`chip ${selectedFinish === finish ? 'active' : ''}`}
                           onClick={() => setSelectedFinish(finish)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${
-                            selectedFinish === finish
-                              ? 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)]'
-                              : isLight
-                              ? 'bg-slate-100 text-slate-800 border-slate-300 hover:border-slate-400'
-                              : 'bg-[#161814] text-gray-300 border-white/10 hover:border-white/20'
-                          }`}
+                          aria-pressed={selectedFinish === finish}
                         >
                           {finish}
                         </button>
                       ))}
                     </div>
                   </div>
-
-                </div>
+                </>
               )}
 
-              {/* Custom Name or Text Personalization */}
-              <div className="pt-1">
-                <label className={`block text-[11px] font-extrabold uppercase tracking-wider mb-1 flex items-center justify-between ${
-                  isLight ? 'text-slate-800' : 'text-gray-300'
-                }`}>
-                  <span>{cfg('pm_custom_text_label', 'Añadir Texto o Apodo Personalizado:')}</span>
-                  <div className="flex items-center gap-2">
-                    <span className={`text-[10px] font-bold ${isLight ? 'text-slate-600' : 'text-gray-400'}`}>{cfg('pm_free', 'Gratis')}</span>
-                    <span className={`text-[10px] font-mono font-bold ${
-                      customText.length >= 30 ? 'text-red-500' : isLight ? 'text-lime-800' : 'text-[var(--accent)]'
-                    }`}>
-                      {customText.length}/30 {cfg('pm_characters', 'caracteres')}
-                    </span>
-                  </div>
-                </label>
+              <label className="field">
+                <span>
+                  {cfg('pm_custom_text_label', 'Texto o nombre personalizado · opcional')} ·{' '}
+                  {customText.length}/30
+                </span>
                 <input
                   type="text"
                   maxLength={30}
                   value={customText}
                   onChange={(e) => setCustomText(e.target.value)}
-                  placeholder={isApparel ? cfg('pm_placeholder_apparel', 'Ej. Nombre en manga / "LUMIN 04"') : cfg('pm_placeholder_cup', 'Ej. "Carlos" o Frase corta')}
-                  className={`w-full border rounded-xl px-3 py-2 text-xs focus:outline-none transition-colors ${
-                    isLight
-                      ? 'bg-slate-100 border-slate-300 text-slate-900 placeholder-slate-500 focus:border-slate-800'
-                      : 'bg-[#161814] border-white/10 text-white placeholder-gray-500 focus:border-[var(--accent)]'
-                  }`}
+                  placeholder={
+                    isApparel
+                      ? cfg('pm_placeholder_apparel', 'Ej. Nombre en manga / "LUMIN 04"')
+                      : cfg('pm_placeholder_cup', 'Ej. "Carlos" o frase corta')
+                  }
+                  autoComplete="off"
                 />
-              </div>
+              </label>
 
+              <p className="subtle">
+                {cfg(
+                  'pm_coordination_note',
+                  'Coordinaremos contigo el diseño final y las opciones disponibles antes de producirlo.',
+                )}
+              </p>
             </div>
-
           </div>
 
-        </div>
+          <div className="modalfoot">
+            <div>
+              <p className="subtle">{cfg('pm_total_label', 'Total estimado')}</p>
+              <p className="price">S/ {totalPrice.toFixed(2)}</p>
+            </div>
 
-        {/* Sticky Bottom Actions & Total Price */}
-        <div className={`p-3 sm:px-6 sm:py-4 border-t z-10 flex flex-col sm:flex-row items-center justify-between gap-2 sm:gap-3 ${
-          isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#0E100C] border-white/10'
-        }`}>
-          
-          {/* Quantity selector & calculated price */}
-          <div className="flex items-center justify-between w-full sm:w-auto gap-3 sm:gap-4">
-            <div className={`flex items-center gap-1 border rounded-xl p-0.5 sm:p-1 ${
-              isLight ? 'bg-white border-slate-300' : 'bg-[#161814] border-white/10'
-            }`}>
+            <div className="qty">
               <button
+                type="button"
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className={`p-1.5 rounded-lg transition-colors ${
-                  isLight ? 'hover:bg-slate-200 text-slate-800' : 'hover:bg-white/10 text-gray-300'
-                }`}
                 aria-label={cfg('pm_decrease', 'Disminuir cantidad')}
               >
-                <Minus className="w-3.5 h-3.5" />
+                <Minus />
               </button>
-              <span className={`w-6 sm:w-7 text-center text-xs sm:text-sm font-extrabold ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                {quantity}
-              </span>
+              <input
+                type="number"
+                min={1}
+                max={99}
+                step={1}
+                value={quantity}
+                aria-label={cfg('pm_quantity_label', 'Cantidad')}
+                onChange={(e) =>
+                  setQuantity(Math.max(1, Math.min(99, Number(e.target.value) || 1)))
+                }
+              />
               <button
-                onClick={() => setQuantity(quantity + 1)}
-                className={`p-1.5 rounded-lg transition-colors ${
-                  isLight ? 'hover:bg-slate-200 text-slate-800' : 'hover:bg-white/10 text-gray-300'
-                }`}
+                type="button"
+                onClick={() => setQuantity(Math.min(99, quantity + 1))}
                 aria-label={cfg('pm_increase', 'Aumentar cantidad')}
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus />
               </button>
             </div>
 
-            <div className="text-right">
-              <span className={`text-[8px] sm:text-[10px] font-mono block ${isLight ? 'text-slate-600 font-bold' : 'text-gray-400'}`}>{cfg('pm_total_label', 'TOTAL ESTIMADO')}</span>
-              <span className={`text-base sm:text-lg md:text-xl font-black ${isLight ? 'text-slate-900' : 'text-[var(--accent)]'}`}>
-                S/ {totalPrice.toFixed(2)}
-              </span>
-            </div>
-          </div>
-
-          {/* Submit Button */}
-          {product.agotado ? (
-            <div className="w-full sm:w-auto sm:px-8 py-2.5 sm:py-3.5 rounded-xl bg-orange-500/10 border border-orange-500/30 text-orange-400 font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 cursor-not-allowed">
-              <Tag className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>Este producto está agotado</span>
-            </div>
-          ) : (
-            <button
-              onClick={handleAdd}
-              className="w-full sm:w-auto sm:px-8 py-2.5 sm:py-3.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent-hover2)] text-[#0A0A0A] font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-xl shadow-[var(--accent)]/15 active:scale-98"
-            >
-              <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>{cfg('pm_add_to_cart', 'AÑADIR A MI PEDIDO')}</span>
+            <button type="submit" className="btn" disabled={product.agotado}>
+              <ShoppingBag />
+              {product.agotado
+                ? cfg('sold_out_label', 'Agotado')
+                : cfg('pm_add_to_cart', 'Añadir al pedido')}
             </button>
-          )}
-
-        </div>
-
+          </div>
+        </form>
       </div>
     </div>
   );

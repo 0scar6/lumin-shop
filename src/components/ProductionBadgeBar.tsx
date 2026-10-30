@@ -1,107 +1,31 @@
 import React from 'react';
-import { Tag, Clock, ShieldCheck, Truck, RefreshCw, CheckCircle } from 'lucide-react';
+import { Clock, ShieldCheck, Truck } from 'lucide-react';
 import { cfg } from '../lib/config';
 
 interface ProductionBadgeBarProps {
   themeMode?: 'dark' | 'light' | 'amoled';
 }
 
-export const ProductionBadgeBar: React.FC<ProductionBadgeBarProps> = ({ themeMode = 'dark' }) => {
-  const isLight = themeMode === 'light';
-
-  const steps = [
-    {
-      step: '01',
-      title: cfg('badge_step1_title', 'Eliges y Configuras'),
-      desc: cfg('badge_step1_desc', 'Seleccionas tu prenda o vaso, talla, corte, color o texto personal.'),
-      icon: Tag,
-    },
-    {
-      step: '02',
-      title: cfg('badge_step2_title', 'Producción 24-48h'),
-      desc: cfg('badge_step2_desc', 'Estampamos con serigrafía/fijación térmica o sublimamos a 200°C con máxima fijación.'),
-      icon: Clock,
-    },
-    {
-      step: '03',
-      title: cfg('badge_step3_title', 'Despacho & Entrega'),
-      desc: cfg('badge_step3_desc', 'Empacamos con cuidado y enviamos a la puerta de tu domicilio.'),
-      icon: Truck,
-    },
+/**
+ * Barra de confianza `.trust` (3 ítems) que va justo debajo del hero,
+ * igual que en LUMIN-propuesta.html.
+ */
+export const ProductionBadgeBar: React.FC<ProductionBadgeBarProps> = React.memo(() => {
+  const items = [
+    { icon: Clock, text: cfg('hero_badge_1', 'Producción en 24–48 h') },
+    { icon: ShieldCheck, text: cfg('hero_badge_2', 'Calidad y color') },
+    { icon: Truck, text: cfg('shipping_badge', 'Envíos a todo el Perú') },
   ];
 
   return (
-    <section className="my-10 space-y-6">
-      
-      {/* Top Banner Statement */}
-      <div className="text-center max-w-2xl mx-auto space-y-2">
-        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-widest ${
-          isLight ? 'bg-lime-100 border border-lime-300 text-lime-800' : 'bg-[var(--accent)]/10 border border-[var(--accent)]/20 text-[var(--accent)]'
-        }`}>
-          <RefreshCw className="w-3.5 h-3.5 animate-spin text-lime-600 dark:text-[var(--accent)]" />
-          <span>{cfg('badge_model_title', 'MODELO SUSTENTABLE BAJO DEMANDA')}</span>
+    <div className="trust">
+      {items.map(({ icon: Icon, text }, idx) => (
+        <div className="trust-item" key={idx}>
+          <Icon />
+          {text}
         </div>
-        <h3 className={`font-display text-2xl sm:text-3xl font-extrabold uppercase ${isLight ? 'text-slate-900' : 'text-white'}`}>
-          {cfg('badge_model_subtitle', '¿CÓMO FUNCIONA LUMIN SHOP?')}
-        </h3>
-        <p className={`text-xs sm:text-sm ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
-          {cfg('badge_model_desc', 'Cero sobre-stock, mayor frescura en estampados y acabados totalmente personalizados para ti.')}
-        </p>
-      </div>
-
-      {/* 3 Step Process Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {steps.map((item) => {
-          const Icon = item.icon;
-          return (
-            <div
-              key={item.step}
-              className={`p-6 rounded-2xl border relative overflow-hidden transition-all ${
-                isLight
-                  ? 'bg-white border-slate-300 text-slate-900 shadow-sm hover:border-lime-600'
-                  : 'bg-[#161814] border-white/10 text-white hover:border-[var(--accent)]/40'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-4">
-                <span className={`font-mono text-2xl font-black ${isLight ? 'text-lime-700' : 'text-[var(--accent)]/80'}`}>
-                  {item.step}
-                </span>
-                <div className={`p-3 rounded-xl border ${
-                  isLight ? 'bg-slate-100 border-slate-300 text-lime-800' : 'bg-[#0A0A0A] border-white/10 text-[var(--accent)]'
-                }`}>
-                  <Icon className="w-5 h-5" />
-                </div>
-              </div>
-
-              <h4 className={`font-bold text-base mb-1 ${isLight ? 'text-slate-900' : 'text-white'}`}>
-                {item.title}
-              </h4>
-              <p className={`text-xs leading-relaxed ${isLight ? 'text-slate-700 font-medium' : 'text-gray-300'}`}>
-                {item.desc}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Trust guarantees bar */}
-      <div className={`p-4 rounded-2xl border flex flex-wrap items-center justify-around gap-4 text-xs ${
-        isLight ? 'bg-white border-slate-300 text-slate-800 shadow-sm' : 'bg-[#161814] border-white/5 text-gray-300'
-      }`}>
-        <div className="flex items-center gap-2">
-          <ShieldCheck className="w-4 h-4 text-lime-600 dark:text-[var(--accent)]" />
-          <span>Fijación Térmica HD de Alta Durabilidad</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <Clock className="w-4 h-4 text-lime-600 dark:text-[var(--accent)]" />
-          <span>Tiempo de fabricación: 24-48 hrs</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-lime-600 dark:text-[var(--accent)]" />
-          <span>Atención Directa por WhatsApp</span>
-        </div>
-      </div>
-
-    </section>
+      ))}
+    </div>
   );
-};
+});
+ProductionBadgeBar.displayName = 'ProductionBadgeBar';

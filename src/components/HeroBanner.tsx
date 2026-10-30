@@ -1,6 +1,7 @@
 import React, { memo, useState, useCallback, useEffect } from 'react';
-import { Tag, ArrowRight, Clock, ShieldCheck, Flame } from 'lucide-react';
+import { Tag, ArrowRight } from 'lucide-react';
 import { cfg } from '../lib/config';
+import { SeasonArt } from './SeasonArt';
 
 const DEFAULT_FALLBACK = 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80';
 
@@ -79,129 +80,67 @@ interface HeroBannerProps {
 export const HeroBanner: React.FC<HeroBannerProps> = React.memo(({
   onExploreClick,
   onCustomOrderClick,
-  themeMode = 'dark',
   heroMedia1Url,
   heroMedia2Url,
 }) => {
-  const isLight = themeMode === 'light';
-
-  const defaultMedia1 = 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80';
-  const defaultMedia2 = 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80';
+  const defaultMedia1 = cfg('hero_media_1_url', 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?auto=format&fit=crop&w=600&q=80');
+  const defaultMedia2 = cfg('hero_media_2_url', 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=600&q=80');
 
   return (
-    <div className={`relative rounded-3xl overflow-hidden border p-6 sm:p-10 my-6 transition-all ${
-      isLight
-        ? 'bg-gradient-to-br from-white via-slate-50 to-slate-100 border-slate-300 text-slate-900 shadow-lg'
-        : 'bg-gradient-to-br from-[#161814] via-[#0F110D] to-[#0A0A0A] border-white/10 text-white'
-    }`}>
-      <div className={`absolute top-0 right-0 -mt-12 -mr-12 w-64 h-64 rounded-full blur-3xl pointer-events-none ${
-        isLight ? 'bg-lime-400/20' : 'bg-[var(--accent)]/10'
-      }`}></div>
-      
-      <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-        
-        <div className="lg:col-span-7 space-y-4 sm:space-y-6">
-          <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
-            isLight
-              ? 'bg-lime-100 border border-lime-300 text-lime-800'
-              : 'bg-[var(--accent)]/10 border border-[var(--accent)]/30 text-[var(--accent)]'
-          }`}>
-            <Flame className="w-3.5 h-3.5 text-lime-600 dark:text-[var(--accent)]" />
-            <span>{cfg('hero_badge', 'Exclusivo — COLECCIÓN BAJO DEMANDA')}</span>
-          </div>
+    <section className="hero">
+      <div>
+        <p className="eyebrow accent">
+          <span className="dot" />
+          {cfg('hero_badge', 'HECHO BAJO PEDIDO · HECHO PARA TI')}
+        </p>
 
-          <h2 className={`font-display text-3xl sm:text-5xl font-extrabold leading-tight uppercase tracking-tight ${
-            isLight ? 'text-slate-900' : 'text-white'
-          }`}>
-            {cfg('hero_title_1', 'MODA URBANA &')} <br />
-            <span className={isLight ? 'text-lime-700 font-black' : 'text-[var(--accent)]'}>{cfg('hero_title_2', 'VASOS SUBLIMADOS')}</span>
-          </h2>
+        <h1>
+          {cfg('hero_title_1', 'Tu idea.')}
+          <span>{cfg('hero_title_2', 'Hecha tuya.')}</span>
+        </h1>
 
-          <p className={`text-sm sm:text-base max-w-xl leading-relaxed ${
-            isLight ? 'text-slate-700' : 'text-gray-400'
-          }`}>
-            {cfg('hero_subtitle_1', 'Polos Sublimados con')}{' '}
-            <strong className={isLight ? 'text-slate-900 font-bold' : 'text-white'}>{cfg('hero_subtitle_2', 'Estampado Urbano HD High-Density')}</strong>{' '}
-            y vasos/tazas con sublimación continua a 200°C. <br className="hidden sm:inline" />
-            {cfg('hero_description', 'Sin sobre-stock. Fabricado especialmente para ti al confirmar tu orden.')}
-          </p>
+        <p>
+          {cfg('hero_subtitle_1', 'Polos, tazas y placas con tu estilo.')}{' '}
+          <strong>{cfg('hero_subtitle_2', 'Elige un diseño o cuéntanos el tuyo:')}</strong>{' '}
+          {cfg('hero_description', 'lo hacemos especialmente para ti.')}
+        </p>
 
-          <div className="flex flex-wrap gap-2 pt-1">
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold ${
-              isLight ? 'bg-slate-200 border border-slate-300 text-slate-900' : 'bg-black/60 border border-white/15 text-gray-200'
-            }`}>
-              <Clock className="w-3.5 h-3.5 text-lime-700 dark:text-[var(--accent)]" />
-              {cfg('hero_badge_1', '⚡ Producción Express: 24 a 48 hrs')}
-            </span>
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-bold ${
-              isLight ? 'bg-slate-200 border border-slate-300 text-slate-900' : 'bg-black/60 border border-white/15 text-gray-200'
-            }`}>
-              <ShieldCheck className="w-3.5 h-3.5 text-lime-700 dark:text-[var(--accent)]" />
-              {cfg('hero_badge_2', '🛡️ Garantía de Fijación Térmica & Color')}
-            </span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-3">
-            <button
-              onClick={onExploreClick}
-              className="px-6 py-3.5 rounded-xl bg-[var(--accent)] text-[#0A0A0A] font-extrabold text-sm hover:bg-[var(--accent-hover)] transition-all flex items-center justify-center gap-2 shadow-lg group"
-            >
-              <span>{cfg('hero_cta_catalogo', 'EXPLORAR CATÁLOGO')}</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
-
-            <button
-              onClick={onCustomOrderClick}
-              className={`px-6 py-3.5 rounded-xl border font-bold text-sm transition-all flex items-center justify-center gap-2 ${
-                isLight
-                  ? 'bg-slate-900 hover:bg-slate-800 text-white border-slate-900'
-                  : 'bg-white/5 border-white/10 hover:bg-white/10 text-white'
-              }`}
-            >
-              <Tag className="w-4 h-4 text-[var(--accent)]" />
-              <span>{cfg('hero_cta_idea', 'Personalizar Mi Idea')}</span>
-            </button>
-          </div>
+        <div className="hero-actions">
+          <button type="button" className="btn" onClick={onExploreClick}>
+            {cfg('hero_cta_catalogo', 'Explorar catálogo')}
+            <ArrowRight />
+          </button>
+          <button type="button" className="btn outline" onClick={onCustomOrderClick}>
+            {cfg('hero_cta_idea', 'Tengo una idea')}
+            <Tag />
+          </button>
         </div>
-
-        <div className="lg:col-span-5 relative">
-          <div className="grid grid-cols-2 gap-3 relative">
-            <div className={`relative group overflow-hidden rounded-2xl border aspect-[4/5] ${
-              isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#161814] border-white/10'
-            }`}>
-              <HeroMedia
-                url={heroMedia1Url || defaultMedia1}
-                alt="Polo Streetwear Oversized"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                scale={parseInt(cfg('hero_media_1_scale', '100'))}
-                opacity={parseInt(cfg('hero_media_1_opacity', '100'))}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-3 flex flex-col justify-end">
-                <span className="text-[10px] font-mono text-[var(--accent)] uppercase">{cfg('hero_street_title', 'STREETWEAR')}</span>
-                <span className="text-xs font-bold text-white leading-tight">{cfg('hero_street_sub', 'Acid Tokyo 1988')}</span>
-              </div>
-            </div>
-
-            <div className={`relative group overflow-hidden rounded-2xl border aspect-[4/5] mt-6 ${
-              isLight ? 'bg-slate-100 border-slate-300' : 'bg-[#161814] border-white/10'
-            }`}>
-              <HeroMedia
-                url={heroMedia2Url || defaultMedia2}
-                alt="Vaso Sublimado Frosted"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                scale={parseInt(cfg('hero_media_2_scale', '100'))}
-                opacity={parseInt(cfg('hero_media_2_opacity', '100'))}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent p-3 flex flex-col justify-end">
-                <span className="text-[10px] font-mono text-[var(--accent)] uppercase">{cfg('hero_subli_title', 'SUBLIMACIÓN')}</span>
-                <span className="text-xs font-bold text-white leading-tight">{cfg('hero_subli_sub', 'Frosted Glass 16oz')}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
       </div>
-    </div>
+
+      <div className="season-visual">
+        <div className="stage">
+          <div className="hero-photo">
+            <HeroMedia
+              url={heroMedia1Url || defaultMedia1}
+              alt={cfg('hero_street_sub', 'Polo Streetwear')}
+              scale={parseInt(cfg('hero_media_1_scale', '100'))}
+              opacity={parseInt(cfg('hero_media_1_opacity', '100'))}
+            />
+          </div>
+          <div className="hero-photo secondary">
+            <HeroMedia
+              url={heroMedia2Url || defaultMedia2}
+              alt={cfg('hero_subli_sub', 'Vaso sublimado')}
+              scale={parseInt(cfg('hero_media_2_scale', '100'))}
+              opacity={parseInt(cfg('hero_media_2_opacity', '100'))}
+            />
+          </div>
+          <span className="stamp">{cfg('hero_stamp', '100% PERSONALIZADO')}</span>
+          <span className="stage-caption">{cfg('hero_stage_caption', 'DISEÑO ARTÍSTICO / SUBLIMACIÓN')}</span>
+        </div>
+        <SeasonArt />
+      </div>
+    </section>
   );
 });
 HeroBanner.displayName = 'HeroBanner';

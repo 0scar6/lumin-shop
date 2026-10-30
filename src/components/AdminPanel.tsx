@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, memo, useRef } from 'react';
 import {
-  X, Upload, Save, Eye, EyeOff, Lock, Package, Settings, Image, Plus, Trash2,
+  X, Upload, Save, Eye, EyeOff, Package, Settings, Image, Plus, Trash2,
   ArrowLeft, Check, ShoppingCart, Sliders, Sun, Home, LayoutGrid, Heart, FileText,
   User, ChevronDown, ChevronRight, Shirt, Coffee, Pencil, Type, MessageCircle,
   Clock, ShieldCheck, Truck, RefreshCw, Tag, HelpCircle, ChevronUp, Download,
@@ -254,29 +254,61 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     alert(`Sincronizados ${count} productos. Galería actualizada.`); await loadProducts();
   };
 
-  const inputCls = 'w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#1a1d1a] border-white/10 placeholder-gray-500 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]/30 transition-all';
-  const labelCls = 'block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5';
-
   if (!isOpen) return null;
 
   if (!authenticated) {
     return (
-      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={onClose}>
-        <div className="relative w-full max-w-sm rounded-2xl border border-white/10 bg-[#0A0A0A] p-8 space-y-6" onClick={e => e.stopPropagation()}>
-          <button onClick={onClose} className="absolute top-4 right-4 text-gray-400 hover:text-white p-1 rounded-full hover:bg-white/10"><X className="w-5 h-5" /></button>
-          <div className="text-center space-y-2">
-            <div className="w-14 h-14 mx-auto rounded-2xl bg-[var(--accent)]/10 border border-[var(--accent)]/30 flex items-center justify-center"><Lock className="w-6 h-6 text-[var(--accent)]" /></div>
-            <h2 className="text-lg font-extrabold uppercase text-white">Admin</h2>
-            <p className="text-xs text-gray-400">Contraseña requerida</p>
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onClick={onClose}>
+        <div className="modal authmodal animate-fade-in-up" role="dialog" aria-modal="true" onClick={e => e.stopPropagation()}>
+          <div className="modal-head">
+            <h2>Acceso de LUMIN</h2>
+            <button type="button" className="close" onClick={onClose} aria-label="Cerrar"><X /></button>
           </div>
-          <div className="space-y-3">
-            <div className="relative">
-              <input type={showPw ? 'text' : 'password'} value={pw} onChange={e => setPw(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleLogin()} placeholder="••••••••"
-                className={`${inputCls} ${pwError ? 'border-red-500' : ''}`} />
-              <button onClick={() => setShowPw(!showPw)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white">{showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}</button>
+          <div className="modal-body">
+            <p className="eyebrow">ADMINISTRACIÓN</p>
+            <h2 style={{ fontSize: 28, margin: '12px 0' }}>Tu tienda, en tus manos.</h2>
+            <p className="subtle" style={{ marginBottom: 16 }}>
+              Ingresa tu contraseña para administrar productos, textos y configuración.
+            </p>
+
+            <label className="field">
+              <span>Contraseña</span>
+              <div style={{ position: 'relative' }}>
+                <input
+                  type={showPw ? 'text' : 'password'}
+                  value={pw}
+                  onChange={e => setPw(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleLogin()}
+                  placeholder="••••••••"
+                  autoComplete="current-password"
+                  className={pwError ? 'border-red-500' : undefined}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPw(!showPw)}
+                  className="close"
+                  style={{ position: 'absolute', right: 6, top: '50%', transform: 'translateY(-50%)', width: 30, height: 30, background: 'transparent' }}
+                  aria-label={showPw ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                >
+                  {showPw ? <EyeOff /> : <Eye />}
+                </button>
+              </div>
+            </label>
+
+            {pwError && <p className="error">Contraseña incorrecta</p>}
+
+            <button type="button" className="btn full" onClick={handleLogin}>
+              Ingresar
+            </button>
+
+            {hashLoaded && !storedHash && (
+              <div className="notice">
+                No se pudo leer la contraseña desde Supabase. Revisa la conexión e inténtalo de nuevo.
+              </div>
+            )}
+            <div className="notice">
+              La contraseña se valida con Supabase y no se guarda en el navegador.
             </div>
-            {pwError && <p className="text-xs text-red-400 text-center">Contraseña incorrecta</p>}
-            <button onClick={handleLogin} className="w-full py-3 rounded-xl bg-[var(--accent)] text-[#0A0A0A] font-extrabold text-sm hover:bg-[var(--accent-hover)] transition-all shadow-lg">ENTRAR</button>
           </div>
         </div>
       </div>
@@ -296,46 +328,49 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-0 sm:p-3" onClick={onClose}>
-      <div className="relative w-full h-full sm:w-[95vw] sm:max-w-[1400px] sm:h-[92vh] sm:rounded-3xl border-0 sm:border border-white/10 bg-[#0A0A0A] overflow-hidden flex flex-col text-white shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div
+        className="relative w-full h-full sm:w-[95vw] sm:max-w-[1400px] sm:h-[92vh] sm:rounded-3xl border-0 sm:border overflow-hidden flex flex-col shadow-2xl"
+        style={{ background: 'var(--bg)', color: 'var(--text)', borderColor: 'var(--line)' }}
+        onClick={e => e.stopPropagation()}
+      >
 
         {/* Header Bar */}
-        <div className="flex items-center justify-between px-5 py-3.5 border-b border-white/5 flex-shrink-0 bg-[#0A0A0A]">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-[var(--accent)] flex items-center justify-center shadow-lg shadow-[var(--accent)]/20">
-              <span className="text-[#0A0A0A] font-extrabold text-base">L</span>
-            </div>
+        <div className="adminbar" style={{ justifyContent: 'space-between', padding: '10px 20px', flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span className="mark" style={{ width: 34, height: 34, fontSize: 20 }}>L</span>
             <div>
-              <h2 className="text-sm font-extrabold uppercase tracking-wider text-white">Admin Panel</h2>
-              <p className="text-[9px] text-gray-500 font-mono tracking-wider">LUMIN SHOP CMS</p>
+              <h2 style={{ fontSize: 14 }}>Panel LUMIN</h2>
+              <p className="eyebrow" style={{ fontSize: 9, letterSpacing: '.16em' }}>LUMIN SHOP CMS</p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             {cfgChanged > 0 && (
-              <span className="text-[10px] font-bold text-[var(--accent)] bg-[var(--accent)]/10 px-2.5 py-1.5 rounded-lg border border-[var(--accent)]/20">{cfgChanged} cambio{cfgChanged > 1 ? 's' : ''}</span>
+              <span className="eyebrow accent" style={{ whiteSpace: 'nowrap' }}>{cfgChanged} cambio{cfgChanged > 1 ? 's' : ''}</span>
             )}
-            {cfgSaved && <span className="text-[10px] font-bold text-green-400 bg-green-400/10 px-2.5 py-1.5 rounded-lg border border-green-400/20">Guardado</span>}
-            <button onClick={handleCfgSave} disabled={cfgChanged === 0}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-xl font-extrabold text-[11px] transition-all ${cfgChanged > 0 ? 'bg-[var(--accent)] text-[#0A0A0A] hover:bg-[var(--accent-hover)] shadow-lg shadow-[var(--accent)]/20' : 'bg-white/5 text-gray-500 cursor-not-allowed'}`}>
-              <Save className="w-3.5 h-3.5" /> Guardar
+            {cfgSaved && <span className="eyebrow accent" style={{ whiteSpace: 'nowrap' }}>Guardado</span>}
+            <button type="button" className="btn small" onClick={handleCfgSave} disabled={cfgChanged === 0}>
+              <Save />
+              Guardar
             </button>
-            <button onClick={onClose} className="p-2 rounded-xl hover:bg-white/10 text-gray-400 hover:text-white transition-all"><X className="w-5 h-5" /></button>
+            <button type="button" className="close" onClick={onClose} aria-label="Cerrar panel">
+              <X />
+            </button>
           </div>
         </div>
 
         {/* Tab Navigation */}
-        <div className="flex gap-1.5 px-4 py-2.5 border-b border-white/5 flex-shrink-0 overflow-x-auto bg-[#0A0A0A]">
+        <div className="adminnav" style={{ padding: '0 20px', margin: '16px 0', flexShrink: 0 }}>
           {tabs.map(t => (
-            <button key={t.key} onClick={() => { setMainTab(t.key); setEditingProduct(null); setIsNewProduct(false); }}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-                mainTab === t.key
-                  ? 'bg-[var(--accent)] text-[#0A0A0A] shadow-lg shadow-[var(--accent)]/20'
-                  : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white'
-              }`}>
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => { setMainTab(t.key); setEditingProduct(null); setIsNewProduct(false); }}
+              className={`chip ${mainTab === t.key ? 'active' : ''}`}
+              aria-pressed={mainTab === t.key}
+              title={t.desc}
+            >
               <t.icon className="w-4 h-4" />
-              <div className="text-left">
-                <span className="block">{t.label}</span>
-                <span className={`block text-[8px] font-normal ${mainTab === t.key ? 'text-[#0A0A0A]/60' : 'text-gray-500'}`}>{t.desc}</span>
-              </div>
+              {t.label}
             </button>
           ))}
         </div>
