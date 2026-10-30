@@ -256,6 +256,21 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
 
   if (!isOpen) return null;
 
+  // El panel conserva su tema oscuro de siempre: así las pestañas internas
+  // (forms, tarjetas y previsualizaciones) se ven coherentes también cuando
+  // la tienda está en modo claro.
+  const adminThemeVars = {
+    '--bg': '#10120e',
+    '--surface': '#191c16',
+    '--raised': '#24281f',
+    '--text': '#f2f4eb',
+    '--muted': '#a6ad9c',
+    '--line': '#33392c',
+    background: 'var(--bg)',
+    color: 'var(--text)',
+    colorScheme: 'dark',
+  } as React.CSSProperties;
+
   if (!authenticated) {
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4" onClick={onClose}>
@@ -330,7 +345,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-0 sm:p-3" onClick={onClose}>
       <div
         className="relative w-full h-full sm:w-[95vw] sm:max-w-[1400px] sm:h-[92vh] sm:rounded-3xl border-0 sm:border overflow-hidden flex flex-col shadow-2xl"
-        style={{ background: 'var(--bg)', color: 'var(--text)', borderColor: 'var(--line)' }}
+        style={adminThemeVars}
         onClick={e => e.stopPropagation()}
       >
 
