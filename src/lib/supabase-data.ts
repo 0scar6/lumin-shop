@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
-import { Product, CartItem, UserProfileData, GoogleUser } from '../types';
+import { Product, CartItem, UserProfileData, GoogleUser, CategoryUI } from '../types';
+import { buildCategoryList, parseTaxonomy, taxonomyConfigId } from './catalog';
 
 // All sync functions fail silently - localStorage remains the source of truth
 // Supabase is a remote backup/sync layer
@@ -266,38 +267,28 @@ interface SupabaseCategory {
   orden: number;
 }
 
-interface CategoryUI {
-  id: string;
-  label: string;
-  iconName: string;
-}
-
-const CATEGORY_ICON_MAP: Record<string, string> = {
-  Shirt: 'Shirt',
-  Coffee: 'Coffee',
-  Flame: 'Flame',
-  Grid: 'Grid',
-};
-
-export async function loadCategoriesFromSupabase(): Promise<CategoryUI[]> {
+export async function loadCategoriesFromSupabase(includeInactive = false): Promise<CategoryUI[]> {
   if (!supabase) return [];
   try {
-    const { data, error } = await supabase
-      .from('categorias')
-      .select('*')
-      .eq('activo', true)
-      .order('orden', { ascending: true });
-
+    const query = supabase.from('categorias').select('*').order('orden', { ascending: true });
+    const { data, error } = includeInactive ? await query : await query.eq('activo', true);
     if (error || !data || data.length === 0) return [];
 
-    const allCategory: CategoryUI = { id: 'all', label: 'Todos los Productos', iconName: 'Grid' };
-    const mapped = data.map((c: SupabaseCategory) => ({
-      id: c.id,
-      label: c.nombre,
-      iconName: CATEGORY_ICON_MAP[c.icono || ''] || 'Grid',
-    }));
+    // La taxonomía (tipo de categoría + filtros) vive en configuracion para
+    // poder personalizarla sin tocar el esquema de la base de datos.
+    let rawTaxonomy: string | null = null;
+    try {
+      const { data: cfgRow } = await supabase
+        .from('configuracion')
+        .select('valor')
+        .eq('id', taxonomyConfigId())
+        .maybeSingle();
+      rawTaxonomy = cfgRow?.valor ?? null;
+    } catch {
+      rawTaxonomy = null;
+    }
 
-    return [allCategory, ...mapped];
+    return buildCategoryList(data as SupabaseCategory[], parseTaxonomy(rawTaxonomy), !includeInactive);
   } catch {
     return [];
   }

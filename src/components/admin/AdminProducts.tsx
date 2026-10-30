@@ -1,11 +1,19 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  Package, Settings, Plus, Trash2, ArrowLeft, Check, Shirt, Coffee, Save,
+  Package, Settings, Plus, Trash2, ArrowLeft, Check, Shirt, Coffee, Save, Ruler,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { Field, TextInput, TextArea, MediaUpload, Section, PreviewBox } from './AdminShared';
+import { AdminCategories } from './AdminCategories';
+import type {
+  CategoryAttributeDef,
+  CategoryUI,
+  MeasureValue,
+  ProductAttributes,
+} from '../../types';
+import { measureLabel, sortAttributeValues } from '../../lib/catalog';
 
-export interface ProductoRow { id: string; nombre: string; categoria_id: string; precio: number; precio_original: number | null; tecnica: string; tiempo_produccion: string; imagen: string; galeria: any; descripcion: string; etiqueta: string; opciones_ropa: any; opciones_vaso: any; personalizable: boolean; activo: boolean; destacado: boolean; agotado: boolean; }
+export interface ProductoRow { id: string; nombre: string; categoria_id: string; precio: number; precio_original: number | null; tecnica: string; tiempo_produccion: string; imagen: string; galeria: any; descripcion: string; etiqueta: string; opciones_ropa: any; opciones_vaso: any; atributos?: ProductAttributes; personalizable: boolean; activo: boolean; destacado: boolean; agotado: boolean; }
 
 interface AdminProductsProps {
   cfgEdit: Record<string, string>;
@@ -14,7 +22,7 @@ interface AdminProductsProps {
   cfgSaved: boolean;
   products: ProductoRow[];
   editingProduct: ProductoRow | null;
-  setEditingProduct: (p: ProductoRow | null) => void;
+  setEditingProduct: React.Dispatch<React.SetStateAction<ProductoRow | null>>;
   isNewProduct: boolean;
   startNewProduct: () => void;
   handleProdSave: () => void;
@@ -23,18 +31,114 @@ interface AdminProductsProps {
   prodSaving: boolean;
   uploading: boolean;
   handleSyncGalleries: () => void;
+  categories: CategoryUI[];
+  onSaveCategories: (next: CategoryUI[]) => Promise<void>;
+  categoriesSaving: boolean;
 }
+
+const OptionValueEditor: React.FC<{
+  def: CategoryAttributeDef;
+  values: string[];
+  onChange: (values: string[]) => void;
+}> = ({ def, values, onChange }) => {
+  const [newValue, setNewValue] = useState('');
+  const suggestions = sortAttributeValues([...(def.valores || []), ...values]);
+
+  const add = () => {
+    const value = newValue.trim();
+    if (!value) return;
+    if (!values.some((v) => v.toLowerCase() === value.toLowerCase())) {
+      onChange([...values, value]);
+    }
+    setNewValue('');
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-1.5">
+        {suggestions.map((value) => {
+          const active = values.some((v) => v.toLowerCase() === value.toLowerCase());
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() =>
+                onChange(
+                  active
+                    ? values.filter((v) => v.toLowerCase() !== value.toLowerCase())
+                    : [...values, value],
+                )
+              }
+              className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold border transition-all ${
+                active
+                  ? 'bg-[var(--accent)] text-[#0A0A0A] border-[var(--accent)]'
+                  : 'bg-white/5 text-gray-300 border-white/10 hover:border-[var(--accent)]/40'
+              }`}
+            >
+              {value}
+            </button>
+          );
+        })}
+        {suggestions.length === 0 && (
+          <span className="text-[10px] text-gray-500">Sin valores sugeridos. Agrega uno abajo.</span>
+        )}
+      </div>
+      <div className="flex items-center gap-2">
+        <input
+          value={newValue}
+          onChange={(e) => setNewValue(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              add();
+            }
+          }}
+          placeholder="Añadir otro valor (ej. 24oz, Unitalla…)"
+          className="flex-1 px-3 py-2 rounded-lg border text-xs text-white bg-[#161814] border-white/10 placeholder-gray-500 focus:outline-none focus:border-[var(--accent)]/50"
+        />
+        <button
+          type="button"
+          onClick={add}
+          className="px-3 py-2 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] text-xs font-bold hover:bg-[var(--accent)]/20"
+        >
+          Añadir
+        </button>
+      </div>
+    </div>
+  );
+};
 
 export const AdminProducts = ({
   cfgEdit, setCfg, handleCfgSave, cfgSaved, products, editingProduct, setEditingProduct, isNewProduct,
   startNewProduct, handleProdSave, handleProdDelete, handleProdImageUpload,
-  prodSaving, uploading, handleSyncGalleries,
+  prodSaving, uploading, handleSyncGalleries, categories, onSaveCategories, categoriesSaving,
 }: AdminProductsProps) => {
   const _labelCls = 'block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5';
   const _inputCls = 'w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#1a1d1a] border-white/10 placeholder-gray-500 focus:outline-none focus:border-[var(--accent)] focus:ring-1 focus:ring-[var(--accent)]/30 transition-all';
-  const streetProducts = useMemo(() => products.filter((p: ProductoRow) => p.categoria_id === 'streetwear'), [products]);
-  const cupsProducts = useMemo(() => products.filter((p: ProductoRow) => p.categoria_id === 'cups'), [products]);
-  const dropsProducts = useMemo(() => products.filter((p: ProductoRow) => p.categoria_id === 'drops'), [products]);
+
+  const groups = useMemo(
+    () =>
+      categories
+        .filter((cat) => cat.id !== 'all')
+        .map((cat) => ({
+          ...cat,
+          items: products.filter((p: ProductoRow) => p.categoria_id === cat.id),
+        })),
+    [categories, products],
+  );
+
+  const currentCategory = editingProduct
+    ? categories.find((cat) => cat.id === editingProduct.categoria_id)
+    : undefined;
+  const currentKind =
+    currentCategory?.tipo ||
+    (editingProduct?.categoria_id === 'streetwear' ? 'ropa' : editingProduct?.categoria_id === 'cups' ? 'vaso' : 'otro');
+  const currentAttrDefs = currentCategory?.atributos || [];
+
+  const setAttr = (key: string, value: string[] | MeasureValue[]) =>
+    setEditingProduct((p: any) =>
+      p ? { ...p, atributos: { ...(p.atributos || {}), [key]: value } } : p,
+    );
 
   if (editingProduct) {
     return (
@@ -49,22 +153,25 @@ export const AdminProducts = ({
             <div className="grid grid-cols-2 gap-3">
               <Field label="Categoría">
                 <select value={editingProduct.categoria_id} onChange={e => {
-                  const cat = e.target.value;
+                  const cat = categories.find(c => c.id === e.target.value);
+                  const kind = cat?.tipo || 'otro';
                   setEditingProduct((p: any) => {
                     if (!p) return p;
-                    const updated: any = { ...p, categoria_id: cat };
-                    if (cat === 'streetwear' && !p.opciones_ropa) {
-                      updated.opciones_ropa = { sizes: ['S', 'M', 'L', 'XL'], fits: ['Oversized Streetwear'], colors: [{ name: 'Negro', hex: '#0A0A0A' }] };
-                    } else if ((cat === 'cups' || cat === 'drops') && !p.opciones_vaso) {
-                      updated.opciones_vaso = { types: [{ name: '', extraPrice: 0 }], finishes: [''] };
+                    const updated: any = { ...p, categoria_id: e.target.value, atributos: {} };
+                    if (kind === 'ropa') {
+                      if (!p.opciones_ropa) {
+                        updated.opciones_ropa = { sizes: ['S', 'M', 'L', 'XL'], fits: ['Oversized Streetwear'], colors: [{ name: 'Negro', hex: '#0A0A0A' }] };
+                      }
+                    } else if (!p.opciones_vaso) {
+                      updated.opciones_vaso = { types: [], finishes: [] };
                     }
                     return updated;
                   });
                 }}
-                  className="w-full px-3 py-2.5 rounded-xl border text-sm text-white bg-[#161814] border-white/10 focus:outline-none focus:border-[var(--accent)]/50 transition-all">
-                  <option value="streetwear">Polos Sublimados</option>
-                  <option value="cups">Vasos/Tazas</option>
-                  <option value="drops">Placas de Aluminio</option>
+                  className={_inputCls}>
+                  {categories.filter(c => c.id !== 'all').map(c => (
+                    <option key={c.id} value={c.id}>{c.label}{c.activo === false ? ' (oculta)' : ''}</option>
+                  ))}
                 </select>
               </Field>
               <Field label="Etiqueta"><TextInput value={editingProduct.etiqueta || ''} onChange={v => setEditingProduct((p: any) => p ? { ...p, etiqueta: v } : p)} placeholder="BESTSELLER" /></Field>
@@ -138,9 +245,124 @@ export const AdminProducts = ({
                 </label>
               ))}
             </div>
+            {/* ── FILTROS RÁPIDOS DE LA CATEGORÍA (tallas / onzas / medidas) ── */}
+            <div className="border-t border-white/10 pt-4 space-y-4">
+              <p className="text-[11px] font-extrabold text-[var(--accent)] uppercase tracking-wider flex items-center gap-2">
+                <Ruler className="w-3.5 h-3.5" /> Filtros de la categoría · {currentCategory?.label || editingProduct.categoria_id}
+              </p>
+              <p className="text-[10px] text-gray-500">
+                Estos valores alimentan los chips del catálogo (talla, onzas, alto × ancho…). Se guardan en el producto.
+              </p>
+
+              {currentAttrDefs.length === 0 && (
+                <p className="text-[10px] text-gray-500">
+                  Esta categoría no tiene filtros. Agrégalos en “Categorías y filtros” (arriba en el catálogo).
+                </p>
+              )}
+
+              {currentAttrDefs.map((def) => {
+                const raw = editingProduct.atributos?.[def.key];
+
+                if (def.tipo === 'medida') {
+                  const measures = Array.isArray(raw)
+                    ? (raw as MeasureValue[]).filter((m) => m && typeof m === 'object' && 'alto' in m)
+                    : [];
+                  const unidad = def.unidad || 'cm';
+                  return (
+                    <div key={def.key}>
+                      <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+                        {def.label} <span className="text-gray-500 normal-case tracking-normal">· alto × ancho ({unidad})</span>
+                      </label>
+                      <div className="space-y-1.5">
+                        {measures.map((m, i) => (
+                          <div key={i} className="flex flex-wrap items-center gap-2">
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] text-gray-500">Alto</span>
+                              <div className="w-20">
+                                <TextInput
+                                  type="number"
+                                  value={String(m.alto ?? '')}
+                                  onChange={(v) => {
+                                    const next = [...measures];
+                                    next[i] = { ...next[i], alto: parseFloat(v) || 0 };
+                                    setAttr(def.key, next);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] text-gray-500">Ancho</span>
+                              <div className="w-20">
+                                <TextInput
+                                  type="number"
+                                  value={String(m.ancho ?? '')}
+                                  onChange={(v) => {
+                                    const next = [...measures];
+                                    next[i] = { ...next[i], ancho: parseFloat(v) || 0 };
+                                    setAttr(def.key, next);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] text-gray-500">+S/</span>
+                              <div className="w-20">
+                                <TextInput
+                                  type="number"
+                                  value={String(m.extraPrice || 0)}
+                                  onChange={(v) => {
+                                    const next = [...measures];
+                                    next[i] = { ...next[i], extraPrice: parseFloat(v) || 0 };
+                                    setAttr(def.key, next);
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <span className="text-[10px] text-[var(--accent)]">
+                              {measureLabel(m, unidad)}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setAttr(def.key, measures.filter((_, j) => j !== i))}
+                              className="p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-all"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          onClick={() => setAttr(def.key, [...measures, { alto: 20, ancho: 30, extraPrice: 0 }])}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] text-xs font-bold hover:bg-[var(--accent)]/20 transition-all"
+                        >
+                          <Plus className="w-3 h-3" /> Agregar medida
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
+                const values = Array.isArray(raw)
+                  ? (raw as unknown[]).filter((v): v is string => typeof v === 'string')
+                  : [];
+                return (
+                  <div key={def.key}>
+                    <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">
+                      {def.label}
+                    </label>
+                    <OptionValueEditor
+                      def={def}
+                      values={values}
+                      onChange={(next) => setAttr(def.key, next)}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+
             {/* ── OPCIONES DE PRODUCTO ── */}
             <div className="border-t border-white/10 pt-4 space-y-4">
-              <p className="text-[11px] font-extrabold text-[var(--accent)] uppercase tracking-wider flex items-center gap-2"><Shirt className="w-3.5 h-3.5" /> Opciones de Polos (Tallas con precio extra / Cortes / Colores)</p>
+              <p className="text-[11px] font-extrabold text-[var(--accent)] uppercase tracking-wider flex items-center gap-2"><Shirt className="w-3.5 h-3.5" /> Opciones de Ropa (Tallas con precio extra / Cortes / Colores)</p>
               <div>
                 <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Tallas (nombre + precio extra)</label>
                 <div className="space-y-1.5">
@@ -229,8 +451,14 @@ export const AdminProducts = ({
 
             <div className="border-t border-white/10 pt-4 space-y-4">
               <p className="text-[11px] font-extrabold text-[var(--accent)] uppercase tracking-wider flex items-center gap-2"><Coffee className="w-3.5 h-3.5" /> Opciones de Vasos / Tazas / Placas</p>
+              {currentKind === 'placa' ? (
+                <p className="text-[10px] text-gray-500">
+                  Las medidas de esta placa se editan arriba, en “Filtros de la categoría · alto × ancho”.
+                  Desde ahí se generan las opciones que ve el cliente.
+                </p>
+              ) : (
               <div>
-                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">{editingProduct.categoria_id === 'drops' ? 'Medidas' : 'Tipos'}</label>
+                <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Tipos</label>
                 <div className="space-y-1.5">
                   {(editingProduct.opciones_vaso?.types || []).map((t: any, i: number) => (
                     <div key={i} className="flex items-center gap-2">
@@ -238,7 +466,7 @@ export const AdminProducts = ({
                         const types = [...(editingProduct.opciones_vaso?.types || [])];
                         types[i] = { ...types[i], name: v };
                         setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
-                      }} placeholder={editingProduct.categoria_id === 'drops' ? 'Ej: 20x30cm' : 'Ej: Vaso Frosted 16oz'} />
+                      }} placeholder="Ej: Vaso Frosted 16oz" />
                       <div className="flex items-center gap-1 shrink-0">
                         <span className="text-[10px] text-gray-500">+S/</span>
                         <TextInput type="number" value={String(t.extraPrice || 0)} onChange={v => {
@@ -256,9 +484,10 @@ export const AdminProducts = ({
                   <button onClick={() => {
                     const types = [...(editingProduct.opciones_vaso?.types || []), { name: '', extraPrice: 0 }];
                     setEditingProduct((p: any) => p ? { ...p, opciones_vaso: { ...(p.opciones_vaso || {}), types } } : p);
-                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] text-xs font-bold hover:bg-[var(--accent)]/20 transition-all"><Plus className="w-3 h-3" /> Agregar {editingProduct.categoria_id === 'drops' ? 'medida' : 'tipo'}</button>
+                  }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--accent)]/10 text-[var(--accent)] text-xs font-bold hover:bg-[var(--accent)]/20 transition-all"><Plus className="w-3 h-3" /> Agregar tipo</button>
                 </div>
               </div>
+              )}
               <div>
                 <label className="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Acabados</label>
                 <div className="space-y-1.5">
@@ -367,18 +596,34 @@ export const AdminProducts = ({
         </div>
       </Section>
 
-      {[
-        { label: 'Polos Sublimados', items: streetProducts, cat: 'streetwear', emoji: '👕' },
-        { label: 'Vasos / Tazas', items: cupsProducts, cat: 'cups', emoji: '☕' },
-        { label: 'Placas de Aluminio', items: dropsProducts, cat: 'drops', emoji: '🖼️' },
-      ].map(group => (
-        <Section key={group.cat} title={`${group.emoji} ${group.label}`} icon={<Package className="w-3.5 h-3.5 text-[var(--accent)]" />} badge={`${group.items.length} productos`}>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {group.items.map((p: ProductoRow) => <ProductCard key={p.id} p={p} />)}
-            {group.items.length === 0 && <p className="text-xs text-gray-500 col-span-full text-center py-8">Sin productos en esta categoría</p>}
-          </div>
-        </Section>
-      ))}
+      <AdminCategories
+        categories={categories}
+        onSave={onSaveCategories}
+        saving={categoriesSaving}
+      />
+
+      {(() => {
+        const known = new Set(groups.map((group) => group.id));
+        const orphans = products.filter((p) => !known.has(p.categoria_id));
+        const allGroups = orphans.length > 0
+          ? [...groups, { id: '__orphans', label: 'Sin categoría', iconName: 'Grid', items: orphans } as any]
+          : groups;
+        const emojiFor = (iconName: string) =>
+          iconName === 'Shirt' ? '👕' : iconName === 'Coffee' ? '☕' : iconName === 'Flame' ? '🖼️' : iconName === 'Package' ? '📦' : '🏷️';
+        return allGroups.map((group) => (
+          <Section
+            key={group.id}
+            title={`${emojiFor(group.iconName)} ${group.label}`}
+            icon={<Package className="w-3.5 h-3.5 text-[var(--accent)]" />}
+            badge={`${group.items.length} productos`}
+          >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+              {group.items.map((p: ProductoRow) => <ProductCard key={p.id} p={p} />)}
+              {group.items.length === 0 && <p className="text-xs text-gray-500 col-span-full text-center py-8">Sin productos en esta categoría</p>}
+            </div>
+          </Section>
+        ));
+      })()}
     </div>
   );
 };

@@ -1,6 +1,37 @@
-export type Category = 'all' | 'streetwear' | 'cups' | 'drops';
+/** Las categorías son libres: el admin puede crear nuevas (gorras, etc.). */
+export type Category = string;
 
-export type ProductType = 'streetwear' | 'cups';
+export type ProductType = string;
+
+/** Comportamiento de la ficha de producto según la categoría. */
+export type CategoryKind = 'ropa' | 'vaso' | 'placa' | 'otro';
+
+export interface MeasureValue {
+  alto: number;
+  ancho: number;
+  extraPrice?: number;
+}
+
+/** Valores de filtro guardados por producto: tallas, onzas, medidas, etc. */
+export type ProductAttributes = Record<string, string[] | MeasureValue[]>;
+
+export interface CategoryAttributeDef {
+  key: string;
+  label: string;
+  tipo: 'opciones' | 'medida';
+  valores?: string[];
+  unidad?: string;
+}
+
+export interface CategoryUI {
+  id: string;
+  label: string;
+  iconName: string;
+  tipo: CategoryKind;
+  atributos: CategoryAttributeDef[];
+  activo?: boolean;
+  orden?: number;
+}
 
 export interface ApparelOptions {
   sizes: (string | { name: string; extraPrice: number })[];
@@ -25,6 +56,7 @@ export interface Product {
   galleryImages?: string[];
   description: string;
   tag?: string; // e.g. '🔥 DROP 04', '⚡ Top Ventas'
+  attributes?: ProductAttributes;
   apparelOptions?: ApparelOptions;
   cupOptions?: CupOptions;
   customizable?: boolean;

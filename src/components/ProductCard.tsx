@@ -1,6 +1,6 @@
 import React from 'react';
 import { Heart, Plus } from 'lucide-react';
-import { Product } from '../types';
+import { CategoryKind, Product } from '../types';
 import { cfg } from '../lib/config';
 
 interface ProductCardProps {
@@ -10,6 +10,8 @@ interface ProductCardProps {
   onToggleFavorite: (p: Product) => void;
   onSelectProduct: (p: Product) => void;
   themeMode?: 'dark' | 'light' | 'amoled';
+  categoryLabel?: string;
+  categoryKind?: CategoryKind;
 }
 
 export const ProductCard: React.FC<ProductCardProps> = React.memo(({
@@ -18,13 +20,18 @@ export const ProductCard: React.FC<ProductCardProps> = React.memo(({
   isFavorite,
   onToggleFavorite,
   onSelectProduct,
+  categoryLabel,
+  categoryKind,
 }) => {
-  const categoryName =
-    product.category === 'streetwear'
+  const fallbackName =
+    categoryKind === 'ropa' || product.category === 'streetwear'
       ? cfg('pc_category_polo', 'Polo')
-      : product.category === 'cups'
+      : categoryKind === 'vaso' || product.category === 'cups'
       ? cfg('pc_category_cup', 'Vaso/Taza')
-      : cfg('pc_category_plaque', 'Placa');
+      : categoryKind === 'placa'
+      ? cfg('pc_category_plaque', 'Placa')
+      : cfg('pc_category_polo', 'Producto');
+  const categoryName = categoryLabel || fallbackName;
 
   const hasDiscount = !!product.originalPrice && product.originalPrice > product.price;
   const badgeLabel = product.agotado

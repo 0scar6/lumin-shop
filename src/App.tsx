@@ -27,7 +27,13 @@ import { applyPalette } from './lib/palette';
 import { supabase } from './lib/supabase';
 import { generateOrderImage } from './lib/generateOrderImage';
 import { sanitize } from './lib/sanitize';
-import { Product, CartItem, NavigationTab, Category, ThemeMode, UserProfileData, GoogleUser } from './types';
+import { Product, CartItem, NavigationTab, Category, ThemeMode, UserProfileData, GoogleUser, CategoryUI, CategoryAttributeDef } from './types';
+import {
+  attributeValues,
+  categoryKindOf,
+  matchesAttributes,
+  sortAttributeValues,
+} from './lib/catalog';
 import {
   Tag,
   MessageCircle,
@@ -52,12 +58,13 @@ export default function App() {
   const [selectedCategory, setSelectedCategory] = useState<Category>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTechnique, setSelectedTechnique] = useState<string>('all');
+  const [selectedAttributes, setSelectedAttributes] = useState<Record<string, string>>({});
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc'>('featured');
 
   // Products from Supabase (empty until loaded)
   const [products, setProducts] = useState<Product[]>([]);
   const [productsLoaded, setProductsLoaded] = useState(false);
-  const [categories, setCategories] = useState(CATEGORIES_STATIC);
+  const [categories, setCategories] = useState<CategoryUI[]>(CATEGORIES_STATIC);
 
   // Config state
   const [configLoaded, setConfigLoaded] = useState(false);
@@ -270,13 +277,38 @@ export default function App() {
   const [customIdeaText, setCustomIdeaText] = useState('');
   const [customIdeaType, setCustomIdeaType] = useState<'polo' | 'vaso' | 'otro'>('polo');
 
+  // Filtros rápidos por atributo (tallas, onzas, medidas u otros definidos
+  // en el panel para cada categoría).
+  useEffect(() => {
+    setSelectedAttributes({});
+  }, [selectedCategory]);
+
+  const activeCategory = useMemo(
+    () => categories.find((cat) => cat.id === selectedCategory),
+    [categories, selectedCategory],
+  );
+
+  const activeAttributeDefs: CategoryAttributeDef[] = useMemo(() => {
+    if (!activeCategory || activeCategory.id === 'all') return [];
+    return activeCategory.atributos || [];
+  }, [activeCategory]);
+
+  const attributeGroups = useMemo(() => {
+    if (!activeCategory || activeCategory.id === 'all') return [] as { def: CategoryAttributeDef; values: string[] }[];
+    const scoped = products.filter((p) => p.category === activeCategory.id);
+    return activeAttributeDefs
+      .map((def) => ({
+        def,
+        values: sortAttributeValues(scoped.flatMap((p) => attributeValues(p, def))),
+      }))
+      .filter((group) => group.values.length > 0);
+  }, [products, activeCategory, activeAttributeDefs]);
+
   // Filter products logic
   const filteredProducts = useMemo(() => {
     return products.filter((product) => {
-      // Category filter
-      if (selectedCategory === 'streetwear' && product.category !== 'streetwear') return false;
-      if (selectedCategory === 'cups' && product.category !== 'cups') return false;
-      if (selectedCategory === 'drops' && !product.tag?.includes('DROP')) return false;
+      // Category filter (las categorías son dinámicas)
+      if (selectedCategory !== 'all' && product.category !== selectedCategory) return false;
 
       // Search query
       if (searchQuery.trim()) {
@@ -288,8 +320,11 @@ export default function App() {
       }
 
       // Technique / Type filter
-      if (selectedTechnique === 'textil' && product.category !== 'streetwear') return false;
-      if (selectedTechnique === 'sublimacion' && product.category !== 'cups') return false;
+      if (selectedTechnique === 'textil' && categoryKindOf(categories, product.category) !== 'ropa') return false;
+      if (selectedTechnique === 'sublimacion' && !['vaso', 'placa'].includes(categoryKindOf(categories, product.category))) return false;
+
+      // Attribute filters (talla / onzas / medida / personalizados)
+      if (!matchesAttributes(product, activeAttributeDefs, selectedAttributes)) return false;
 
       return true;
     }).sort((a, b) => {
@@ -297,7 +332,7 @@ export default function App() {
       if (sortBy === 'price-desc') return b.price - a.price;
       return 0;
     });
-  }, [selectedCategory, searchQuery, selectedTechnique, sortBy, products]);
+  }, [selectedCategory, searchQuery, selectedTechnique, selectedAttributes, activeAttributeDefs, categories, sortBy, products]);
 
   // Cart operations
   const handleAddToCart = useCallback((item: CartItem) => {
@@ -630,6 +665,8 @@ export default function App() {
                         onToggleFavorite={toggleFavorite}
                         onSelectProduct={(p) => setSelectedProduct(p)}
                         themeMode={themeMode}
+                        categoryLabel={categories.find((c) => c.id === product.category)?.label}
+                        categoryKind={categoryKindOf(categories, product.category)}
                       />
                     ))
                   ) : (
@@ -750,6 +787,50 @@ export default function App() {
               </label>
             </div>
 
+            {/* Filtros por talla / onzas / medida (configurables por categoría) */}
+            {attributeGroups.length > 0 && (
+              <div className="attrfilters" aria-label="Filtros rápidos por categoría">
+                {attributeGroups.map(({ def, values }) => {
+                  const chosen = selectedAttributes[def.key];
+                  return (
+                    <div className="chips" role="group" aria-label={def.label} key={def.key}>
+                      <span className="attrlabel">{def.label}</span>
+                      <button
+                        type="button"
+                        className={`chip ${!chosen ? 'active' : ''}`}
+                        aria-pressed={!chosen}
+                        onClick={() =>
+                          setSelectedAttributes((prev) => {
+                            const next = { ...prev };
+                            delete next[def.key];
+                            return next;
+                          })
+                        }
+                      >
+                        Todas
+                      </button>
+                      {values.map((value) => (
+                        <button
+                          key={value}
+                          type="button"
+                          className={`chip ${chosen === value ? 'active' : ''}`}
+                          aria-pressed={chosen === value}
+                          onClick={() =>
+                            setSelectedAttributes((prev) => ({
+                              ...prev,
+                              [def.key]: chosen === value ? '' : value,
+                            }))
+                          }
+                        >
+                          {value}
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
             {/* Conteo + filtro de técnica + orden (`.labelrow`) */}
             <div className="labelrow">
               <p className="subtle" style={{ marginTop: 0 }}>
@@ -798,7 +879,7 @@ export default function App() {
 
             {/* Grilla de productos (`.grid`) */}
             <div
-              key={`${selectedCategory}-${selectedTechnique}-${searchQuery}-${sortBy}`}
+              key={`${selectedCategory}-${selectedTechnique}-${searchQuery}-${sortBy}-${JSON.stringify(selectedAttributes)}`}
               className="grid animate-fade-in"
               style={{ margin: '22px 0 40px' }}
             >
@@ -821,6 +902,7 @@ export default function App() {
                     onClick={() => {
                       setSelectedCategory('all');
                       setSelectedTechnique('all');
+                      setSelectedAttributes({});
                       setSearchQuery('');
                     }}
                   >
@@ -838,6 +920,8 @@ export default function App() {
                     onToggleFavorite={toggleFavorite}
                     onSelectProduct={(p) => setSelectedProduct(p)}
                     themeMode={themeMode}
+                    categoryLabel={categories.find((c) => c.id === product.category)?.label}
+                    categoryKind={categoryKindOf(categories, product.category)}
                   />
                 ))
               )}
@@ -891,6 +975,8 @@ export default function App() {
                     onToggleFavorite={toggleFavorite}
                     onSelectProduct={(p) => setSelectedProduct(p)}
                     themeMode={themeMode}
+                    categoryLabel={categories.find((c) => c.id === product.category)?.label}
+                    categoryKind={categoryKindOf(categories, product.category)}
                   />
                 ))
               )}
@@ -1670,6 +1756,8 @@ export default function App() {
           onClose={() => setSelectedProduct(null)}
           onAddToCart={handleAddToCart}
           themeMode={themeMode}
+          categoryLabel={categories.find((c) => c.id === selectedProduct.category)?.label}
+          categoryKind={categoryKindOf(categories, selectedProduct.category)}
         />
       )}
 
@@ -1765,6 +1853,10 @@ export default function App() {
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
         onConfigChange={() => { reloadConfig().then(() => setConfigVersion(v => v + 1)); }}
+        onCatalogChange={() => {
+          loadProductsFromSupabase().then((items) => { if (items.length > 0) setProducts(items); });
+          loadCategoriesFromSupabase().then((cats) => { if (cats.length > 0) setCategories(cats); });
+        }}
       />
 
       {/* Terms & Privacy Modal */}

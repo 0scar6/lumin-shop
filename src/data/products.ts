@@ -1,4 +1,4 @@
-import { Product, ProductType } from '../types';
+import { Product, ProductType, ProductAttributes } from '../types';
 import { supabase } from '../lib/supabase';
 
 // ============================================
@@ -187,10 +187,28 @@ const PRODUCTS_STATIC: Product[] = [
 ];
 
 export const CATEGORIES = [
-  { id: 'all', label: 'Todos los Productos', iconName: 'Grid' },
-  { id: 'streetwear', label: 'Polos Oversized & Boxy Fit', iconName: 'Shirt' },
-  { id: 'cups', label: 'Vasos Frosted Glass 16oz', iconName: 'Coffee' },
-  { id: 'drops', label: 'Edición Especial Drop 04', iconName: 'Flame' }
+  { id: 'all', label: 'Todos los Productos', iconName: 'Grid', tipo: 'otro' as const, atributos: [] },
+  {
+    id: 'streetwear',
+    label: 'Polos Oversized & Boxy Fit',
+    iconName: 'Shirt',
+    tipo: 'ropa' as const,
+    atributos: [{ key: 'talla', label: 'Talla', tipo: 'opciones' as const, valores: ['S', 'M', 'L', 'XL', 'XXL'] }],
+  },
+  {
+    id: 'cups',
+    label: 'Vasos Frosted Glass 16oz',
+    iconName: 'Coffee',
+    tipo: 'vaso' as const,
+    atributos: [{ key: 'onzas', label: 'Onzas', tipo: 'opciones' as const, valores: ['11oz', '16oz', '20oz'] }],
+  },
+  {
+    id: 'drops',
+    label: 'Edición Especial Drop 04',
+    iconName: 'Flame',
+    tipo: 'placa' as const,
+    atributos: [{ key: 'medida', label: 'Medida (alto × ancho)', tipo: 'medida' as const, unidad: 'cm', valores: [] }],
+  },
 ];
 
 export const FAQS = [
@@ -233,10 +251,12 @@ interface SupabaseProductRow {
     sizes?: string[];
     fits?: string[];
     colors?: { name: string; hex: string }[];
+    atributos?: ProductAttributes;
   } | null;
   opciones_vaso: {
     types?: { name: string; extraPrice: number }[];
     finishes?: string[];
+    atributos?: ProductAttributes;
   } | null;
   destacado: boolean | null;
   activo: boolean | null;
@@ -269,6 +289,10 @@ function mapSupabaseToProduct(row: SupabaseProductRow): Product {
     galleryImages: gallery,
     description: row.descripcion ?? '',
     tag: row.etiqueta ?? undefined,
+    attributes: {
+      ...(row.opciones_ropa?.atributos || {}),
+      ...(row.opciones_vaso?.atributos || {}),
+    },
     apparelOptions: row.opciones_ropa
       ? {
           sizes: row.opciones_ropa.sizes ?? [],

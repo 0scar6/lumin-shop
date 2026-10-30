@@ -183,6 +183,15 @@ src/
 ### 7.8 Temas
 - `dark` | `amoled` | `light` — guardado en `lumin_theme_mode`. En modo claro el acento usa `--accent-ink` (variante oscura legible).
 
+### 7.9 Catálogo flexible (tallas / onzas / medidas / categorías nuevas)
+- **No requiere columnas nuevas ni migración SQL.** La taxonomía de categorías se guarda como JSON en la fila `configuracion` con `id = 'catalog_taxonomy'`; los valores de cada producto se guardan en `opciones_ropa.atributos` / `opciones_vaso.atributos` (JSONB ya existentes).
+- Tipos de categoría (`CategoryKind`): `ropa` (filtro por talla), `vaso` (onzas), `placa` (medida alto × ancho) y `otro` (libre).
+- Lógica central en `src/lib/catalog.ts`: `parseTaxonomy` / `serializeTaxonomy`, `buildCategoryList`, `attributeValues` (deduce tallas/onzas/medidas si el producto aún no las tiene guardadas), `matchesAttributes` y `sortAttributeValues`.
+- Los chips de filtro solo aparecen al elegir una categoría concreta (en “Todos” no se muestran) y se calculan de los productos reales de esa categoría.
+- **Categorías nuevas (gorras, etc.) se crean desde el panel**: Admin → Catálogo → “Categorías y filtros” (`AdminCategories.tsx`), donde se define ID, nombre, comportamiento, icono, orden, visibilidad y los filtros personalizados de la categoría.
+- En el formulario de producto (`AdminProducts.tsx`) hay una sección “Filtros de la categoría” para marcar tallas/onzas/medidas del producto. Al guardar, las tallas se sincronizan con `opciones_ropa.sizes` y las medidas con `opciones_vaso.types`, de modo que el detalle del producto y los chips del catálogo siempre coincidan.
+- `scripts/normalize-catalog.mjs` normalizó el catálogo real (tallas válidas, onzas deducidas, placa movida a `drops` con medida 20 × 25 cm) y escribió la taxonomía inicial.
+
 ---
 
 ## 8. Reglas que NO se deben romper

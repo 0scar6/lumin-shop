@@ -12,10 +12,13 @@ import { AdminSharedProps, Field, TextInput, TextArea, MediaUpload, Section, Pre
 import { AdminConfig } from './admin/AdminConfig';
 import { AdminProducts, ProductoRow } from './admin/AdminProducts';
 import { AdminOrders, PedidoRow } from './admin/AdminOrders';
+import { loadCategoriesFromSupabase } from '../lib/supabase-data';
+import { serializeTaxonomy, sortAttributeValues, taxonomyConfigId } from '../lib/catalog';
+import type { CategoryUI, MeasureValue } from '../types';
 
 type AdminTab = 'inicio' | 'config' | 'catalogo' | 'favoritos' | 'pedidos' | 'cuenta';
 
-interface AdminPanelProps { isOpen: boolean; onClose: () => void; onConfigChange?: () => void; }
+interface AdminPanelProps { isOpen: boolean; onClose: () => void; onConfigChange?: () => void; onCatalogChange?: () => void; }
 interface ConfigRow { id: string; seccion: string; clave: string; valor: string; }
 
 const TABLES_TO_BACKUP = [
@@ -30,7 +33,7 @@ const hashPassword = async (pw: string): Promise<string> => {
   return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 };
 
-export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfigChange }) => {
+export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfigChange, onCatalogChange }) => {
   const [authenticated, setAuthenticated] = useState(false);
   const [pw, setPw] = useState('');
   const [pwError, setPwError] = useState(false);
@@ -52,16 +55,29 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
   const [isNewProduct, setIsNewProduct] = useState(false);
   const [prodSaving, setProdSaving] = useState(false);
 
+  const [categories, setCategories] = useState<CategoryUI[]>([]);
+  const [categoriesSaving, setCategoriesSaving] = useState(false);
+
   const [orders, setOrders] = useState<PedidoRow[]>([]);
 
   useEffect(() => { if (!isOpen) { setAuthenticated(false); setPw(''); setEditingProduct(null); } }, [isOpen]);
 
   useEffect(() => {
     if (!isOpen || !supabase) return;
-    supabase.from('configuracion').select('valor').eq('id', 'admin_password_hash').single().then(({ data }) => {
-      if (data?.valor) setStoredHash(data.valor);
-      setHashLoaded(true);
-    }).catch(() => setHashLoaded(true));
+    (async () => {
+      try {
+        const { data } = await supabase!
+          .from('configuracion')
+          .select('valor')
+          .eq('id', 'admin_password_hash')
+          .single();
+        if (data?.valor) setStoredHash(data.valor);
+      } catch {
+        // Si falla la lectura, el login mostrará el aviso de conexión.
+      } finally {
+        setHashLoaded(true);
+      }
+    })();
   }, [isOpen]);
 
   const handleLogin = async () => {
@@ -75,10 +91,31 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     }
   };
 
-  useEffect(() => { if (!authenticated || !supabase) return; loadConfig(); loadProducts(); loadOrders(); }, [authenticated]);
+  useEffect(() => { if (!authenticated || !supabase) return; loadConfig(); loadProducts(); loadOrders(); loadCategories(); }, [authenticated]);
 
   const loadConfig = async () => { try { const { data } = await supabase!.from('configuracion').select('*'); if (data) { setConfigRows(data); const v: Record<string, string> = {}; data.forEach((r: ConfigRow) => { v[r.id] = r.valor; }); setCfgEdit(v); setCfgOriginal(v); } } catch {} };
-  const loadProducts = async () => { try { const { data } = await supabase!.from('productos').select('*').order('created_at', { ascending: false }); if (data) { setProducts(data as ProductoRow[]); setProductsLoaded(true); } else { setProductsLoaded(true); } } catch { setProductsLoaded(true); } };
+  const loadProducts = async () => {
+    try {
+      const { data } = await supabase!.from('productos').select('*').order('created_at', { ascending: false });
+      if (data) {
+        const rows = (data as any[]).map((row) => ({
+          ...row,
+          atributos: {
+            ...(row.opciones_ropa?.atributos || {}),
+            ...(row.opciones_vaso?.atributos || {}),
+          },
+        }));
+        setProducts(rows as ProductoRow[]);
+        setProductsLoaded(true);
+      } else { setProductsLoaded(true); }
+    } catch { setProductsLoaded(true); }
+  };
+  const loadCategories = async () => {
+    try {
+      const cats = await loadCategoriesFromSupabase(true);
+      if (cats.length > 0) setCategories(cats);
+    } catch {}
+  };
   const loadOrders = async () => { try { const { data } = await supabase!.from('pedidos').select('*').order('created_at', { ascending: false }); if (data) setOrders(data as PedidoRow[]); } catch {} };
 
   const cfgChanged = useMemo(() => {
@@ -203,7 +240,17 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
   };
 
   const startNewProduct = () => {
-    setEditingProduct({ id: `prod-${Date.now()}`, nombre: '', categoria_id: 'streetwear', precio: 0, precio_original: null, tecnica: '', tiempo_produccion: '24-48 hrs', imagen: '', galeria: null, descripcion: '', etiqueta: '', opciones_ropa: { sizes: ['S', 'M', 'L', 'XL'], fits: ['Oversized Streetwear'], colors: [{ name: 'Negro', hex: '#0A0A0A' }] }, opciones_vaso: null, personalizable: false, activo: true, destacado: false, agotado: false });
+    const first = categories.find((c) => c.activo !== false) || categories[0];
+    const catId = first?.id || 'streetwear';
+    const kind = first?.tipo || 'ropa';
+    setEditingProduct({
+      id: `prod-${Date.now()}`, nombre: '', categoria_id: catId, precio: 0, precio_original: null,
+      tecnica: '', tiempo_produccion: '24-48 hrs', imagen: '', galeria: null, descripcion: '', etiqueta: '',
+      atributos: {},
+      opciones_ropa: kind === 'ropa' ? { sizes: ['S', 'M', 'L', 'XL'], fits: ['Oversized Streetwear'], colors: [{ name: 'Negro', hex: '#0A0A0A' }] } : null,
+      opciones_vaso: kind === 'ropa' ? null : { types: [], finishes: [] },
+      personalizable: false, activo: true, destacado: false, agotado: false,
+    });
     setIsNewProduct(true);
   };
 
@@ -215,12 +262,54 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
     try {
       let galeria = editingProduct.galeria;
       if ((!galeria || galeria.length === 0) && editingProduct.imagen) galeria = [editingProduct.imagen];
+
+      // Los atributos (tallas, onzas, medidas…) se guardan dentro de las
+      // opciones del producto para no requerir columnas nuevas en Supabase.
+      const cat = categories.find((c) => c.id === editingProduct.categoria_id);
+      const kind = cat?.tipo || 'otro';
+      const atributos: Record<string, any> = { ...(editingProduct.atributos || {}) };
+      let opcionesRopa = editingProduct.opciones_ropa;
+      let opcionesVaso = editingProduct.opciones_vaso;
+
+      if (kind === 'ropa') {
+        const currentSizes = opcionesRopa?.sizes || [];
+        const nameOf = (s: any) => (typeof s === 'string' ? s : s?.name);
+        const attrSizes: string[] = Array.isArray(atributos.talla) ? (atributos.talla as string[]) : [];
+        // Tallas y filtro deben coincidir: cada chip de talla tiene que existir
+        // también en el selector del detalle de producto (y viceversa).
+        const merged = sortAttributeValues([...currentSizes.map(nameOf), ...attrSizes].filter(Boolean));
+        if (merged.length > 0) {
+          atributos.talla = merged;
+          opcionesRopa = {
+            ...(opcionesRopa || {}),
+            sizes: merged.map((name) => currentSizes.find((s: any) => nameOf(s) === name) ?? name),
+          };
+        }
+        opcionesRopa = { ...(opcionesRopa || {}), atributos };
+      } else {
+        const measureKeys = (cat?.atributos || []).filter((a) => a.tipo === 'medida').map((a) => a.key);
+        for (const key of measureKeys) {
+          const measures = Array.isArray(atributos[key]) ? atributos[key] as MeasureValue[] : [];
+          if (measures.length === 0) continue;
+          const unidad = cat?.atributos.find((a) => a.key === key)?.unidad || 'cm';
+          const existing = [...(opcionesVaso?.types || [])];
+          for (const measure of measures) {
+            const name = `${measure.alto} × ${measure.ancho} ${unidad}`.replace('.', ',');
+            if (!existing.some((t: any) => String(t.name).toLowerCase() === name.toLowerCase())) {
+              existing.push({ name, extraPrice: measure.extraPrice || 0 });
+            }
+          }
+          opcionesVaso = { ...(opcionesVaso || {}), types: existing };
+        }
+        opcionesVaso = { ...(opcionesVaso || {}), atributos };
+      }
+
       const payload = {
         id: editingProduct.id, nombre: editingProduct.nombre, categoria_id: editingProduct.categoria_id,
         precio: editingProduct.precio, precio_original: editingProduct.precio_original,
         tecnica: editingProduct.tecnica, tiempo_produccion: editingProduct.tiempo_produccion,
         imagen: editingProduct.imagen, galeria, descripcion: editingProduct.descripcion,
-        etiqueta: editingProduct.etiqueta, opciones_ropa: editingProduct.opciones_ropa, opciones_vaso: editingProduct.opciones_vaso,
+        etiqueta: editingProduct.etiqueta, opciones_ropa: opcionesRopa, opciones_vaso: opcionesVaso,
         personalizable: editingProduct.personalizable, activo: editingProduct.activo, destacado: editingProduct.destacado, agotado: editingProduct.agotado || false,
       };
       console.log('[LUMIN] Saving product:', payload.id, payload.nombre);
@@ -228,11 +317,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
       if (error) { console.error('[LUMIN] Save error:', error.message, error); throw error; }
       console.log('[LUMIN] Save success:', data);
       await loadProducts(); setEditingProduct(null); setIsNewProduct(false);
+      onCatalogChange?.();
     } catch (err: any) { alert('Error al guardar: ' + (err.message || JSON.stringify(err))); }
     setProdSaving(false);
   };
 
-  const handleProdDelete = async (id: string) => { if (!supabase || !confirm('Eliminar producto?')) return; await supabase.from('productos').delete().eq('id', id); await loadProducts(); setEditingProduct(null); };
+  const handleProdDelete = async (id: string) => { if (!supabase || !confirm('Eliminar producto?')) return; await supabase.from('productos').delete().eq('id', id); await loadProducts(); setEditingProduct(null); onCatalogChange?.(); };
 
   const handleProdImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]; if (!file || !supabase || !editingProduct) return;
@@ -252,6 +342,56 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
       if ((!gallery || gallery.length === 0) && mainImage) { gallery = [mainImage]; await supabase.from('productos').update({ galeria: gallery }).eq('id', row.id); count++; }
     }
     alert(`Sincronizados ${count} productos. Galería actualizada.`); await loadProducts();
+  };
+
+  const handleSaveCategories = async (next: CategoryUI[]) => {
+    if (!supabase) return;
+    const currentIds = new Set(categories.filter((c) => c.id !== 'all').map((c) => c.id));
+    const nextIds = new Set(next.map((c) => c.id));
+    if (nextIds.has('all')) {
+      alert('El ID "all" está reservado para "Todos los Productos". Usa otro.');
+      return;
+    }
+    const removed = [...currentIds].filter((id) => !nextIds.has(id));
+    const usedRemoved = removed.filter((id) => products.some((p) => p.categoria_id === id));
+    if (usedRemoved.length > 0) {
+      alert(`No puedes eliminar una categoría con productos (${usedRemoved.join(', ')}). Muévelos a otra categoría primero.`);
+      return;
+    }
+
+    setCategoriesSaving(true);
+    try {
+      for (const cat of next) {
+        const { error } = await supabase.from('categorias').upsert({
+          id: cat.id,
+          nombre: cat.label,
+          icono: cat.iconName || 'Grid',
+          activo: cat.activo !== false,
+          orden: cat.orden ?? 0,
+        }, { onConflict: 'id' });
+        if (error) throw error;
+      }
+      for (const id of removed) {
+        const { error } = await supabase.from('categorias').delete().eq('id', id);
+        if (error) throw error;
+      }
+      const { error: cfgError } = await supabase.from('configuracion').upsert({
+        id: taxonomyConfigId(),
+        seccion: 'catalogo',
+        clave: 'categorias',
+        valor: serializeTaxonomy(next.map((c) => ({ id: c.id, tipo: c.tipo, atributos: c.atributos }))),
+      }, { onConflict: 'id' });
+      if (cfgError) throw cfgError;
+
+      await loadCategories();
+      await reloadConfig();
+      onConfigChange?.();
+      onCatalogChange?.();
+      alert('Categorías y filtros guardados.');
+    } catch (err: any) {
+      alert('Error al guardar categorías: ' + (err.message || JSON.stringify(err)));
+    }
+    setCategoriesSaving(false);
   };
 
   if (!isOpen) return null;
@@ -394,7 +534,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, onConfi
         <div className="flex-1 overflow-y-auto" style={{ scrollBehavior: 'smooth' }}>
           {mainTab === 'inicio' && <TabInicio {...sharedProps} configRows={configRows} />}
           {mainTab === 'config' && <AdminConfig cfgEdit={cfgEdit} setCfg={setCfg} />}
-          {mainTab === 'catalogo' && <AdminProducts cfgEdit={cfgEdit} setCfg={setCfg} handleCfgSave={handleCfgSave} cfgSaved={cfgSaved} products={products} editingProduct={editingProduct} setEditingProduct={setEditingProduct} isNewProduct={isNewProduct} startNewProduct={startNewProduct} handleProdSave={handleProdSave} handleProdDelete={handleProdDelete} handleProdImageUpload={handleProdImageUpload} prodSaving={prodSaving} uploading={uploading} handleSyncGalleries={handleSyncGalleries} />}
+          {mainTab === 'catalogo' && <AdminProducts cfgEdit={cfgEdit} setCfg={setCfg} handleCfgSave={handleCfgSave} cfgSaved={cfgSaved} products={products} editingProduct={editingProduct} setEditingProduct={setEditingProduct} isNewProduct={isNewProduct} startNewProduct={startNewProduct} handleProdSave={handleProdSave} handleProdDelete={handleProdDelete} handleProdImageUpload={handleProdImageUpload} prodSaving={prodSaving} uploading={uploading} handleSyncGalleries={handleSyncGalleries} categories={categories} onSaveCategories={handleSaveCategories} categoriesSaving={categoriesSaving} />}
           {mainTab === 'favoritos' && <TabFavoritos cfgEdit={cfgEdit} setCfg={setCfg} />}
           {mainTab === 'pedidos' && <AdminOrders orders={orders} handleOrderStatus={handleOrderStatus} />}
           {mainTab === 'cuenta' && <TabCuenta {...sharedProps} backupStatus={backupStatus} handleBackup={handleBackup} handleRestoreFile={handleRestoreFile} handleRestoreConfirm={handleRestoreConfirm} restorePreview={restorePreview} setRestorePreview={setRestorePreview} />}

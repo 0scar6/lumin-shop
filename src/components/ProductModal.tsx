@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Clock, ShieldCheck, Minus, Plus, ShoppingBag } from 'lucide-react';
-import { Product, CartItem, ThemeMode } from '../types';
+import { Product, CartItem, ThemeMode, CategoryKind } from '../types';
 import { cfg } from '../lib/config';
 
 const isVideoUrl = (url: string) => /\.(mp4|webm|ogg)$/i.test(url);
@@ -35,6 +35,8 @@ interface ProductModalProps {
   onClose: () => void;
   onAddToCart: (cartItem: CartItem) => void;
   themeMode?: ThemeMode;
+  categoryLabel?: string;
+  categoryKind?: CategoryKind;
 }
 
 /**
@@ -45,8 +47,11 @@ export const ProductModal: React.FC<ProductModalProps> = ({
   product,
   onClose,
   onAddToCart,
+  categoryLabel,
+  categoryKind,
 }) => {
-  const isApparel = product?.category === 'streetwear';
+  const kind = categoryKind || (product?.category === 'streetwear' ? 'ropa' : product?.category === 'cups' ? 'vaso' : 'otro');
+  const isApparel = kind === 'ropa';
 
   // Push history state when modal opens so back button closes it
   useEffect(() => {
@@ -238,9 +243,10 @@ export const ProductModal: React.FC<ProductModalProps> = ({
             {/* Detalle y opciones */}
             <div>
               <p className="eyebrow">
-                {isApparel
-                  ? cfg('pm_category_polo', 'Polo sublimado')
-                  : cfg('pm_category_cup', 'Vaso / taza sublimada')}
+                {categoryLabel ||
+                  (isApparel
+                    ? cfg('pm_category_polo', 'Polo sublimado')
+                    : cfg('pm_category_cup', 'Vaso / taza sublimada'))}
               </p>
               <h2>{product.name}</h2>
               <p>{product.description}</p>
@@ -324,49 +330,57 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                 </>
               )}
 
-              {/* Vaso / taza: tipo y acabado */}
+              {/* Vaso / taza / placa: medida o tipo, y acabado */}
               {!isApparel && product.cupOptions && (
                 <>
-                  <div className="field">
-                    <span>{cfg('pm_cup_type_label', 'Tipo de vaso / taza')}</span>
-                    <div className="chips" style={{ flexWrap: 'wrap' }}>
-                      {product.cupOptions.types.map((typeObj) => (
-                        <button
-                          key={typeObj.name}
-                          type="button"
-                          className={`chip ${
-                            selectedCupTypeObj.name === typeObj.name ? 'active' : ''
-                          }`}
-                          onClick={() => setSelectedCupTypeObj(typeObj)}
-                          aria-pressed={selectedCupTypeObj.name === typeObj.name}
-                        >
-                          {typeObj.name}
-                          {typeObj.extraPrice > 0
-                            ? ` · + S/ ${typeObj.extraPrice}`
-                            : typeObj.extraPrice < 0
-                            ? ` · - S/ ${Math.abs(typeObj.extraPrice)}`
-                            : ''}
-                        </button>
-                      ))}
+                  {product.cupOptions.types.length > 0 && (
+                    <div className="field">
+                      <span>
+                        {kind === 'placa'
+                          ? cfg('pm_measure_label', 'Medida (alto × ancho)')
+                          : cfg('pm_cup_type_label', 'Tipo de vaso / taza')}
+                      </span>
+                      <div className="chips" style={{ flexWrap: 'wrap' }}>
+                        {product.cupOptions.types.map((typeObj) => (
+                          <button
+                            key={typeObj.name}
+                            type="button"
+                            className={`chip ${
+                              selectedCupTypeObj.name === typeObj.name ? 'active' : ''
+                            }`}
+                            onClick={() => setSelectedCupTypeObj(typeObj)}
+                            aria-pressed={selectedCupTypeObj.name === typeObj.name}
+                          >
+                            {typeObj.name}
+                            {typeObj.extraPrice > 0
+                              ? ` · + S/ ${typeObj.extraPrice}`
+                              : typeObj.extraPrice < 0
+                              ? ` · - S/ ${Math.abs(typeObj.extraPrice)}`
+                              : ''}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
 
-                  <div className="field">
-                    <span>{cfg('pm_finish_label', 'Acabado')}</span>
-                    <div className="chips" style={{ flexWrap: 'wrap' }}>
-                      {product.cupOptions.finishes.map((finish) => (
-                        <button
-                          key={finish}
-                          type="button"
-                          className={`chip ${selectedFinish === finish ? 'active' : ''}`}
-                          onClick={() => setSelectedFinish(finish)}
-                          aria-pressed={selectedFinish === finish}
-                        >
-                          {finish}
-                        </button>
-                      ))}
+                  {product.cupOptions.finishes.length > 0 && (
+                    <div className="field">
+                      <span>{cfg('pm_finish_label', 'Acabado')}</span>
+                      <div className="chips" style={{ flexWrap: 'wrap' }}>
+                        {product.cupOptions.finishes.map((finish) => (
+                          <button
+                            key={finish}
+                            type="button"
+                            className={`chip ${selectedFinish === finish ? 'active' : ''}`}
+                            onClick={() => setSelectedFinish(finish)}
+                            aria-pressed={selectedFinish === finish}
+                          >
+                            {finish}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </>
               )}
 
